@@ -1,4 +1,4 @@
-# 🩸 Glicemilton
+# 🐜 Glicemilton
 
 App educativo com minijogos para conscientizar sobre diabetes e glicemia de forma intuitiva.
 
