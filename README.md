@@ -93,12 +93,16 @@ npx expo start --tunnel
 ## Estrutura de pastas
 
 ```
-StickerSmash/
 app/
 ├── index.tsx                  # Splash/boas-vindas
+├── _layout.tsx
+├── +html.tsx
+├── +not-found.tsx
+├── modal.tsx
 ├── (tabs)/
 │   ├── _layout.tsx
-│   └── index.tsx              # Home
+|   ├── index.tsx              # Home
+│   └── two.tsx
 └── modulos/                   # Cada módulo isolado
     ├── quiz/
     │   └── index.tsx
@@ -110,8 +114,10 @@ app/
     │   └── index.tsx
     ├── exercicios/
     │   └── index.tsx
-    └── medicamentos/
-        └── index.tsx
+    ├── medicamentos/
+    │    └── index.tsx
+    └── medicamento/
+         └── index.tsx   
 components/
 ├── ui/                        # Botões, cards, badges — genéricos
 │   ├── Button.tsx
@@ -126,6 +132,10 @@ components/
 constants/
 ├── foods.ts                   # Dados dos alimentos (prato)
 └── quiz.ts                    # Perguntas e respostas
+context/
+├── GameContext.tsx
+├── GameContext.types.ts
+└── gameReducer.ts
 assets/
 ├── images/
 │   ├── shared/                # Glicemilton, logos
