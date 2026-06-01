@@ -1,11 +1,9 @@
 import { Chewy_400Regular, useFonts } from '@expo-google-fonts/chewy';
 import { BlurView } from 'expo-blur';
 import { useRouter } from 'expo-router';
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import {
-  Animated,
   Dimensions,
-  Easing,
   Image,
   ImageBackground,
   KeyboardAvoidingView,
@@ -18,82 +16,10 @@ import {
 } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
 
+// Importando os componentes que criamos!
+import { AnimatedCloud, AnimatedFloat } from '../../components/AnimatedElements';
+
 const { width } = Dimensions.get('window');
-
-// --- COMPONENTES ANIMADOS (Replicados para manter o fundo vivo) ---
-const AnimatedFloat = ({ children, delay = 0, style }: any) => {
-  const translateY = useRef(new Animated.Value(0)).current;
-  useEffect(() => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(translateY, {
-          toValue: -12,
-          duration: 2000,
-          delay,
-          useNativeDriver: true,
-          easing: Easing.inOut(Easing.ease),
-        }),
-        Animated.timing(translateY, {
-          toValue: 0,
-          duration: 2000,
-          useNativeDriver: true,
-          easing: Easing.inOut(Easing.ease),
-        }),
-      ])
-    ).start();
-  }, []);
-  return <Animated.View style={[style, { transform: [{ translateY }] }]}>{children}</Animated.View>;
-};
-
-const AnimatedCloud = ({ top, width: cloudWidth, duration, initialX, opacity }: any) => {
-  const translateX = useRef(new Animated.Value(initialX)).current;
-
-  useEffect(() => {
-    const totalDistance = width + 50 + cloudWidth + 50;
-    const distanceLeft = initialX - (-cloudWidth - 50);
-    const firstDuration = duration * (distanceLeft / totalDistance);
-
-    Animated.sequence([
-      Animated.timing(translateX, {
-        toValue: -cloudWidth - 50,
-        duration: firstDuration,
-        useNativeDriver: true,
-        easing: Easing.linear,
-      }),
-      Animated.loop(
-        Animated.sequence([
-          Animated.timing(translateX, { toValue: width + 50, duration: 0, useNativeDriver: true }),
-          Animated.timing(translateX, {
-            toValue: -cloudWidth - 50,
-            duration: duration,
-            useNativeDriver: true,
-            easing: Easing.linear,
-          }),
-        ])
-      ),
-    ]).start();
-  }, []);
-
-  return (
-    <Animated.View
-      style={{
-        position: 'absolute',
-        top,
-        width: cloudWidth,
-        opacity,
-        transform: [{ translateX }],
-        zIndex: 1,
-      }}
-    >
-      <Svg viewBox="0 0 512 512" width="100%" height={cloudWidth * 0.6}>
-        <Path
-          fill="#FFFFFF"
-          d="M417.4,228.6c-4.4-78.6-69.5-140.2-149.3-140.2c-46.7,0-88.6,21.6-116.5,55.4C137.9,134.7,120.3,130,101.4,130 c-56,0-101.4,45.4-101.4,101.4c0,56,45.4,101.4,101.4,101.4h316.1c52.2,0,94.5-42.3,94.5-94.5C511.9,281.8,470.9,240.2,417.4,228.6z"
-        />
-      </Svg>
-    </Animated.View>
-  );
-};
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -108,7 +34,6 @@ export default function LoginScreen() {
 
   return (
     <View style={styles.screenWrapper}>
-      {/* 1. O Fundo Idêntico à Home */}
       <ImageBackground
         source={require('../../assets/images/background.jpg')}
         style={styles.homeArea}
@@ -186,14 +111,12 @@ export default function LoginScreen() {
         </AnimatedFloat>
       </ImageBackground>
 
-      {/* 2. O Overlay Escuro e o Cartão de Login por cima de tudo */}
       <BlurView intensity={20} tint="dark" style={styles.loginOverlay}>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={styles.keyboardView}
         >
           <View style={styles.loginContainer}>
-            {/* Navega de volta para a Home */}
             <TouchableOpacity style={styles.closeButton} onPress={() => router.navigate('/')}>
               <Text style={styles.closeButtonText}>✖</Text>
             </TouchableOpacity>

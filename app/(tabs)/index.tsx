@@ -1,10 +1,8 @@
 import { Chewy_400Regular, useFonts } from '@expo-google-fonts/chewy';
 import { useRouter } from 'expo-router';
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import {
-  Animated,
   Dimensions,
-  Easing,
   Image,
   ImageBackground,
   StyleSheet,
@@ -14,125 +12,10 @@ import {
 } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
 
+// Importando os componentes que criamos!
+import { AnimatedCloud, AnimatedFloat, GrassClump } from '../../components/AnimatedElements';
+
 const { width } = Dimensions.get('window');
-
-// --- COMPONENTES ANIMADOS ---
-const AnimatedFloat = ({ children, delay = 0, style }: any) => {
-  const translateY = useRef(new Animated.Value(0)).current;
-  useEffect(() => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(translateY, {
-          toValue: -12,
-          duration: 2000,
-          delay,
-          useNativeDriver: true,
-          easing: Easing.inOut(Easing.ease),
-        }),
-        Animated.timing(translateY, {
-          toValue: 0,
-          duration: 2000,
-          useNativeDriver: true,
-          easing: Easing.inOut(Easing.ease),
-        }),
-      ])
-    ).start();
-  }, []);
-  return <Animated.View style={[style, { transform: [{ translateY }] }]}>{children}</Animated.View>;
-};
-
-const AnimatedCloud = ({ top, width: cloudWidth, duration, initialX, opacity }: any) => {
-  const translateX = useRef(new Animated.Value(initialX)).current;
-
-  useEffect(() => {
-    const totalDistance = width + 50 + cloudWidth + 50;
-    const distanceLeft = initialX - (-cloudWidth - 50);
-    const firstDuration = duration * (distanceLeft / totalDistance);
-
-    Animated.sequence([
-      Animated.timing(translateX, {
-        toValue: -cloudWidth - 50,
-        duration: firstDuration,
-        useNativeDriver: true,
-        easing: Easing.linear,
-      }),
-      Animated.loop(
-        Animated.sequence([
-          Animated.timing(translateX, { toValue: width + 50, duration: 0, useNativeDriver: true }),
-          Animated.timing(translateX, {
-            toValue: -cloudWidth - 50,
-            duration: duration,
-            useNativeDriver: true,
-            easing: Easing.linear,
-          }),
-        ])
-      ),
-    ]).start();
-  }, []);
-
-  return (
-    <Animated.View
-      style={{
-        position: 'absolute',
-        top,
-        width: cloudWidth,
-        opacity,
-        transform: [{ translateX }],
-        zIndex: 1,
-      }}
-    >
-      <Svg viewBox="0 0 512 512" width="100%" height={cloudWidth * 0.6}>
-        <Path
-          fill="#FFFFFF"
-          d="M417.4,228.6c-4.4-78.6-69.5-140.2-149.3-140.2c-46.7,0-88.6,21.6-116.5,55.4C137.9,134.7,120.3,130,101.4,130 c-56,0-101.4,45.4-101.4,101.4c0,56,45.4,101.4,101.4,101.4h316.1c52.2,0,94.5-42.3,94.5-94.5C511.9,281.8,470.9,240.2,417.4,228.6z"
-        />
-      </Svg>
-    </Animated.View>
-  );
-};
-
-const GrassClump = ({ left, delay, scale }: any) => {
-  const rotate = useRef(new Animated.Value(-1)).current;
-  useEffect(() => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(rotate, {
-          toValue: 1,
-          duration: 1500,
-          delay,
-          useNativeDriver: true,
-          easing: Easing.inOut(Easing.ease),
-        }),
-        Animated.timing(rotate, {
-          toValue: -1,
-          duration: 1500,
-          useNativeDriver: true,
-          easing: Easing.inOut(Easing.ease),
-        }),
-      ])
-    ).start();
-  }, []);
-  const spin = rotate.interpolate({ inputRange: [-1, 1], outputRange: ['-8deg', '8deg'] });
-  return (
-    <Animated.View
-      style={{
-        position: 'absolute',
-        bottom: -10,
-        left,
-        width: 50,
-        height: 50,
-        transform: [{ scale }, { rotate: spin }],
-        zIndex: 3,
-      }}
-    >
-      <Svg viewBox="0 0 50 50" width="100%" height="100%">
-        <Path d="M 25 50 Q 15 25 10 0 Q 20 20 25 50 Z" fill="#7DB045" />
-        <Path d="M 25 50 Q 25 25 30 5 Q 30 30 25 50 Z" fill="#8AC24E" />
-        <Path d="M 25 50 Q 35 30 45 10 Q 35 35 25 50 Z" fill="#6A9C3A" />
-      </Svg>
-    </Animated.View>
-  );
-};
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -152,7 +35,6 @@ export default function HomeScreen() {
         style={styles.homeArea}
         imageStyle={{ transform: [{ scale: 1.1 }, { translateX: -15 }] }}
       >
-        {/* Nuvens começando já espalhadas pela tela */}
         <AnimatedCloud top="5%" width={80} duration={30000} initialX={width * 0.1} opacity={0.9} />
         <AnimatedCloud
           top="20%"
@@ -212,7 +94,6 @@ export default function HomeScreen() {
           </View>
         </AnimatedFloat>
 
-        {/* Navega para a aba de Login (two) */}
         <TouchableOpacity
           style={styles.startButton}
           onPress={() => router.navigate('/two')}
