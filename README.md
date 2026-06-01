@@ -101,7 +101,7 @@ app/
 ├── modal.tsx
 ├── (tabs)/
 │   ├── _layout.tsx
-|   ├── index.tsx              # Home
+│   ├── index.tsx              # Home
 │   └── two.tsx
 └── modulos/                   # Cada módulo isolado
     ├── quiz/
@@ -114,10 +114,8 @@ app/
     │   └── index.tsx
     ├── exercicios/
     │   └── index.tsx
-    ├── medicamentos/
-    │    └── index.tsx
-    └── medicamento/
-         └── index.tsx   
+    └── medicamentos/
+        └── index.tsx  
 components/
 ├── ui/                        # Botões, cards, badges — genéricos
 │   ├── Button.tsx

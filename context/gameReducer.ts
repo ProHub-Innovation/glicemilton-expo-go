@@ -7,7 +7,7 @@ import { GameAction, GameState } from './GameContext.types';
 export const INITIAL_STATE: GameState = {
   totalPoints: 0,
   moduleScores: [],
-  sessionStartedAt: Date.now(),
+  sessionStartedAt: 0,
 };
 
 export function gameReducer(state: GameState, action: GameAction): GameState {
@@ -23,7 +23,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       const entry = {
         moduleId,
         points,
-        completedAt: Date.now(),
+        completedAt: action.payload.completedAt,
       };
 
       return {
@@ -36,7 +36,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     case 'RESET_SESSION': {
       return {
         ...INITIAL_STATE,
-        sessionStartedAt: Date.now(), // novo timestamp para a sessão reiniciada
+        sessionStartedAt: action.payload.sessionStartedAt, // novo timestamp para a sessão reiniciada
       };
     }
 

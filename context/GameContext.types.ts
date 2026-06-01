@@ -23,9 +23,18 @@ export interface GameState {
 export type GameAction =
   | {
       type: 'ADD_POINTS';
-      payload: { moduleId: ModuleId; points: number };
+      payload: {
+        moduleId: ModuleId;
+        points: number;
+        completedAt: number;
+      };
     }
-  | { type: 'RESET_SESSION' };
+  | {
+      type: 'RESET_SESSION';
+      payload: {
+        sessionStartedAt: number;
+      };
+    };
 
 // ---------------------------------------------------------------------------
 // Contexto

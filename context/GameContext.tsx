@@ -26,21 +26,27 @@ interface GameProviderProps {
 }
 
 export function GameProvider({ children }: GameProviderProps) {
-  const [state, dispatch] = useReducer(gameReducer, INITIAL_STATE);
+  const [state, dispatch] = useReducer(gameReducer, INITIAL_STATE, (initial) => ({
+    ...initial,
+    sessionStartedAt: Date.now(),
+  }));
 
   const addPoints = useCallback((moduleId: ModuleId, points: number) => {
-    dispatch({ type: 'ADD_POINTS', payload: { moduleId, points } });
+    dispatch({ type: 'ADD_POINTS', payload: { moduleId, points, completedAt: Date.now() } });
   }, []);
 
   const resetSession = useCallback(() => {
-    dispatch({ type: 'RESET_SESSION' });
+    dispatch({ type: 'RESET_SESSION', payload: { sessionStartedAt: Date.now() } });
   }, []);
 
-  const value: GameContextValue = {
-    state,
-    addPoints,
-    resetSession,
-  };
+  const value = React.useMemo(
+    () => ({
+      state,
+      addPoints,
+      resetSession,
+    }),
+    [state, addPoints, resetSession]
+  );
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>;
 }
