@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 
 interface DiceButtonProps {
@@ -10,6 +10,15 @@ interface DiceButtonProps {
 export function DiceButton({ lastRoll, isLocked, onRoll }: DiceButtonProps) {
   const [displayFace, setDisplayFace] = useState<number | null>(null);
   const [isRolling, setIsRolling] = useState(false);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, []);
 
   function handlePress() {
     if (isLocked || isRolling) return;
@@ -18,13 +27,16 @@ export function DiceButton({ lastRoll, isLocked, onRoll }: DiceButtonProps) {
     let counter = 0;
     const maxSpins = 10;
 
-    const interval = setInterval(() => {
+    intervalRef.current = setInterval(() => {
       const randomFace = Math.floor(Math.random() * 6) + 1;
       setDisplayFace(randomFace);
       counter++;
 
       if (counter >= maxSpins) {
-        clearInterval(interval);
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
+        }
         const finalRoll = Math.floor(Math.random() * 6) + 1;
         setDisplayFace(finalRoll);
         setIsRolling(false);

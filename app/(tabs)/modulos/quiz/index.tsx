@@ -4,7 +4,6 @@
 import { router } from 'expo-router';
 import React, { useReducer, useRef, useEffect } from 'react';
 import {
-  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -21,7 +20,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { BoardTrail } from '@/components/ui/modulos/quiz/BoardTrail';
 import { DiceButton } from '@/components/ui/modulos/quiz/DiceButton';
 import { QuizModal } from '@/components/ui/modulos/quiz/QuizModal';
-import { NUMBERED_SQUARES, QUIZ_QUESTIONS, TOTAL_BOARD_SQUARES } from '../../../../constants/quiz';
+import { QUIZ_QUESTIONS, TOTAL_BOARD_SQUARES } from '../../../../constants/quiz';
 import { useGame } from '../../../../context/GameContext';
 
 interface QuizScreenState {
@@ -80,7 +79,7 @@ const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpaci
 
 export default function QuizScreen() {
   const [state, dispatch] = useReducer(quizScreenReducer, INITIAL_SCREEN_STATE);
-  const { state: gameState, addPoints } = useGame();
+  const { addPoints } = useGame();
 
   const [fontsLoaded] = useExpoFonts({
     Caveat_700Bold,
@@ -403,7 +402,7 @@ const styles = StyleSheet.create({
     elevation: 9,
   },
   introTitle: {
-    fontFamily: 'Chewy_400Regular', // Único lugar que preserva a fonte cursiva!
+    fontFamily: 'Chewy_400Regular',
     fontSize: 34,
     color: '#6D4C41',
     textAlign: 'center',

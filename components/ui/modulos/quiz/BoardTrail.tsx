@@ -39,9 +39,11 @@ export function BoardTrail({ currentPosition }: BoardTrailProps) {
         const isSpecialLeaf = index === 0 || index === 16;
 
         // Juntamos a rotação da folha e a escala da folha cinza no mesmo array
-        const imageTransforms: any[] = [{ rotate: `${square.rotate}deg` }];
+        const imageTransforms: ({ rotate: string } | { scale: number })[] = [
+          { rotate: `${square.rotate}deg` },
+        ];
         if (isSpecialLeaf) {
-          imageTransforms.push({ scale: 1.3 }); // Aquele ajuste que fizemos antes!
+          imageTransforms.push({ scale: 1.3 });
         }
 
         return (

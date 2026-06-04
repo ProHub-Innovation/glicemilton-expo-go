@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: 'rgba(235, 226, 216, 0.81)', // Fundo bege translúcido idêntico ao protótipo
     width: '85%', // Ocupa 85% da tela, formando um formato agradável
-    borderRadius: 0, // Bordas arredondadas simétricas
+    borderRadius: 0, // Bordas retas
     padding: 30, // Respiro interno maior
     gap: 24, // Espaço entre título, pergunta e opções
     alignItems: 'center', // Centraliza todo o texto interno
