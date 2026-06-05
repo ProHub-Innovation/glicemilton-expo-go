@@ -5,17 +5,17 @@ import {
   Image,
   ImageBackground,
   SafeAreaView,
-  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
+import { AnimatedFloat } from '../../components/AnimatedElements';
 import { ScoreContext } from '../../contexts/ScoreContext';
 
 export default function DashboardScreen() {
   const router = useRouter();
-  const { score } = useContext(ScoreContext); // Consumindo o Estado Global
+  const { score } = useContext(ScoreContext);
   const [fontsLoaded] = useFonts({ Chewy_400Regular });
 
   if (!fontsLoaded)
@@ -25,139 +25,133 @@ export default function DashboardScreen() {
       </View>
     );
 
-  // Função genérica para navegar para os minigames
   const navigateToGame = (gameName: string) => {
-    // Por enquanto, apenas dá um alerta com o nome do jogo.
-    // No futuro, substitua por router.navigate(gameName)
     alert(`Navegando para o módulo: ${gameName}`);
   };
 
   return (
     <ImageBackground
-      source={require('../../assets/images/background.jpg')}
+      source={require('../../assets/images/fundo_zoom.jpg')}
       style={styles.background}
-      imageStyle={{ transform: [{ scale: 1.1 }] }}
+      resizeMode="cover"
+      // TRUQUE AQUI: Dando um leve zoom e empurrando a imagem para baixo
+      // para a estrelinha vazar para fora da tela e ficar invisível!
+      imageStyle={{ transform: [{ scale: 1.08 }, { translateY: 15 }] }}
     >
       <SafeAreaView style={styles.safeArea}>
-        <ScrollView
-          contentContainerStyle={styles.scrollContainer}
-          showsVerticalScrollIndicator={false}
-        >
-          {/* TOPO: Container de Glicemia e Pontuação */}
-          <View style={styles.topCard}>
-            <View style={styles.cardHeader}>
-              <View style={styles.glicemiaLabel}>
-                <View style={styles.dropIcon} />
-                <Text style={styles.cardTitle}>Glicemia</Text>
-              </View>
-              {/* Barra de progresso ilustrativa */}
-              <View style={styles.progressBar}>
-                <View style={styles.progressFill} />
-              </View>
+        {/* PARTE SUPERIOR */}
+        <View style={styles.topCard}>
+          <View style={styles.cardHeader}>
+            <View style={styles.glicemiaLabel}>
+              <View style={styles.dropIcon} />
+              <Text style={styles.cardTitle}>Glicemia</Text>
             </View>
-
-            <View style={styles.cardBody}>
-              <View style={styles.valueRow}>
-                <Text style={styles.glicemiaValue}>110</Text>
-                <Text style={styles.glicemiaUnit}>mg/dL</Text>
-              </View>
-              {/* Exibição da Pontuação Global */}
-              <View style={styles.scoreContainer}>
-                <Text style={styles.scoreLabel}>Pontos</Text>
-                <Text style={styles.scoreValue}>{score}</Text>
-              </View>
+            <View style={styles.progressBar}>
+              <View style={styles.progressFill} />
             </View>
           </View>
 
-          {/* CENTRO: Glicemilton Feliz */}
-          <View style={styles.characterContainer}>
+          <View style={styles.cardBody}>
+            <View style={styles.valueRow}>
+              <Text style={styles.glicemiaValue}>104</Text>
+              <Text style={styles.glicemiaUnit}>mg/dL</Text>
+            </View>
+            <View style={styles.scoreContainer}>
+              <Text style={styles.scoreLabel}>Pontos</Text>
+              <Text style={styles.scoreValue}>{score}</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* PARTE INFERIOR */}
+        <View style={styles.bottomSection}>
+          <AnimatedFloat>
             <Image
               source={require('../../assets/images/Glicemilton feliz.png')}
               style={styles.characterImage}
               resizeMode="contain"
             />
+          </AnimatedFloat>
+
+          {/* GRID COM CONTROLE INDIVIDUAL DE TAMANHO */}
+          <View style={styles.bottomGrid}>
+            {/* LINHA 1 */}
+            <View style={styles.gridRow}>
+              <TouchableOpacity
+                style={[styles.moduleButton, { width: '22%' }]}
+                onPress={() => navigateToGame('Reduzir Riscos')}
+              >
+                <Image
+                  source={require('../../assets/images/ícone reduzir os riscos.png')}
+                  style={styles.moduleIcon}
+                />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.moduleButton, { width: '22%' }]}
+                onPress={() => navigateToGame('Adaptação Saudável')}
+              >
+                <Image
+                  source={require('../../assets/images/ícone de adaptação saudável.png')}
+                  style={styles.moduleIcon}
+                />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.moduleButton, { width: '22%' }]}
+                onPress={() => navigateToGame('Comer Saudavelmente')}
+              >
+                <Image
+                  source={require('../../assets/images/Ícone do Jogo Comer Saudavelmente.png')}
+                  style={styles.moduleIcon}
+                />
+              </TouchableOpacity>
+            </View>
+
+            {/* LINHA 2 */}
+            <View style={styles.gridRow}>
+              <TouchableOpacity
+                style={[styles.moduleButton, { width: '22%' }]}
+                onPress={() => navigateToGame('Tomar Medicamentos')}
+              >
+                <Image
+                  source={require('../../assets/images/ícone de tomar os medicamentos.png')}
+                  style={styles.moduleIcon}
+                />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.moduleButton, { width: '22%' }]}
+                onPress={() => navigateToGame('Resolver Problemas')}
+              >
+                <Image
+                  source={require('../../assets/images/ícone de resolver problemas.png')}
+                  style={styles.moduleIcon}
+                />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.moduleButton, { width: '24%' }]}
+                onPress={() => navigateToGame('Vigiar Taxas')}
+              >
+                <Image
+                  source={require('../../assets/images/ícone de vigiar as taxas.png')}
+                  style={styles.moduleIcon}
+                />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.moduleButton, { width: '22%' }]}
+                onPress={() => navigateToGame('Atividade Física')}
+              >
+                <Image
+                  source={require('../../assets/images/ícone de atividade física.png')}
+                  style={styles.moduleIcon}
+                />
+              </TouchableOpacity>
+            </View>
           </View>
-
-          {/* BASE: Mapa de Módulos (Grid de Botões) */}
-          <View style={styles.modulesGrid}>
-            <TouchableOpacity
-              style={styles.moduleButton}
-              onPress={() => navigateToGame('Reduzir Riscos')}
-              activeOpacity={0.7}
-            >
-              <Image
-                source={require('../../assets/images/ícone reduzir os riscos.png')}
-                style={styles.moduleIcon}
-              />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.moduleButton}
-              onPress={() => navigateToGame('Adaptação Saudável')}
-              activeOpacity={0.7}
-            >
-              <Image
-                source={require('../../assets/images/ícone de adaptação saudável.png')}
-                style={styles.moduleIcon}
-              />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.moduleButton}
-              onPress={() => navigateToGame('Comer Saudavelmente')}
-              activeOpacity={0.7}
-            >
-              <Image
-                source={require('../../assets/images/Ícone do Jogo Comer Saudavelmente.png')}
-                style={styles.moduleIcon}
-              />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.moduleButton}
-              onPress={() => navigateToGame('Tomar Medicamentos')}
-              activeOpacity={0.7}
-            >
-              <Image
-                source={require('../../assets/images/ícone de tomar os medicamentos.png')}
-                style={styles.moduleIcon}
-              />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.moduleButton}
-              onPress={() => navigateToGame('Resolver Problemas')}
-              activeOpacity={0.7}
-            >
-              <Image
-                source={require('../../assets/images/ícone de resolver problemas.png')}
-                style={styles.moduleIcon}
-              />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.moduleButton}
-              onPress={() => navigateToGame('Vigiar Taxas')}
-              activeOpacity={0.7}
-            >
-              <Image
-                source={require('../../assets/images/ícone de vigiar as taxas.png')}
-                style={styles.moduleIcon}
-              />
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.moduleButton}
-              onPress={() => navigateToGame('Atividade Física')}
-              activeOpacity={0.7}
-            >
-              <Image
-                source={require('../../assets/images/ícone de atividade física.png')}
-                style={styles.moduleIcon}
-              />
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
+        </View>
       </SafeAreaView>
     </ImageBackground>
   );
@@ -166,19 +160,16 @@ export default function DashboardScreen() {
 const styles = StyleSheet.create({
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   background: { flex: 1, width: '100%', height: '100%' },
-  safeArea: { flex: 1 },
-  scrollContainer: {
-    flexGrow: 1,
-    paddingHorizontal: 20,
+  safeArea: {
+    flex: 1,
+    alignItems: 'center',
     paddingTop: 40,
     paddingBottom: 20,
-    alignItems: 'center',
+    justifyContent: 'space-between',
   },
-
-  // Estilos do Cartão de Glicemia
   topCard: {
     backgroundColor: 'white',
-    width: '100%',
+    width: '85%',
     maxWidth: 350,
     borderRadius: 20,
     padding: 20,
@@ -187,7 +178,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 5,
-    zIndex: 10,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -203,7 +193,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderTopRightRadius: 2,
     transform: [{ rotate: '45deg' }],
-  }, // Gotinha feita com CSS
+  },
   cardTitle: { fontSize: 24, fontWeight: 'bold', color: '#6C5141' },
   progressBar: { flex: 1, height: 12, backgroundColor: '#E0E0E0', borderRadius: 6, marginLeft: 15 },
   progressFill: { width: '70%', height: '100%', backgroundColor: '#8DB863', borderRadius: 6 },
@@ -211,8 +201,6 @@ const styles = StyleSheet.create({
   valueRow: { flexDirection: 'row', alignItems: 'baseline' },
   glicemiaValue: { fontSize: 48, fontWeight: '900', color: '#6C5141', lineHeight: 50 },
   glicemiaUnit: { fontSize: 18, fontWeight: 'bold', color: '#6C5141', marginLeft: 5 },
-
-  // Estilos da Pontuação Global
   scoreContainer: {
     alignItems: 'center',
     backgroundColor: '#F29C38',
@@ -222,26 +210,16 @@ const styles = StyleSheet.create({
   },
   scoreLabel: { fontSize: 14, fontFamily: 'Chewy_400Regular', color: 'white' },
   scoreValue: { fontSize: 22, fontFamily: 'Chewy_400Regular', color: 'white' },
-
-  // Estilos do Personagem
-  characterContainer: { width: '100%', alignItems: 'center', marginVertical: 20, zIndex: 5 },
-  characterImage: { width: 180, height: 220 },
-
-  // Estilos do Grid de Módulos (Responsivo)
-  modulesGrid: {
+  bottomSection: { width: '100%', alignItems: 'center', justifyContent: 'flex-end' },
+  characterImage: { width: 220, height: 270, marginBottom: 5 },
+  bottomGrid: { width: '100%', alignItems: 'center', gap: 8, paddingHorizontal: 10 },
+  gridRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
     justifyContent: 'center',
-    gap: 15,
+    alignItems: 'center',
+    gap: 9,
     width: '100%',
-    maxWidth: 350,
   },
-  moduleButton: {
-    width: '28%',
-    aspectRatio: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    borderRadius: 50,
-    padding: 5,
-  },
+  moduleButton: { aspectRatio: 1 },
   moduleIcon: { width: '100%', height: '100%', resizeMode: 'contain' },
 });
