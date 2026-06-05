@@ -1,21 +1,15 @@
-import React, { createContext, ReactNode, useState } from 'react';
+import React, { createContext, ReactNode, useCallback, useMemo, useState } from 'react';
 
-// Tipagem do nosso Contexto
-interface ScoreContextData {
-  score: number;
-  addScore: (points: number) => void;
-}
+export const ScoreContext = createContext<any>(null);
 
-// Criação do Contexto com valores iniciais vazios
-export const ScoreContext = createContext<ScoreContextData>({} as ScoreContextData);
-
-// Provedor do Contexto que vai abraçar o nosso aplicativo
 export const ScoreProvider = ({ children }: { children: ReactNode }) => {
   const [score, setScore] = useState(0); // Pontuação inicial
 
-  const addScore = (points: number) => {
+  const addScore = useCallback((points: number) => {
     setScore((prevScore) => prevScore + points);
-  };
+  }, []);
 
-  return <ScoreContext.Provider value={{ score, addScore }}>{children}</ScoreContext.Provider>;
+  const contextValue = useMemo(() => ({ score, addScore }), [score, addScore]);
+
+  return <ScoreContext.Provider value={contextValue}>{children}</ScoreContext.Provider>;
 };

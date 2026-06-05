@@ -1,9 +1,7 @@
-import { Chewy_400Regular, useFonts } from '@expo-google-fonts/chewy';
 import { BlurView } from 'expo-blur';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import {
-  Dimensions,
   Image,
   ImageBackground,
   KeyboardAvoidingView,
@@ -13,24 +11,16 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  useWindowDimensions,
 } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
 
 // Importando os componentes que criamos!
 import { AnimatedCloud, AnimatedFloat } from '../../components/AnimatedElements';
 
-const { width } = Dimensions.get('window');
-
 export default function LoginScreen() {
   const router = useRouter();
-  const [fontsLoaded] = useFonts({ Chewy_400Regular });
-
-  if (!fontsLoaded)
-    return (
-      <View style={styles.loadingContainer}>
-        <Text>A carregar...</Text>
-      </View>
-    );
+  const { width } = useWindowDimensions(); // Hook responsivo adicionado aqui!
 
   return (
     <View style={styles.screenWrapper}>
@@ -165,7 +155,7 @@ export default function LoginScreen() {
                   <Text style={styles.socialText}>f</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={[styles.socialButton, { backgroundColor: '#db4a39' }]}>
-                  <Text style={styles.socialText}>G+</Text>
+                  <Text style={styles.socialText}>G</Text>
                 </TouchableOpacity>
               </View>
 

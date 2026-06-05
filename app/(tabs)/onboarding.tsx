@@ -1,7 +1,7 @@
-import { Chewy_400Regular, useFonts } from '@expo-google-fonts/chewy';
 import { useRouter } from 'expo-router';
 import React, { useContext } from 'react';
 import {
+  Alert,
   Image,
   ImageBackground,
   SafeAreaView,
@@ -16,17 +16,10 @@ import { ScoreContext } from '../../contexts/ScoreContext';
 export default function DashboardScreen() {
   const router = useRouter();
   const { score } = useContext(ScoreContext);
-  const [fontsLoaded] = useFonts({ Chewy_400Regular });
-
-  if (!fontsLoaded)
-    return (
-      <View style={styles.loadingContainer}>
-        <Text>A carregar...</Text>
-      </View>
-    );
 
   const navigateToGame = (gameName: string) => {
-    alert(`Navegando para o módulo: ${gameName}`);
+    // Usando o Alert nativo do React Native para evitar problemas de compatibilidade
+    Alert.alert('Navegação', `Navegando para o módulo: ${gameName}`);
   };
 
   return (
@@ -34,8 +27,6 @@ export default function DashboardScreen() {
       source={require('../../assets/images/fundo_zoom.jpg')}
       style={styles.background}
       resizeMode="cover"
-      // TRUQUE AQUI: Dando um leve zoom e empurrando a imagem para baixo
-      // para a estrelinha vazar para fora da tela e ficar invisível!
       imageStyle={{ transform: [{ scale: 1.08 }, { translateY: 15 }] }}
     >
       <SafeAreaView style={styles.safeArea}>
@@ -73,7 +64,7 @@ export default function DashboardScreen() {
             />
           </AnimatedFloat>
 
-          {/* GRID COM CONTROLE INDIVIDUAL DE TAMANHO */}
+          {/* GRID COM OS NOMES DE ARQUIVO CORRIGIDOS PARA O PADRÃO (SNAKE_CASE) */}
           <View style={styles.bottomGrid}>
             {/* LINHA 1 */}
             <View style={styles.gridRow}>
@@ -82,7 +73,7 @@ export default function DashboardScreen() {
                 onPress={() => navigateToGame('Reduzir Riscos')}
               >
                 <Image
-                  source={require('../../assets/images/ícone reduzir os riscos.png')}
+                  source={require('../../assets/images/icone_reduzir_os_riscos.png')}
                   style={styles.moduleIcon}
                 />
               </TouchableOpacity>
@@ -92,7 +83,7 @@ export default function DashboardScreen() {
                 onPress={() => navigateToGame('Adaptação Saudável')}
               >
                 <Image
-                  source={require('../../assets/images/ícone de adaptação saudável.png')}
+                  source={require('../../assets/images/icone_adaptacao_saudavel.png')}
                   style={styles.moduleIcon}
                 />
               </TouchableOpacity>
@@ -102,7 +93,7 @@ export default function DashboardScreen() {
                 onPress={() => navigateToGame('Comer Saudavelmente')}
               >
                 <Image
-                  source={require('../../assets/images/Ícone do Jogo Comer Saudavelmente.png')}
+                  source={require('../../assets/images/icone_comer_saudavelmente.png')}
                   style={styles.moduleIcon}
                 />
               </TouchableOpacity>
@@ -115,7 +106,7 @@ export default function DashboardScreen() {
                 onPress={() => navigateToGame('Tomar Medicamentos')}
               >
                 <Image
-                  source={require('../../assets/images/ícone de tomar os medicamentos.png')}
+                  source={require('../../assets/images/icone_tomar_medicamentos.png')}
                   style={styles.moduleIcon}
                 />
               </TouchableOpacity>
@@ -125,7 +116,7 @@ export default function DashboardScreen() {
                 onPress={() => navigateToGame('Resolver Problemas')}
               >
                 <Image
-                  source={require('../../assets/images/ícone de resolver problemas.png')}
+                  source={require('../../assets/images/icone_resolver_problemas.png')}
                   style={styles.moduleIcon}
                 />
               </TouchableOpacity>
@@ -135,7 +126,7 @@ export default function DashboardScreen() {
                 onPress={() => navigateToGame('Vigiar Taxas')}
               >
                 <Image
-                  source={require('../../assets/images/ícone de vigiar as taxas.png')}
+                  source={require('../../assets/images/icone_vigiar_taxas.png')}
                   style={styles.moduleIcon}
                 />
               </TouchableOpacity>
@@ -145,7 +136,7 @@ export default function DashboardScreen() {
                 onPress={() => navigateToGame('Atividade Física')}
               >
                 <Image
-                  source={require('../../assets/images/ícone de atividade física.png')}
+                  source={require('../../assets/images/icone_atividade_fisica.png')}
                   style={styles.moduleIcon}
                 />
               </TouchableOpacity>

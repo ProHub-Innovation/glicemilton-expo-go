@@ -1,32 +1,22 @@
-import { Chewy_400Regular, useFonts } from '@expo-google-fonts/chewy';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import {
-  Dimensions,
   Image,
   ImageBackground,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
+  useWindowDimensions,
 } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
 
 // Importando os componentes que criamos!
 import { AnimatedCloud, AnimatedFloat, GrassClump } from '../../components/AnimatedElements';
 
-const { width } = Dimensions.get('window');
-
 export default function HomeScreen() {
   const router = useRouter();
-  const [fontsLoaded] = useFonts({ Chewy_400Regular });
-
-  if (!fontsLoaded)
-    return (
-      <View style={styles.loadingContainer}>
-        <Text>A carregar...</Text>
-      </View>
-    );
+  const { width } = useWindowDimensions(); // Hook responsivo adicionado aqui!
 
   return (
     <View style={styles.screenWrapper}>
