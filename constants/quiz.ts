@@ -69,7 +69,8 @@ export const QUIZ_QUESTIONS: QuizQuestion[] = [
   },
   {
     id: 'q5',
-    question: 'Por que é importante conhecer como o medicamento prescrito funciona no organismo?',
+    question:
+      'Por que é importante para Glicemilton conhecer como o medicamento prescrito funciona no organismo?',
     options: [
       { id: 'a', text: 'Para poder vender o medicamento' },
       { id: 'b', text: 'Para poder criar novos remédios' },
