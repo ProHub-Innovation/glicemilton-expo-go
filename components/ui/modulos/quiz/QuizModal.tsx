@@ -42,7 +42,7 @@ export function QuizModal({ visible, question, onAnswer }: QuizModalProps) {
     // 3. GUARDAMOS O TEMPORIZADOR DENTRO DA REFERÊNCIA
     timeoutRef.current = setTimeout(() => {
       onAnswer(isCorrect);
-    }, 2000);
+    }, 3000);
   }
 
   // Função para definir a cor de fundo do botão
