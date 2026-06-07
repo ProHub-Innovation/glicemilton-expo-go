@@ -10,6 +10,7 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "@expo-google-fonts/caveat": "^0.4.2",
     "@expo-google-fonts/chewy": "^0.4.0",
     "@expo/ngrok": "^4.1.0",
     "@expo/vector-icons": "^15.0.3",

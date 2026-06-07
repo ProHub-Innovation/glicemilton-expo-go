@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import React, { useContext } from 'react';
+import React from 'react';
 import {
   Alert,
   Image,
@@ -11,11 +11,13 @@ import {
   View,
 } from 'react-native';
 import { AnimatedFloat } from '../../components/AnimatedElements';
-import { ScoreContext } from '../../contexts/ScoreContext';
+import { useScore } from '../../contexts/ScoreContext';
 
 export default function DashboardScreen() {
   const router = useRouter();
-  const { score } = useContext(ScoreContext);
+
+  // Usando o novo hook customizado super seguro!
+  const { score } = useScore();
 
   const navigateToGame = (gameName: string) => {
     // Usando o Alert nativo do React Native para evitar problemas de compatibilidade
