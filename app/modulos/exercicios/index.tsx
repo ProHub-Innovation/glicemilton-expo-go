@@ -1,27 +1,27 @@
 // app/(tabs)/modulos/quiz/index.tsx
 // Tela do módulo Quiz — Reduzir Riscos.
 
+import { Caveat_700Bold } from '@expo-google-fonts/caveat';
+import { Chewy_400Regular } from '@expo-google-fonts/chewy';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useFonts as useExpoFonts } from 'expo-font';
 import { router } from 'expo-router';
-import React, { useReducer, useRef, useEffect } from 'react';
+import React, { useEffect, useReducer, useRef } from 'react';
 import {
+  ActivityIndicator,
+  Animated,
+  ImageBackground,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  ImageBackground,
-  Animated,
-  ActivityIndicator,
 } from 'react-native';
-import { useFonts as useExpoFonts } from 'expo-font';
-import { Caveat_700Bold } from '@expo-google-fonts/caveat';
-import { Chewy_400Regular } from '@expo-google-fonts/chewy';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 import { BoardTrail } from '@/components/ui/modulos/quiz/BoardTrail';
 import { DiceButton } from '@/components/ui/modulos/quiz/DiceButton';
 import { QuizModal } from '@/components/ui/modulos/quiz/QuizModal';
-import { QUIZ_QUESTIONS, TOTAL_BOARD_SQUARES } from '../../../../constants/quiz';
-import { useGame } from '../../../../context/GameContext';
+import { QUIZ_QUESTIONS, TOTAL_BOARD_SQUARES } from '../../../constants/quiz';
+import { useGame } from '../../../context/GameContext';
 
 interface QuizScreenState {
   position: number;

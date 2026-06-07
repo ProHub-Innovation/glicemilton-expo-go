@@ -1,8 +1,6 @@
 import React, { useEffect, useRef } from 'react';
-import { Animated, Dimensions, Easing, StyleProp, ViewStyle } from 'react-native';
+import { Animated, Easing, StyleProp, ViewStyle, useWindowDimensions } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
-
-const { width } = Dimensions.get('window');
 
 // 1. ANIMATED FLOAT
 interface AnimatedFloatProps {
@@ -33,7 +31,7 @@ export const AnimatedFloat = ({ children, delay = 0, style }: AnimatedFloatProps
       ])
     );
     animation.start();
-    return () => animation.stop(); // Resolve o aviso de vazamento de memória!
+    return () => animation.stop();
   }, [delay, translateY]);
 
   return <Animated.View style={[style, { transform: [{ translateY }] }]}>{children}</Animated.View>;
@@ -55,6 +53,8 @@ export const AnimatedCloud = ({
   initialX,
   opacity = 1,
 }: AnimatedCloudProps) => {
+  // Hook responsivo adicionado dentro do componente para se adaptar à tela
+  const { width } = useWindowDimensions();
   const translateX = useRef(new Animated.Value(initialX)).current;
 
   useEffect(() => {
@@ -83,7 +83,7 @@ export const AnimatedCloud = ({
     ]);
     animation.start();
     return () => animation.stop();
-  }, [cloudWidth, duration, initialX, translateX]);
+  }, [cloudWidth, duration, initialX, translateX, width]);
 
   return (
     <Animated.View
