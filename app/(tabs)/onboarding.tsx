@@ -11,14 +11,11 @@ import {
   View,
 } from 'react-native';
 import { AnimatedFloat } from '../../components/AnimatedElements';
-import { useScore } from '../../contexts/ScoreContext';
 import { useGame } from '@/context/GameContext';
 
 export default function DashboardScreen() {
   const router = useRouter();
 
-  // Usando o novo hook customizado super seguro!
-  const { score } = useScore();
   const { state } = useGame();
 
   const navigateToGame = (gameName: string) => {
