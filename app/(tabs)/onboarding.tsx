@@ -12,12 +12,14 @@ import {
 } from 'react-native';
 import { AnimatedFloat } from '../../components/AnimatedElements';
 import { useScore } from '../../contexts/ScoreContext';
+import { useGame } from '@/context/GameContext';
 
 export default function DashboardScreen() {
   const router = useRouter();
 
   // Usando o novo hook customizado super seguro!
   const { score } = useScore();
+  const { state } = useGame();
 
   const navigateToGame = (gameName: string) => {
     // Usando o Alert nativo do React Native para evitar problemas de compatibilidade
@@ -51,7 +53,7 @@ export default function DashboardScreen() {
             </View>
             <View style={styles.scoreContainer}>
               <Text style={styles.scoreLabel}>Pontos</Text>
-              <Text style={styles.scoreValue}>{score}</Text>
+              <Text style={styles.scoreValue}>{state.totalPoints}</Text>
             </View>
           </View>
         </View>
@@ -72,7 +74,7 @@ export default function DashboardScreen() {
             <View style={styles.gridRow}>
               <TouchableOpacity
                 style={[styles.moduleButton, { width: '22%' }]}
-                onPress={() => navigateToGame('Reduzir Riscos')}
+                onPress={() => router.navigate('/modulos/exercicios')}
               >
                 <Image
                   source={require('../../assets/images/icone_reduzir_os_riscos.png')}
