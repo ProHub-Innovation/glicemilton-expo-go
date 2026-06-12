@@ -104,7 +104,7 @@ export default function DashboardScreen() {
             <View style={styles.gridRow}>
               <TouchableOpacity
                 style={[styles.moduleButton, { width: '22%' }]}
-                onPress={() => navigateToGame('Tomar Medicamentos')}
+                onPress={() => router.navigate('/modulos/medicamentos')}
               >
                 <Image
                   source={require('../../assets/images/icone_tomar_medicamentos.png')}
