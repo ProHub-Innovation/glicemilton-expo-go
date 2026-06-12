@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { QuizQuestion } from '@/constants/quiz';
+import React, { useState, useEffect } from 'react';
+import { Modal, StyleSheet, Text, TouchableOpacity, View, ScrollView } from 'react-native';
+import { QuizQuestion, QuizOption } from '@/constants/quiz';
 
 interface QuizModalProps {
   visible: boolean;
@@ -12,18 +12,7 @@ export function QuizModal({ visible, question, onAnswer }: QuizModalProps) {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [isAnswered, setIsAnswered] = useState(false);
 
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    return () => {
-      // Se o modal for fechado ou a tela destruída, o React cancela o timer
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
-  }, []);
-
-  // Reseta as cores sempre que uma nova pergunta abrir
+  // Reseta os estados sempre que uma nova pergunta abrir
   useEffect(() => {
     if (visible) {
       setSelectedOption(null);
@@ -33,34 +22,30 @@ export function QuizModal({ visible, question, onAnswer }: QuizModalProps) {
 
   function handleOption(optionId: string) {
     if (isAnswered) return;
-
     setSelectedOption(optionId);
     setIsAnswered(true);
-
-    const isCorrect = optionId === question.correctId;
-
-    // 3. GUARDAMOS O TEMPORIZADOR DENTRO DA REFERÊNCIA
-    timeoutRef.current = setTimeout(() => {
-      onAnswer(isCorrect);
-    }, 3000);
   }
 
-  // Função para definir a cor de fundo do botão
+  // Função acionada apenas quando o usuário clica no botão "Continuar" após ler a explicação
+  function handleContinue() {
+    const isCorrect = selectedOption === question.correctId;
+    onAnswer(isCorrect);
+  }
+
   function getOptionStyle(optionId: string) {
     if (!isAnswered) return styles.optionDefault;
 
     if (optionId === question.correctId) {
-      return [styles.optionDefault, styles.optionCorrect]; // Certo = Verde
+      return [styles.optionDefault, styles.optionCorrect];
     }
 
     if (optionId === selectedOption && optionId !== question.correctId) {
-      return [styles.optionDefault, styles.optionWrong]; // Errado = Vermelho
+      return [styles.optionDefault, styles.optionWrong];
     }
 
-    return [styles.optionDefault, styles.optionDisabled]; // Outros ficam opacos
+    return [styles.optionDefault, styles.optionDisabled];
   }
 
-  // Função para definir a cor do texto (branco quando tem fundo colorido)
   function getOptionTextStyle(optionId: string) {
     if (!isAnswered) return styles.optionTextDefault;
 
@@ -71,28 +56,60 @@ export function QuizModal({ visible, question, onAnswer }: QuizModalProps) {
     return [styles.optionTextDefault, styles.optionTextDisabled];
   }
 
+  // Encontra a explicação da alternativa que o usuário clicou
+  const currentExplanation =
+    isAnswered && selectedOption
+      ? question.options.find((opt) => opt.id === selectedOption)?.explanation
+      : '';
+
+  const isCorrectAnswer = selectedOption === question.correctId;
+
   return (
     <Modal visible={visible} transparent animationType="fade">
       <View style={styles.overlay}>
         <View style={styles.card}>
-          <Text style={styles.label}>PERGUNTA</Text>
-          <Text style={styles.question}>{question.question}</Text>
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+          >
+            <Text style={styles.label}>PERGUNTA</Text>
+            <Text style={styles.question}>{question.question}</Text>
 
-          <View style={styles.options}>
-            {question.options.map((opt) => (
-              <TouchableOpacity
-                key={opt.id}
-                style={getOptionStyle(opt.id)}
-                onPress={() => handleOption(opt.id)}
-                activeOpacity={0.7}
-                disabled={isAnswered} // Desativa o botão após o clique
+            <View style={styles.options}>
+              {question.options.map((opt: QuizOption) => (
+                <TouchableOpacity
+                  key={opt.id}
+                  style={getOptionStyle(opt.id)}
+                  onPress={() => handleOption(opt.id)}
+                  activeOpacity={0.7}
+                  disabled={isAnswered}
+                >
+                  <Text style={getOptionTextStyle(opt.id)}>
+                    {opt.id.toUpperCase()}. {opt.text}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {/* CAIXA DE FEEDBACK EXPLICATIVO (Aparece após responder) */}
+            {isAnswered && (
+              <View
+                style={[
+                  styles.explanationBox,
+                  isCorrectAnswer ? styles.explanationBoxCorrect : styles.explanationBoxWrong,
+                ]}
               >
-                <Text style={getOptionTextStyle(opt.id)}>
-                  {opt.id.toUpperCase()}. {opt.text}
+                <Text style={styles.explanationTitle}>
+                  {isCorrectAnswer ? 'Mandou bem!' : 'Atenção!'}
                 </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+                <Text style={styles.explanationText}>{currentExplanation}</Text>
+
+                <TouchableOpacity style={styles.continueButton} onPress={handleContinue}>
+                  <Text style={styles.continueButtonText}>Continuar</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </ScrollView>
         </View>
       </View>
     </Modal>
@@ -102,68 +119,113 @@ export function QuizModal({ visible, question, onAnswer }: QuizModalProps) {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    backgroundColor: 'rgba(0,0,0,0.6)', // Fundo um pouco mais escuro para destacar o modal maior
     justifyContent: 'center',
     alignItems: 'center',
   },
   card: {
-    backgroundColor: 'rgba(235, 226, 216, 0.92)',
-    width: '85%',
-    borderRadius: 0,
-    padding: 30,
-    gap: 24,
-    alignItems: 'center',
+    backgroundColor: 'rgba(235, 226, 216, 0.98)', // Menos translúcido para melhor leitura do texto longo
+    width: '90%',
+    maxHeight: '85%', // Impede que o modal vaze da tela
+    borderRadius: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 5,
     elevation: 5,
   },
+  scrollContent: {
+    padding: 24,
+    gap: 20,
+    alignItems: 'center',
+  },
   label: {
-    fontSize: 36,
+    fontSize: 32,
     color: '#6D4C41',
     textAlign: 'center',
     fontFamily: 'Chewy_400Regular',
   },
   question: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: '600',
-    color: '#6D4C41',
+    color: '#3E2723',
     textAlign: 'center',
-    lineHeight: 26,
+    lineHeight: 24,
   },
   options: {
     gap: 12,
     width: '100%',
   },
-
-  // --- NOVOS ESTILOS PARA O FEEDBACK DE CORES ---
   optionDefault: {
-    paddingVertical: 12, // Aumentei o padding para o fundo colorido ficar bonito
+    paddingVertical: 12,
     paddingHorizontal: 16,
     alignItems: 'center',
-    borderRadius: 8, // Bordas suaves no botão
-    backgroundColor: 'transparent',
+    borderRadius: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.5)', // Fundo sutil nas opções
   },
   optionCorrect: {
-    backgroundColor: '#4CAF50', // Verde Sucesso
+    backgroundColor: '#4CAF50',
   },
   optionWrong: {
-    backgroundColor: '#E53935', // Vermelho Erro
+    backgroundColor: '#E53935',
   },
   optionDisabled: {
-    opacity: 0.4, // Deixa as alternativas não selecionadas clarinhas
+    opacity: 0.4,
   },
   optionTextDefault: {
-    fontSize: 17,
+    fontSize: 16,
     fontWeight: '700',
     color: '#6D4C41',
     textAlign: 'center',
   },
   optionTextWhite: {
-    color: '#FFFFFF', // Texto branco para contrastar com o fundo verde/vermelho
+    color: '#FFFFFF',
   },
   optionTextDisabled: {
     color: '#8D6E63',
+  },
+  // --- ESTILOS DA CAIXA DE EXPLICAÇÃO ---
+  explanationBox: {
+    width: '100%',
+    marginTop: 10,
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    borderWidth: 2,
+  },
+  explanationBoxCorrect: {
+    backgroundColor: '#E8F5E9',
+    borderColor: '#4CAF50',
+  },
+  explanationBoxWrong: {
+    backgroundColor: '#FFEBEE',
+    borderColor: '#E53935',
+  },
+  explanationTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#3E2723',
+    marginBottom: 8,
+  },
+  explanationText: {
+    fontSize: 15,
+    color: '#4E342E',
+    textAlign: 'center',
+    lineHeight: 22,
+    marginBottom: 16,
+  },
+  continueButton: {
+    backgroundColor: '#6D4C41',
+    paddingVertical: 12,
+    paddingHorizontal: 32,
+    borderRadius: 8,
+    width: '100%',
+    alignItems: 'center',
+  },
+  continueButtonText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
   },
 });
