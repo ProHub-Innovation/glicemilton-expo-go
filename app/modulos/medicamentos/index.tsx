@@ -13,6 +13,7 @@ import { router } from 'expo-router';
 import { useFonts as useExpoFonts } from 'expo-font';
 import { Chewy_400Regular } from '@expo-google-fonts/chewy';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type Phase = 'intro' | 'storage' | 'application' | 'finished';
 
@@ -24,13 +25,17 @@ export default function MedicamentosScreen() {
   const [fontsLoaded] = useExpoFonts({ Chewy_400Regular });
   const homePulseAnim = useRef(new Animated.Value(1)).current;
 
+  const insets = useSafeAreaInsets();
+
   useEffect(() => {
-    Animated.loop(
+    const animation = Animated.loop(
       Animated.sequence([
         Animated.timing(homePulseAnim, { toValue: 1.1, duration: 800, useNativeDriver: true }),
         Animated.timing(homePulseAnim, { toValue: 1.0, duration: 800, useNativeDriver: true }),
       ])
-    ).start();
+    );
+    animation.start();
+    return () => animation.stop();
   }, [homePulseAnim]);
 
   if (!fontsLoaded) return null;
@@ -101,7 +106,10 @@ export default function MedicamentosScreen() {
           style={styles.background}
           resizeMode="contain"
         >
-          <TouchableOpacity style={styles.topHomeBtn} onPress={() => router.back()}>
+          <TouchableOpacity
+            style={[styles.topHomeBtn, { top: Math.max(insets.top + 10, 40) }]}
+            onPress={() => router.back()}
+          >
             <MaterialCommunityIcons name="home" size={24} color="#fff" />
           </TouchableOpacity>
 
@@ -154,7 +162,11 @@ export default function MedicamentosScreen() {
               />
             </TouchableOpacity>
           </View>
-          {RenderFeedbackModal(feedbackVisible, feedbackData, handleCloseFeedback)}
+          <FeedbackModal
+            visible={feedbackVisible}
+            data={feedbackData}
+            onClose={handleCloseFeedback}
+          />
         </ImageBackground>
       </View>
     );
@@ -168,7 +180,10 @@ export default function MedicamentosScreen() {
         style={styles.background}
         resizeMode="cover"
       >
-        <TouchableOpacity style={styles.topHomeBtn} onPress={() => router.back()}>
+        <TouchableOpacity
+          style={[styles.topHomeBtn, { top: Math.max(insets.top + 10, 40) }]}
+          onPress={() => router.back()}
+        >
           <MaterialCommunityIcons name="home" size={24} color="#fff" />
         </TouchableOpacity>
 
@@ -258,7 +273,11 @@ export default function MedicamentosScreen() {
           />
         </View>
 
-        {RenderFeedbackModal(feedbackVisible, feedbackData, handleCloseFeedback)}
+        <FeedbackModal
+          visible={feedbackVisible}
+          data={feedbackData}
+          onClose={handleCloseFeedback}
+        />
       </ImageBackground>
     );
   }
@@ -288,11 +307,13 @@ export default function MedicamentosScreen() {
   return null;
 }
 
-function RenderFeedbackModal(
-  visible: boolean,
-  data: { isCorrect: boolean; title: string; message: string },
-  onClose: () => void
-) {
+interface FeedbackModalProps {
+  visible: boolean;
+  data: { isCorrect: boolean; title: string; message: string };
+  onClose: () => void;
+}
+
+function FeedbackModal({ visible, data, onClose }: FeedbackModalProps) {
   return (
     <Modal visible={visible} transparent animationType="fade">
       <View style={styles.modalOverlay}>
@@ -332,7 +353,6 @@ const styles = StyleSheet.create({
   },
   topHomeBtn: {
     position: 'absolute',
-    top: 50,
     left: 20,
     width: 44,
     height: 44,
