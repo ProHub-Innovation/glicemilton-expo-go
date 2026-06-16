@@ -93,192 +93,218 @@ export default function MedicamentosScreen() {
     );
   }
 
-  // FASE 2: ARMAZENAMENTO (CENA DO QUARTO)
+  // FASE 2: ARMAZENAMENTO (CENA DO QUARTO - COM ACESSIBILIDADE E RESPONSIVIDADE)
   if (phase === 'storage') {
     return (
       <View style={styles.storageWrapper}>
-        {/* TRUQUE DO FUNDO DUPLO PARA PREENCHER A TELA */}
         <View style={styles.topBackground} />
         <View style={styles.bottomBackground} />
 
-        <ImageBackground
-          source={require('@/assets/images/armazenamento_insulina.png')}
-          style={styles.background}
-          resizeMode="contain"
-        >
-          <TouchableOpacity
-            style={[styles.topHomeBtn, { top: Math.max(insets.top + 10, 40) }]}
-            onPress={() => router.back()}
+        {/* CONTAINER COM ASPECT RATIO PARA TRAVAR A PROPORÇÃO */}
+        <View style={styles.gameBoardStorage}>
+          <ImageBackground
+            source={require('@/assets/images/armazenamento_insulina.png')}
+            style={styles.background}
+            resizeMode="cover" // Como a proporção está travada pelo gameBoard, usamos cover
           >
-            <MaterialCommunityIcons name="home" size={24} color="#fff" />
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.topHomeBtn, { top: Math.max(insets.top + 10, 40) }]}
+              onPress={() => router.back()}
+              accessible={true}
+              accessibilityRole="button"
+              accessibilityLabel="Voltar para a tela inicial"
+            >
+              <MaterialCommunityIcons name="home" size={24} color="#fff" />
+            </TouchableOpacity>
 
-          <Text style={styles.gameTitle}>
-            Qual melhor local para armazenar a caneta de insulina em uso?
-          </Text>
+            <Text style={styles.gameTitle}>
+              Qual melhor local para armazenar a caneta de insulina em uso?
+            </Text>
 
-          <View style={styles.interactiveArea}>
-            <Image
-              source={require('@/assets/images/Glicemilton_feliz.png')}
-              style={styles.storageCharacterImage}
-              resizeMode="contain"
+            <View style={styles.interactiveArea}>
+              {/* HITBOX DA ESQUERDA - Criado-mudo no Sol (Errado) */}
+              <TouchableOpacity
+                style={[
+                  styles.invisibleButton,
+                  { top: '48%', left: '10%', width: '28%', height: '18%' },
+                ]}
+                onPress={() =>
+                  showFeedback(
+                    false,
+                    'Atenção!',
+                    'O calor e o contato direto com o sol podem estragar a insulina. Tente novamente!'
+                  )
+                }
+                accessible={true}
+                accessibilityRole="button"
+                accessibilityLabel="Criado-mudo sob a luz do sol"
+                accessibilityHint="Toque para escolher este local para armazenar a insulina"
+              />
+
+              {/* HITBOX DA DIREITA - Criado-mudo na Sombra (Certo) */}
+              <TouchableOpacity
+                style={[
+                  styles.invisibleButton,
+                  { top: '48%', right: '12%', width: '28%', height: '18%' },
+                ]}
+                onPress={() =>
+                  showFeedback(
+                    true,
+                    'Parabéns!',
+                    'Você escolheu o local correto! A caneta em uso deve ficar protegida da luz solar e do calor excessivo.'
+                  )
+                }
+                accessible={true}
+                accessibilityRole="button"
+                accessibilityLabel="Criado-mudo na sombra"
+                accessibilityHint="Toque para escolher este local para armazenar a insulina"
+              />
+            </View>
+
+            <FeedbackModal
+              visible={feedbackVisible}
+              data={feedbackData}
+              onClose={handleCloseFeedback}
             />
-
-            {/* CANETA NO SOL (Errado) */}
-            <TouchableOpacity
-              style={[styles.penButton, { top: '50%', left: '13%' }]}
-              onPress={() =>
-                showFeedback(
-                  false,
-                  'Atenção!',
-                  'O calor e o contato direto com o sol podem estragar a insulina. Tente novamente!'
-                )
-              }
-              activeOpacity={0.7}
-            >
-              <Image
-                source={require('@/assets/images/insulina.png')}
-                style={styles.penImage}
-                resizeMode="contain"
-              />
-            </TouchableOpacity>
-
-            {/* CANETA NA SOMBRA (Certo) */}
-            <TouchableOpacity
-              style={[styles.penButton, { top: '50%', right: '15%' }]}
-              onPress={() =>
-                showFeedback(
-                  true,
-                  'Parabéns!',
-                  'Você escolheu o local correto! A caneta em uso deve ficar protegida da luz solar e do calor excessivo.'
-                )
-              }
-              activeOpacity={0.7}
-            >
-              <Image
-                source={require('@/assets/images/insulina.png')}
-                style={styles.penImage}
-                resizeMode="contain"
-              />
-            </TouchableOpacity>
-          </View>
-          <FeedbackModal
-            visible={feedbackVisible}
-            data={feedbackData}
-            onClose={handleCloseFeedback}
-          />
-        </ImageBackground>
+          </ImageBackground>
+        </View>
       </View>
     );
   }
 
-  // FASE 3: LOCAIS DE APLICAÇÃO (CENA DA COZINHA)
+  // FASE 3: LOCAIS DE APLICAÇÃO (CENA DA COZINHA - COM ACESSIBILIDADE E RESPONSIVIDADE)
   if (phase === 'application') {
     return (
-      <ImageBackground
-        source={require('@/assets/images/uso_insulina.jpg')}
-        style={styles.background}
-        resizeMode="cover"
-      >
-        <TouchableOpacity
-          style={[styles.topHomeBtn, { top: Math.max(insets.top + 10, 40) }]}
-          onPress={() => router.back()}
-        >
-          <MaterialCommunityIcons name="home" size={24} color="#fff" />
-        </TouchableOpacity>
+      <View style={styles.storageWrapper}>
+        {/* Fundo neutro (cor pastel que combina com a cozinha) para preencher as bordas em telas ultra-longas ou tablets */}
+        <View style={[styles.topBackground, { backgroundColor: '#EAD7C3', bottom: 0 }]} />
 
-        <Text style={styles.gameTitle}>
-          Quais são os locais corretos de aplicação da caneta de insulina?
-        </Text>
+        {/* CONTAINER MÁGICO QUE TRAVA A PROPORÇÃO DA COZINHA */}
+        <View style={styles.gameBoardApplication}>
+          <ImageBackground
+            source={require('@/assets/images/uso_insulina.jpg')}
+            style={styles.background}
+            resizeMode="cover"
+          >
+            <Text style={styles.gameTitle}>
+              Quais são os locais corretos de aplicação da caneta de insulina?
+            </Text>
 
-        <View style={styles.interactiveArea}>
-          {/* ÁREA DE ERRO GIGANTE (Fica no fundo, capturando qualquer clique errado) */}
-          <TouchableOpacity
-            style={styles.wrongAreaFull}
-            activeOpacity={1} // Impede que a tela inteira pisque ao clicar
-            onPress={() =>
-              showFeedback(
-                false,
-                'Ops!',
-                'Este não é o local correto. A insulina deve ser aplicada na barriga, coxas ou parte posterior dos braços.'
-              )
-            }
-          />
+            <View style={styles.interactiveArea}>
+              {/* ÁREA DE ERRO GIGANTE */}
+              <TouchableOpacity
+                style={styles.wrongAreaFull}
+                activeOpacity={1}
+                onPress={() =>
+                  showFeedback(
+                    false,
+                    'Ops!',
+                    'Este não é o local correto. A insulina deve ser aplicada na barriga, coxas ou parte posterior dos braços.'
+                  )
+                }
+                accessible={true}
+                accessibilityRole="button"
+                accessibilityLabel="Área incorreta do cenário"
+                accessibilityHint="Qualquer toque aqui indicará um local incorreto de aplicação"
+              />
 
-          {/* ÁREAS CORRETAS (Ficam por cima, interceptando os cliques certos) */}
-          <TouchableOpacity // Braço Esquerdo
-            style={[
-              styles.invisibleButton,
-              {
-                top: '58%',
-                left: '22%',
-                width: '14%',
-                height: '13%',
-                transform: [{ rotate: '-82deg' }],
-              },
-            ]}
-            onPress={() =>
-              showFeedback(true, 'Parabéns!', 'Os braços são ótimos locais para aplicação!')
-            }
-          />
+              {/* ÁREAS CORRETAS MAPEADAS COM ACESSIBILIDADE */}
+              <TouchableOpacity // Braço Esquerdo
+                style={[
+                  styles.invisibleButton,
+                  {
+                    top: '58%',
+                    left: '22%',
+                    width: '14%',
+                    height: '13%',
+                    transform: [{ rotate: '-82deg' }],
+                  },
+                ]}
+                onPress={() =>
+                  showFeedback(true, 'Parabéns!', 'Os braços são ótimos locais para aplicação!')
+                }
+                accessible={true}
+                accessibilityRole="button"
+                accessibilityLabel="Braço esquerdo do personagem"
+                accessibilityHint="Toque duas vezes para selecionar o braço como local de aplicação"
+              />
 
-          <TouchableOpacity // Braço Direito
-            style={[
-              styles.invisibleButton,
-              {
-                top: '63%',
-                right: '24%',
-                width: '15%',
-                height: '10.5%',
-                transform: [{ rotate: '35deg' }],
-              },
-            ]}
-            onPress={() =>
-              showFeedback(true, 'Parabéns!', 'Excelente! O braço é um local recomendado.')
-            }
-          />
+              <TouchableOpacity // Braço Direito
+                style={[
+                  styles.invisibleButton,
+                  {
+                    top: '63%',
+                    right: '24%',
+                    width: '15%',
+                    height: '10.5%',
+                    transform: [{ rotate: '35deg' }],
+                  },
+                ]}
+                onPress={() =>
+                  showFeedback(true, 'Parabéns!', 'Excelente! O braço é um local recomendado.')
+                }
+                accessible={true}
+                accessibilityRole="button"
+                accessibilityLabel="Braço direito do personagem"
+                accessibilityHint="Toque duas vezes para selecionar o braço como local de aplicação"
+              />
 
-          <TouchableOpacity // Barriga (Região Abdominal)
-            style={[
-              styles.invisibleButton,
-              { top: '73%', left: '41%', width: '30%', height: '8%' },
-            ]}
-            onPress={() =>
-              showFeedback(
-                true,
-                'Parabéns!',
-                'A barriga (região abdominal) é um dos melhores locais para absorção da insulina!'
-              )
-            }
-          />
+              <TouchableOpacity // Barriga (Região Abdominal)
+                style={[
+                  styles.invisibleButton,
+                  { top: '73%', left: '41%', width: '30%', height: '8%' },
+                ]}
+                onPress={() =>
+                  showFeedback(
+                    true,
+                    'Parabéns!',
+                    'A barriga (região abdominal) é um dos melhores locais para absorção da insulina!'
+                  )
+                }
+                accessible={true}
+                accessibilityRole="button"
+                accessibilityLabel="Barriga, região abdominal"
+                accessibilityHint="Toque duas vezes para selecionar o abdómen como local de aplicação"
+              />
 
-          <TouchableOpacity // Pernas / Coxas
-            style={[
-              styles.invisibleButton,
-              { top: '81%', left: '43%', width: '33%', height: '8%' },
-            ]}
-            onPress={() =>
-              showFeedback(
-                true,
-                'Parabéns!',
-                'As coxas são locais seguros e muito usados para aplicar a insulina.'
-              )
-            }
-          />
+              <TouchableOpacity // Pernas / Coxas
+                style={[
+                  styles.invisibleButton,
+                  { top: '81%', left: '43%', width: '33%', height: '8%' },
+                ]}
+                onPress={() =>
+                  showFeedback(
+                    true,
+                    'Parabéns!',
+                    'As coxas são locais seguros e muito usados para aplicar a insulina.'
+                  )
+                }
+                accessible={true}
+                accessibilityRole="button"
+                accessibilityLabel="Coxas, região das pernas"
+                accessibilityHint="Toque duas vezes para selecionar as coxas como local de aplicação"
+              />
+            </View>
 
-          <Image
-            source={require('@/assets/images/insulina.png')}
-            style={styles.applicationPenImage}
-            resizeMode="contain"
-          />
+            <FeedbackModal
+              visible={feedbackVisible}
+              data={feedbackData}
+              onClose={handleCloseFeedback}
+            />
+
+            {/* BOTÃO DE VOLTAR NO TOPO DO NÓ JSX COM ACESSIBILIDADE */}
+            <TouchableOpacity
+              style={[styles.topHomeBtn, { top: Math.max(insets.top + 10, 40) }]}
+              onPress={() => router.back()}
+              accessible={true}
+              accessibilityRole="button"
+              accessibilityLabel="Voltar para o menu principal"
+            >
+              <MaterialCommunityIcons name="home" size={24} color="#fff" />
+            </TouchableOpacity>
+          </ImageBackground>
         </View>
-
-        <FeedbackModal
-          visible={feedbackVisible}
-          data={feedbackData}
-          onClose={handleCloseFeedback}
-        />
-      </ImageBackground>
+      </View>
     );
   }
 
@@ -342,7 +368,7 @@ function FeedbackModal({ visible, data, onClose }: FeedbackModalProps) {
   );
 }
 
-// ==================== ESTILOS ====================
+// ==================== ESTILOS LIMPOS ====================
 const styles = StyleSheet.create({
   background: {
     flex: 1,
@@ -382,8 +408,8 @@ const styles = StyleSheet.create({
   interactiveArea: { flex: 1, width: '100%', position: 'relative' },
   invisibleButton: {
     position: 'absolute',
-    zIndex: 30, // Nível 20 (frente): Botões corretos
-    //backgroundColor: 'rgba(255, 0, 0, 0.5)', // trecho para testar
+    zIndex: 30,
+    backgroundColor: 'rgba(255, 0, 0, 0.4)', // Descomente para calibrar os tamanhos das novas hitboxes!
   },
   wrongAreaFull: {
     position: 'absolute',
@@ -391,51 +417,48 @@ const styles = StyleSheet.create({
     bottom: '10%',
     left: '28%',
     right: '18%',
-    zIndex: 10, // Nível 10 (fundo): Botão de erro que cobre a tela toda
-    // backgroundColor: 'rgba(29, 168, 76, 0.5)', // trecho para teste
+    zIndex: 10,
+    backgroundColor: 'rgba(80, 250, 29, 0.4)',
   },
 
   storageWrapper: {
     flex: 1,
     width: '100%',
     height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#000',
+  },
+  // Tabuleiro do Quarto (1080x1920 = 9/16)
+  gameBoardStorage: {
+    width: '100%',
+    maxHeight: '100%',
+    aspectRatio: 1080 / 1920, // Proporção exata da imagem do armazenamento
+    overflow: 'hidden',
+  },
+
+  // Tabuleiro da Cozinha (535x1024)
+  gameBoardApplication: {
+    width: '100%',
+    maxHeight: '100%',
+    aspectRatio: 535 / 1024, // Proporção exata da imagem do uso de insulina
+    overflow: 'hidden',
   },
   topBackground: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
-    bottom: '50%', // Ocupa exatamente a metade de cima
+    bottom: '50%',
     backgroundColor: '#894C16',
   },
   bottomBackground: {
     position: 'absolute',
-    top: '50%', // Começa da metade para baixo
+    top: '50%',
     left: 0,
     right: 0,
     bottom: 0,
     backgroundColor: '#613915',
-  },
-  storageCharacterImage: {
-    position: 'absolute',
-    bottom: '19%',
-    left: '-11%',
-    width: 500,
-    height: 400,
-    zIndex: 15,
-  },
-  penButton: {
-    position: 'absolute',
-    width: 90,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 20,
-  },
-  penImage: {
-    width: 150,
-    height: 150,
-    transform: [{ rotate: '-90deg' }],
   },
 
   modalOverlay: {
@@ -537,14 +560,4 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   emojiTrophy: { fontSize: 64 },
-
-  applicationPenImage: {
-    position: 'absolute',
-    top: '51%',
-    left: '5%',
-    width: 150,
-    height: 220,
-    zIndex: 15,
-    transform: [{ rotate: '-165deg' }],
-  },
 });
