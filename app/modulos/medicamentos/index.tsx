@@ -93,11 +93,10 @@ export default function MedicamentosScreen() {
     );
   }
 
-  // FASE 2: ARMAZENAMENTO (CENA DO QUARTO)
+  // FASE 2: ARMAZENAMENTO (CENA DO QUARTO - AGORA COM IMAGEM ÚNICA E HITBOXES)
   if (phase === 'storage') {
     return (
       <View style={styles.storageWrapper}>
-        {/* TRUQUE DO FUNDO DUPLO PARA PREENCHER A TELA */}
         <View style={styles.topBackground} />
         <View style={styles.bottomBackground} />
 
@@ -118,15 +117,12 @@ export default function MedicamentosScreen() {
           </Text>
 
           <View style={styles.interactiveArea}>
-            <Image
-              source={require('@/assets/images/Glicemilton_feliz.png')}
-              style={styles.storageCharacterImage}
-              resizeMode="contain"
-            />
-
-            {/* CANETA NO SOL (Errado) */}
+            {/* HITBOX DA ESQUERDA - Criado-mudo no Sol (Errado) */}
             <TouchableOpacity
-              style={[styles.penButton, { top: '50%', left: '13%' }]}
+              style={[
+                styles.invisibleButton,
+                { top: '48%', left: '10%', width: '28%', height: '18%' },
+              ]}
               onPress={() =>
                 showFeedback(
                   false,
@@ -134,18 +130,14 @@ export default function MedicamentosScreen() {
                   'O calor e o contato direto com o sol podem estragar a insulina. Tente novamente!'
                 )
               }
-              activeOpacity={0.7}
-            >
-              <Image
-                source={require('@/assets/images/insulina.png')}
-                style={styles.penImage}
-                resizeMode="contain"
-              />
-            </TouchableOpacity>
+            />
 
-            {/* CANETA NA SOMBRA (Certo) */}
+            {/* HITBOX DA DIREITA - Criado-mudo na Sombra (Certo) */}
             <TouchableOpacity
-              style={[styles.penButton, { top: '50%', right: '15%' }]}
+              style={[
+                styles.invisibleButton,
+                { top: '48%', right: '12%', width: '28%', height: '18%' },
+              ]}
               onPress={() =>
                 showFeedback(
                   true,
@@ -153,15 +145,9 @@ export default function MedicamentosScreen() {
                   'Você escolheu o local correto! A caneta em uso deve ficar protegida da luz solar e do calor excessivo.'
                 )
               }
-              activeOpacity={0.7}
-            >
-              <Image
-                source={require('@/assets/images/insulina.png')}
-                style={styles.penImage}
-                resizeMode="contain"
-              />
-            </TouchableOpacity>
+            />
           </View>
+
           <FeedbackModal
             visible={feedbackVisible}
             data={feedbackData}
@@ -172,7 +158,7 @@ export default function MedicamentosScreen() {
     );
   }
 
-  // FASE 3: LOCAIS DE APLICAÇÃO (CENA DA COZINHA)
+  // FASE 3: LOCAIS DE APLICAÇÃO (CENA DA COZINHA - CANETA REMOVIDA)
   if (phase === 'application') {
     return (
       <ImageBackground
@@ -192,10 +178,10 @@ export default function MedicamentosScreen() {
         </Text>
 
         <View style={styles.interactiveArea}>
-          {/* ÁREA DE ERRO GIGANTE (Fica no fundo, capturando qualquer clique errado) */}
+          {/* ÁREA DE ERRO GIGANTE */}
           <TouchableOpacity
             style={styles.wrongAreaFull}
-            activeOpacity={1} // Impede que a tela inteira pisque ao clicar
+            activeOpacity={1}
             onPress={() =>
               showFeedback(
                 false,
@@ -205,7 +191,7 @@ export default function MedicamentosScreen() {
             }
           />
 
-          {/* ÁREAS CORRETAS (Ficam por cima, interceptando os cliques certos) */}
+          {/* ÁREAS CORRETAS MAPPED EM CIMA DA SUA NOVA IMAGEM INTEGRADA */}
           <TouchableOpacity // Braço Esquerdo
             style={[
               styles.invisibleButton,
@@ -264,12 +250,6 @@ export default function MedicamentosScreen() {
                 'As coxas são locais seguros e muito usados para aplicar a insulina.'
               )
             }
-          />
-
-          <Image
-            source={require('@/assets/images/insulina.png')}
-            style={styles.applicationPenImage}
-            resizeMode="contain"
           />
         </View>
 
@@ -342,7 +322,7 @@ function FeedbackModal({ visible, data, onClose }: FeedbackModalProps) {
   );
 }
 
-// ==================== ESTILOS ====================
+// ==================== ESTILOS LIMPOS ====================
 const styles = StyleSheet.create({
   background: {
     flex: 1,
@@ -382,8 +362,8 @@ const styles = StyleSheet.create({
   interactiveArea: { flex: 1, width: '100%', position: 'relative' },
   invisibleButton: {
     position: 'absolute',
-    zIndex: 30, // Nível 20 (frente): Botões corretos
-    //backgroundColor: 'rgba(255, 0, 0, 0.5)', // trecho para testar
+    zIndex: 30,
+    //backgroundColor: 'rgba(255, 0, 0, 0.4)', // Descomente para calibrar os tamanhos das novas hitboxes!
   },
   wrongAreaFull: {
     position: 'absolute',
@@ -391,8 +371,8 @@ const styles = StyleSheet.create({
     bottom: '10%',
     left: '28%',
     right: '18%',
-    zIndex: 10, // Nível 10 (fundo): Botão de erro que cobre a tela toda
-    // backgroundColor: 'rgba(29, 168, 76, 0.5)', // trecho para teste
+    zIndex: 10,
+    //backgroundColor: 'rgba(80, 250, 29, 0.4)',
   },
 
   storageWrapper: {
@@ -405,37 +385,16 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    bottom: '50%', // Ocupa exatamente a metade de cima
+    bottom: '50%',
     backgroundColor: '#894C16',
   },
   bottomBackground: {
     position: 'absolute',
-    top: '50%', // Começa da metade para baixo
+    top: '50%',
     left: 0,
     right: 0,
     bottom: 0,
     backgroundColor: '#613915',
-  },
-  storageCharacterImage: {
-    position: 'absolute',
-    bottom: '19%',
-    left: '-11%',
-    width: 500,
-    height: 400,
-    zIndex: 15,
-  },
-  penButton: {
-    position: 'absolute',
-    width: 90,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 20,
-  },
-  penImage: {
-    width: 150,
-    height: 150,
-    transform: [{ rotate: '-90deg' }],
   },
 
   modalOverlay: {
@@ -537,14 +496,4 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   emojiTrophy: { fontSize: 64 },
-
-  applicationPenImage: {
-    position: 'absolute',
-    top: '51%',
-    left: '5%',
-    width: 150,
-    height: 220,
-    zIndex: 15,
-    transform: [{ rotate: '-165deg' }],
-  },
 });
