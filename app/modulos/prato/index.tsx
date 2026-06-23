@@ -47,6 +47,7 @@ export type FoodItem = {
   plateSliceImage: any | null;
   color: string;
   isSolid?: boolean;
+  uniqueId?: string;
 };
 
 // BANCO DE DADOS COMPLETO
@@ -550,8 +551,8 @@ const FOOD_DATABASE: FoodItem[] = [
     carbs: 22,
     cals: 300,
     insulin: 2,
-    conveyorImage: null,
-    plateSliceImage: null,
+    conveyorImage: require('@/assets/images/prato/bebidas/lasanha.png'),
+    plateSliceImage: require('@/assets/images/prato/bebidas/lasanha.png'),
     color: '#FFCC80',
     isSolid: true,
   },
@@ -772,26 +773,29 @@ export default function PratoScreen() {
 
   const handleDropInPlate = (food: FoodItem) => {
     setPlateItems((prev) => {
-      // Se o exato mesmo item já está lá, não faz nada
-      if (prev.find((item) => item.id === food.id)) return prev;
+      // Criamos um identificador único para ESTA porção específica
+      const foodInstance = {
+        ...food,
+        uniqueId: `${food.id}-${Date.now()}-${Math.random()}`,
+      };
 
-      // 🔥 REGRA DA BEBIDA ÚNICA: Se for uma bebida (e não for sólido)
+      // REGRA DA BEBIDA ÚNICA: Se for uma bebida legítima (não sólida)
       if (food.category === 'drinks' && !food.isSolid) {
-        // Remove qualquer outra bebida não sólida que já existia na mesa
+        // Remove qualquer outra bebida não sólida antiga
         const mesaSemBebidas = prev.filter(
           (item) => !(item.category === 'drinks' && !item.isSolid)
         );
-        return [...mesaSemBebidas, food]; // Adiciona a nova substituta
+        return [...mesaSemBebidas, foodInstance];
       }
 
-      // Para os outros alimentos normais, mantém o comportamento padrão de acumular
-      return [...prev, food];
+      // Para os alimentos e extras sólidos, permite acumular porções livremente!
+      return [...prev, foodInstance];
     });
     setStagedFood(null);
   };
 
-  const handleRemoveFromPlate = (foodId: string) => {
-    setPlateItems((prev) => prev.filter((item) => item.id !== foodId));
+  const handleRemoveFromPlate = (uniqueId: string) => {
+    setPlateItems((prev) => prev.filter((item) => item.uniqueId !== uniqueId));
   };
 
   const totalCarbs = plateItems.reduce((acc, item) => acc + item.carbs, 0);
@@ -935,24 +939,24 @@ export default function PratoScreen() {
 
             {/* ÁREA DA MESA (Bebidas em cima, Prato embaixo) */}
             <View style={styles.tableArea}>
-              {/* ÁREA DAS BEBIDAS (SUPORTA APENAS UMA E MAIOR) */}
+              {/* ÁREA DAS BEBIDAS */}
               <View style={styles.drinkArea}>
                 {drinksOnTable.length === 0 && (
                   <Text style={styles.dragHintTextDrinks}>Bebida</Text>
                 )}
                 {drinksOnTable.map((item, index) => (
                   <Animated.View
-                    key={`slice-${item.id}`}
+                    key={`drink-${item.uniqueId}`} //  MUDOU AQUI
                     entering={FadeIn}
                     exiting={FadeOut}
                     style={{ position: 'absolute', zIndex: index }}
                   >
+                    {/* MUDOU O PARAMETRO DO ONPRESS AQUI: */}
                     <TouchableOpacity
                       activeOpacity={0.8}
-                      onPress={() => handleRemoveFromPlate(item.id)}
+                      onPress={() => handleRemoveFromPlate(item.uniqueId!)}
                     >
                       {item.plateSliceImage ? (
-                        // 🔥 AUMENTADO DE 55 PARA 85 AQUI:
                         <Image
                           source={item.plateSliceImage}
                           style={{ width: 85, height: 85 }}
@@ -991,19 +995,18 @@ export default function PratoScreen() {
                   <View style={styles.plateInsideContainer}>
                     {foodOnPlate.map((item, index) => (
                       <Animated.View
-                        key={`slice-${item.id}`}
+                        key={`food-${item.uniqueId}`} //  MUDOU AQUI
                         entering={FadeIn}
                         exiting={FadeOut}
-                        // Ajustamos a margem para -12 para acompanhar o tamanho de 80px
                         style={{ margin: -12, zIndex: index }}
                       >
+                        {/* MUDOU O PARAMETRO DO ONPRESS AQUI: */}
                         <TouchableOpacity
                           activeOpacity={0.8}
-                          onPress={() => handleRemoveFromPlate(item.id)}
+                          onPress={() => handleRemoveFromPlate(item.uniqueId!)}
                           style={{ justifyContent: 'center', alignItems: 'center' }}
                         >
                           {item.plateSliceImage ? (
-                            // Alterado de 100 para 80 para caber perfeitamente na curvatura do círculo
                             <Image
                               source={item.plateSliceImage}
                               style={{ width: 80, height: 80 }}
