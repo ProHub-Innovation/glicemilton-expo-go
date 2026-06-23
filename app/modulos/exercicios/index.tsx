@@ -109,10 +109,10 @@ export default function QuizScreen() {
         setShowIntroBtn(true); // Faz a caixa "crescer" ao renderizar o componente
         Animated.timing(nextBtnOpacity, {
           toValue: 1,
-          duration: 800, // Padronizado para 800ms igual aos outros
+          duration: 800,
           useNativeDriver: true,
         }).start();
-      }, 1000); // Padronizado para o delay de 3 segundos
+      }, 1000);
 
       return () => clearTimeout(timer);
     }

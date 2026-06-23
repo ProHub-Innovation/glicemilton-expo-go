@@ -755,14 +755,15 @@ export default function PratoScreen() {
   });
 
   const [fontsLoaded] = useExpoFonts({ Chewy_400Regular });
-  if (!fontsLoaded) return null;
 
   useEffect(() => {
     if (phase === 'intro') {
-      const timer = setTimeout(() => setShowIntroBtn(true), 3000);
+      const timer = setTimeout(() => setShowIntroBtn(true), 1000);
       return () => clearTimeout(timer);
     }
   }, [phase]);
+
+  if (!fontsLoaded) return null;
 
   const handleSelectFood = (food: FoodItem) => {
     setActiveCategory(null);
@@ -1155,7 +1156,7 @@ const styles = StyleSheet.create({
   },
 
   subtitle: {
-    fontWeight: 100,
+    fontWeight: '100',
     fontFamily: 'Chewy_400Regular',
     fontSize: 22,
     color: '#FFF',
