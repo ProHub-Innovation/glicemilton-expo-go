@@ -85,7 +85,7 @@ export default function DashboardScreen() {
 
               <TouchableOpacity
                 style={[styles.moduleButton, { width: '22%' }]}
-                onPress={() => navigateToGame('Comer Saudavelmente')}
+                onPress={() => router.navigate('/modulos/prato')}
               >
                 <Image
                   source={require('../../assets/images/icone_comer_saudavelmente.png')}

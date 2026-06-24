@@ -22,10 +22,29 @@ export default function MedicamentosScreen() {
   const [feedbackVisible, setFeedbackVisible] = useState(false);
   const [feedbackData, setFeedbackData] = useState({ isCorrect: false, title: '', message: '' });
 
+  const [showIntroBtn, setShowIntroBtn] = useState(false);
+  const btnOpacity = useRef(new Animated.Value(0)).current;
+
   const [fontsLoaded] = useExpoFonts({ Chewy_400Regular });
   const homePulseAnim = useRef(new Animated.Value(1)).current;
 
   const insets = useSafeAreaInsets();
+
+  useEffect(() => {
+    if (phase === 'intro') {
+      const timer = setTimeout(() => {
+        setShowIntroBtn(true); // Mostra o botão no código
+        Animated.timing(btnOpacity, {
+          // Faz a animação de opacidade de 0 para 1
+          toValue: 1,
+          duration: 800, // Duração do efeito de surgimento (0.8 segundos)
+          useNativeDriver: true,
+        }).start();
+      }, 1000);
+
+      return () => clearTimeout(timer); // Limpa o timer se o usuário sair antes
+    }
+  }, [phase, btnOpacity]);
 
   useEffect(() => {
     const animation = Animated.loop(
@@ -83,9 +102,16 @@ export default function MedicamentosScreen() {
                 prescrição médica, é essencial para o autocuidado no diabetes.
               </Text>
 
-              <TouchableOpacity style={styles.introCircleBtn} onPress={() => setPhase('storage')}>
-                <MaterialCommunityIcons name="chevron-right" size={38} color="#fff" />
-              </TouchableOpacity>
+              {showIntroBtn && (
+                <Animated.View style={{ opacity: btnOpacity }}>
+                  <TouchableOpacity
+                    style={styles.introCircleBtn}
+                    onPress={() => setPhase('storage')}
+                  >
+                    <MaterialCommunityIcons name="chevron-right" size={38} color="#fff" />
+                  </TouchableOpacity>
+                </Animated.View>
+              )}
             </View>
           </View>
         </View>
@@ -409,7 +435,7 @@ const styles = StyleSheet.create({
   invisibleButton: {
     position: 'absolute',
     zIndex: 30,
-    backgroundColor: 'rgba(255, 0, 0, 0.4)', // Descomente para calibrar os tamanhos das novas hitboxes!
+    //backgroundColor: 'rgba(255, 0, 0, 0.4)',
   },
   wrongAreaFull: {
     position: 'absolute',
@@ -418,7 +444,7 @@ const styles = StyleSheet.create({
     left: '28%',
     right: '18%',
     zIndex: 10,
-    backgroundColor: 'rgba(80, 250, 29, 0.4)',
+    //backgroundColor: 'rgba(80, 250, 29, 0.4)',
   },
 
   storageWrapper: {
@@ -501,6 +527,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 24,
     backgroundColor: 'rgba(0,0,0,0.1)',
+    width: '100%',
   },
   cardAnchor: { width: '100%', maxWidth: 340, position: 'relative' },
   introCard: {
