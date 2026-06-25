@@ -15,12 +15,11 @@ import { AnimatedFloat } from '../../components/AnimatedElements';
 
 export default function DashboardScreen() {
   const router = useRouter();
-
   const { state } = useGame();
 
   const navigateToGame = (gameName: string) => {
-    // Se o jogo clicado for o Vigiar Taxas, navega para a tela nova!
-    if (gameName === 'Vigiar Taxas') {
+    // Se o jogo clicado for o Vigiar Taxas (ou Medir Glicemia), navega para a tela nova!
+    if (gameName === 'Vigiar Taxas' || gameName === 'Medir Glicemia') {
       router.push('/modulos/vigiar-taxas');
     } else {
       // Mantém o aviso para os outros botões que ainda não criamos
@@ -36,7 +35,6 @@ export default function DashboardScreen() {
       imageStyle={{ transform: [{ scale: 1.08 }, { translateY: 15 }] }}
     >
       <SafeAreaView style={styles.safeArea}>
-        {/* PARTE SUPERIOR */}
         <View style={styles.topCard}>
           <View style={styles.cardHeader}>
             <View style={styles.glicemiaLabel}>
@@ -54,13 +52,12 @@ export default function DashboardScreen() {
               <Text style={styles.glicemiaUnit}>mg/dL</Text>
             </View>
             <View style={styles.scoreContainer}>
-              <Text style={styles.scoreLabel}>Pontos</Text>
+              <Text style={styles.scoreLabel}>Points</Text>
               <Text style={styles.scoreValue}>{state.totalPoints}</Text>
             </View>
           </View>
         </View>
 
-        {/* PARTE INFERIOR */}
         <View style={styles.bottomSection}>
           <AnimatedFloat>
             <Image
@@ -70,9 +67,7 @@ export default function DashboardScreen() {
             />
           </AnimatedFloat>
 
-          {/* GRID COM OS NOMES DE ARQUIVO CORRIGIDOS PARA O PADRÃO (SNAKE_CASE) */}
           <View style={styles.bottomGrid}>
-            {/* LINHA 1 */}
             <View style={styles.gridRow}>
               <TouchableOpacity
                 style={[styles.moduleButton, { width: '22%' }]}
@@ -96,7 +91,7 @@ export default function DashboardScreen() {
 
               <TouchableOpacity
                 style={[styles.moduleButton, { width: '22%' }]}
-                onPress={() => navigateToGame('Comer Saudavelmente')}
+                onPress={() => router.navigate('/modulos/prato')}
               >
                 <Image
                   source={require('../../assets/images/icone_comer_saudavelmente.png')}
@@ -105,11 +100,10 @@ export default function DashboardScreen() {
               </TouchableOpacity>
             </View>
 
-            {/* LINHA 2 */}
             <View style={styles.gridRow}>
               <TouchableOpacity
                 style={[styles.moduleButton, { width: '22%' }]}
-                onPress={() => navigateToGame('Tomar Medicamentos')}
+                onPress={() => router.navigate('/modulos/medicamentos')}
               >
                 <Image
                   source={require('../../assets/images/icone_tomar_medicamentos.png')}
@@ -119,7 +113,7 @@ export default function DashboardScreen() {
 
               <TouchableOpacity
                 style={[styles.moduleButton, { width: '22%' }]}
-                onPress={() => navigateToGame('Resolver Problemas')}
+                onPress={() => navigateToGame('Cartões')}
               >
                 <Image
                   source={require('../../assets/images/icone_resolver_problemas.png')}
@@ -129,7 +123,7 @@ export default function DashboardScreen() {
 
               <TouchableOpacity
                 style={[styles.moduleButton, { width: '24%' }]}
-                onPress={() => navigateToGame('Vigiar Taxas')}
+                onPress={() => navigateToGame('Medir Glicemia')}
               >
                 <Image
                   source={require('../../assets/images/icone_vigiar_taxas.png')}

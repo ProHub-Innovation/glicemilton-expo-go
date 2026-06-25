@@ -6,7 +6,7 @@ import { Chewy_400Regular } from '@expo-google-fonts/chewy';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFonts as useExpoFonts } from 'expo-font';
 import { router } from 'expo-router';
-import React, { useEffect, useReducer, useRef } from 'react';
+import React, { useEffect, useReducer, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Animated,
@@ -81,6 +81,8 @@ export default function QuizScreen() {
   const [state, dispatch] = useReducer(quizScreenReducer, INITIAL_SCREEN_STATE);
   const { addPoints } = useGame();
 
+  const [showIntroBtn, setShowIntroBtn] = useState(false);
+
   const [fontsLoaded] = useExpoFonts({
     Caveat_700Bold,
     Chewy_400Regular,
@@ -101,14 +103,18 @@ export default function QuizScreen() {
   useEffect(() => {
     if (state.phase === 'intro') {
       nextBtnOpacity.setValue(0);
-      Animated.sequence([
-        Animated.delay(1000),
+      setShowIntroBtn(false); // Reseta o botão se o usuário voltar para a intro
+
+      const timer = setTimeout(() => {
+        setShowIntroBtn(true); // Faz a caixa "crescer" ao renderizar o componente
         Animated.timing(nextBtnOpacity, {
           toValue: 1,
-          duration: 400,
+          duration: 800,
           useNativeDriver: true,
-        }),
-      ]).start();
+        }).start();
+      }, 1000);
+
+      return () => clearTimeout(timer);
     }
   }, [state.phase, nextBtnOpacity]);
 
@@ -168,14 +174,17 @@ export default function QuizScreen() {
                   pelo monitoramento regular (exames e aspectos emocionais).
                 </Text>
 
-                <Animated.View style={{ opacity: nextBtnOpacity }}>
-                  <TouchableOpacity
-                    style={styles.introCircleBtn}
-                    onPress={() => dispatch({ type: 'START_GAME' })}
-                  >
-                    <MaterialCommunityIcons name="chevron-right" size={38} color="#fff" />
-                  </TouchableOpacity>
-                </Animated.View>
+                {/* 3. SUBSTITUA O BLOCO DO BOTÃO POR ESTE: */}
+                {showIntroBtn && (
+                  <Animated.View style={{ opacity: nextBtnOpacity }}>
+                    <TouchableOpacity
+                      style={styles.introCircleBtn}
+                      onPress={() => dispatch({ type: 'START_GAME' })}
+                    >
+                      <MaterialCommunityIcons name="chevron-right" size={38} color="#fff" />
+                    </TouchableOpacity>
+                  </Animated.View>
+                )}
               </View>
             </View>
           </View>
