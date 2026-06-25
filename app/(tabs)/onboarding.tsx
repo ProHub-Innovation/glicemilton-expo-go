@@ -1,3 +1,4 @@
+import { useGame } from '@/context/GameContext';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import {
@@ -11,7 +12,6 @@ import {
   View,
 } from 'react-native';
 import { AnimatedFloat } from '../../components/AnimatedElements';
-import { useGame } from '@/context/GameContext';
 
 export default function DashboardScreen() {
   const router = useRouter();
@@ -19,8 +19,13 @@ export default function DashboardScreen() {
   const { state } = useGame();
 
   const navigateToGame = (gameName: string) => {
-    // Usando o Alert nativo do React Native para evitar problemas de compatibilidade
-    Alert.alert('Navegação', `Navegando para o módulo: ${gameName}`);
+    // Se o jogo clicado for o Vigiar Taxas, navega para a tela nova!
+    if (gameName === 'Vigiar Taxas') {
+      router.push('/modulos/vigiar-taxas');
+    } else {
+      // Mantém o aviso para os outros botões que ainda não criamos
+      Alert.alert('Em breve', `O módulo ${gameName} ainda está em desenvolvimento!`);
+    }
   };
 
   return (
