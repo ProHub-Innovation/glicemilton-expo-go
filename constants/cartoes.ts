@@ -1,0 +1,96 @@
+import { GLICEMIA_COLORS } from './glicemia';
+
+export type CardType = 'PROBLEMA' | 'SOLUCAO';
+
+export interface CardItem {
+  id: string;
+  pairId: string;
+  type: CardType;
+  image: any;
+  alt: string;
+}
+
+export const CARTOES_COLORS = {
+  primary: GLICEMIA_COLORS.primary,
+  white: GLICEMIA_COLORS.white,
+  containerBg: GLICEMIA_COLORS.background,
+  brandDark: '#795548',
+  selectedBorder: GLICEMIA_COLORS.selectionOrange,
+  selectedBg: GLICEMIA_COLORS.selectionOrangeBg,
+  successBg: '#AED581',
+  successBorder: GLICEMIA_COLORS.success,
+  errorBg: '#FFEBEE',
+  errorBorder: GLICEMIA_COLORS.error,
+  cardBackBg: '#4FC3F7',
+  cardBackBorder: '#E1F5FE',
+  overlay: GLICEMIA_COLORS.overlay,
+  textMuted: '#555555',
+};
+
+export const CARTOES_THEORY = {
+  title: 'Resolver problemas',
+  instruction:
+    'Combine cada obstáculo ou sintoma do cotidiano com a atitude ou tratamento correto para resolver o tabuleiro!',
+  successTitle: 'Parabéns!',
+  successMessage:
+    'Você associou todos os problemas diários às suas respectivas soluções clínicas com maestria!',
+};
+
+export const TABULEIRO_CARTOES: CardItem[] = [
+  {
+    id: 'p1',
+    pairId: 'par_1',
+    type: 'PROBLEMA',
+    image: require('../assets/images/cartas/formiga_hipoglicemia_sintoma_1.png'),
+    alt: 'Formiga com tontura e suor frio, representando os sintomas de hipoglicemia.',
+  },
+  {
+    id: 's1',
+    pairId: 'par_1',
+    type: 'SOLUCAO',
+    image: require('../assets/images/cartas/formiga_hipoglicemia_solucao_1.png'),
+    alt: 'Formiga ingerindo açúcar rápido para reverter a crise de hipoglicemia.',
+  },
+  {
+    id: 'p2',
+    pairId: 'par_2',
+    type: 'PROBLEMA',
+    image: require('../assets/images/cartas/formiga_hipoglicemia_sintoma_2.png'),
+    alt: 'Formiga desanimada ao lado de uma cama, ilustrando fraqueza por baixa taxa de açúcar.',
+  },
+  {
+    id: 's2',
+    pairId: 'par_2',
+    type: 'SOLUCAO',
+    image: require('../assets/images/cartas/formiga_hipoglicemia_solucao_2.png'),
+    alt: 'Formiga comendo uma refeição balanceada para estabilização das taxas.',
+  },
+  {
+    id: 'p3',
+    pairId: 'par_3',
+    type: 'PROBLEMA',
+    image: require('../assets/images/cartas/formiga_hipoglicemia_sintoma_3.png'),
+    alt: 'Formiga desorientada durante caminhada ao ar livre.',
+  },
+  {
+    id: 's3',
+    pairId: 'par_3',
+    type: 'SOLUCAO',
+    image: require('../assets/images/cartas/formiga_hipoglicemia_solucao_3.png'),
+    alt: 'Formiga pausando o exercício e monitorando a glicemia com o glicosímetro.',
+  },
+  {
+    id: 'p4',
+    pairId: 'par_4',
+    type: 'PROBLEMA',
+    image: require('../assets/images/cartas/formiga_hipoglicemia_sintoma_4.png'),
+    alt: 'Gráfico mostrando alimentos inadequados e uma ambulância de emergência ao fundo.',
+  },
+  {
+    id: 's4',
+    pairId: 'par_4',
+    type: 'SOLUCAO',
+    image: require('../assets/images/cartas/formiga_hipoglicemia_solucao_4.png'),
+    alt: 'Formiga agindo com cautela ao volante de um carro, simbolizando prevenção de riscos.',
+  },
+];
