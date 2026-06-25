@@ -81,7 +81,7 @@ export default function DashboardScreen() {
 
               <TouchableOpacity
                 style={[styles.moduleButton, { width: '22%' }]}
-                onPress={() => navigateToGame('Adaptação Saudável')}
+                onPress={() => router.navigate('/modulos/labirinto')}
               >
                 <Image
                   source={require('../../assets/images/icone_adaptacao_saudavel.png')}
@@ -113,7 +113,7 @@ export default function DashboardScreen() {
 
               <TouchableOpacity
                 style={[styles.moduleButton, { width: '22%' }]}
-                onPress={() => navigateToGame('Cartões')}
+                onPress={() => router.navigate('/modulos/cartoes')}
               >
                 <Image
                   source={require('../../assets/images/icone_resolver_problemas.png')}
