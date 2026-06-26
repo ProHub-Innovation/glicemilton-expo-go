@@ -310,20 +310,6 @@ export default function LabirintoScreen() {
           <MaterialCommunityIcons name="arrow-down" size={28} color="#FFF" />
         </TouchableOpacity>
       </View>
-
-      {/* MODAL DE VITÓRIA */}
-      {hasWon && (
-        <Animated.View entering={FadeIn} style={styles.victoryOverlay}>
-          <View style={styles.victoryCard}>
-            <Text style={{ fontSize: 50 }}>🏆</Text>
-            <Text style={styles.victoryTitle}>Parabéns!</Text>
-            <Text style={styles.victoryScore}>Açúcares Coletados: {score} pts</Text>
-            <TouchableOpacity style={styles.victoryBtnRestart} onPress={reiniciarJogo}>
-              <Text style={styles.victoryBtnText}>Jogar Novamente</Text>
-            </TouchableOpacity>
-          </View>
-        </Animated.View>
-      )}
     </ImageBackground>
   );
 }
@@ -460,37 +446,6 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   dPadCenterSpace: { width: 66, height: 66 },
-
-  victoryOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.8)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 100,
-  },
-  victoryCard: {
-    backgroundColor: '#FFF',
-    width: '80%',
-    borderRadius: 24,
-    padding: 30,
-    alignItems: 'center',
-  },
-  victoryTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#543D2B',
-    marginTop: 15,
-    marginBottom: 10,
-  },
-  victoryScore: { fontSize: 18, color: '#2E7D32', fontWeight: 'bold', marginBottom: 20 },
-  victoryBtnRestart: {
-    backgroundColor: '#543D2B',
-    paddingVertical: 12,
-    paddingHorizontal: 25,
-    borderRadius: 12,
-  },
-  victoryBtnText: { color: '#FFF', fontWeight: 'bold' },
-
   finishedContainer: {
     flex: 1,
     alignItems: 'center',
