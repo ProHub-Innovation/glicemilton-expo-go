@@ -694,7 +694,7 @@ export default function VigiarTaxasScreen() {
               </View>
               <View style={styles.characterStory} pointerEvents="none">
                 <Image
-                  source={require('../../../assets/images/Glicemilton feliz.png')}
+                  source={require('../../../assets/images/Glicemilton_feliz.png')}
                   style={styles.characterLarge}
                   resizeMode="contain"
                 />
@@ -732,7 +732,7 @@ export default function VigiarTaxasScreen() {
               </View>
               <View style={styles.characterBottomCenter} pointerEvents="none">
                 <Image
-                  source={require('../../../assets/images/Glicemilton feliz.png')}
+                  source={require('../../../assets/images/Glicemilton_feliz.png')}
                   style={styles.characterLarge}
                   resizeMode="contain"
                 />

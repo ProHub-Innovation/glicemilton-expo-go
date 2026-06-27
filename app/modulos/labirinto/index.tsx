@@ -1,18 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  ImageBackground,
-  TouchableOpacity,
-  StyleSheet,
-  Image,
-  Dimensions,
-} from 'react-native';
-import { router } from 'expo-router';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useFonts as useExpoFonts } from 'expo-font';
+import { useGame } from '@/context/GameContext';
 import { Chewy_400Regular } from '@expo-google-fonts/chewy';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useFonts as useExpoFonts } from 'expo-font';
+import { router } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import {
+  Dimensions,
+  Image,
+  ImageBackground,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import Animated, {
   FadeIn,
   ZoomIn,
@@ -22,7 +22,7 @@ import Animated, {
   withSequence,
   withSpring,
 } from 'react-native-reanimated';
-import { useGame } from '@/context/GameContext';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -342,7 +342,7 @@ export default function LabirintoScreen() {
                       style={{ justifyContent: 'center', alignItems: 'center' }}
                     >
                       <Image
-                        source={require('@/assets/images/Glicemilton feliz.png')}
+                        source={require('@/assets/images/Glicemilton_feliz.png')}
                         style={{
                           width: CELL_SIZE * 1.25,
                           height: CELL_SIZE * 1.25,
