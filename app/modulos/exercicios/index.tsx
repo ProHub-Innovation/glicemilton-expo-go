@@ -50,26 +50,48 @@ function quizScreenReducer(state: QuizScreenState, action: QuizScreenAction): Qu
   switch (action.type) {
     case 'START_GAME':
       return { ...state, phase: 'playing' };
+
     case 'ROLL_DICE': {
       const steps = action.payload;
       const rawNext = state.position + steps;
+
+      // Se a soma passar ou for igual à última casa, fixamos na última casa (index 15)
       const nextPosition = Math.min(rawNext, TOTAL_BOARD_SQUARES - 1);
-      const isFinished = nextPosition === TOTAL_BOARD_SQUARES - 1;
-      const landedOnNumbered = nextPosition > 0 && nextPosition < TOTAL_BOARD_SQUARES - 1;
+
       return {
         ...state,
-        position: nextPosition,
         lastRoll: steps,
-        isLocked: landedOnNumbered,
-        quizVisible: landedOnNumbered,
+        isLocked: true,
+        quizVisible: true,
+        position: nextPosition,
+        phase: 'playing',
+      };
+    }
+
+    case 'ANSWER_CORRECT': {
+      // Verifica se a casa atual onde ele acertou é a última casa
+      const isFinished = state.position === TOTAL_BOARD_SQUARES - 1;
+
+      return {
+        ...state,
+        isLocked: false,
+        quizVisible: false,
         phase: isFinished ? 'finished' : 'playing',
       };
     }
-    case 'ANSWER_CORRECT':
-    case 'ANSWER_WRONG':
-      return { ...state, isLocked: false, quizVisible: false };
+
+    // 🔥 O CASE QUE ESTAVA FALTANDO:
+    case 'ANSWER_WRONG': {
+      return {
+        ...state,
+        quizVisible: false, // Força o modal do quiz a fechar
+        isLocked: true, // Mantém o dado bloqueado
+      };
+    }
+
     case 'RESET':
-      return { ...INITIAL_SCREEN_STATE, phase: 'intro' };
+      return { ...INITIAL_SCREEN_STATE, phase: 'playing' };
+
     default:
       return state;
   }
@@ -82,6 +104,8 @@ export default function QuizScreen() {
   const { addPoints } = useGame();
 
   const [showIntroBtn, setShowIntroBtn] = useState(false);
+
+  const [hasFailedQuestion, setHasFailedQuestion] = useState(false);
 
   const [fontsLoaded] = useExpoFonts({
     Caveat_700Bold,
@@ -123,11 +147,21 @@ export default function QuizScreen() {
   }
 
   function handleAnswer(isCorrect: boolean) {
-    if (isCorrect) addPoints('quiz', 10);
-    dispatch({ type: isCorrect ? 'ANSWER_CORRECT' : 'ANSWER_WRONG' });
+    if (isCorrect) {
+      // 1. Adiciona os pontos globalmente no acerto
+      addPoints('quiz', 10);
+      setHasFailedQuestion(false);
+
+      // 2. O reducer fecha o modal e verifica se vai para a tela de vitória
+      dispatch({ type: 'ANSWER_CORRECT' });
+    } else {
+      // 3. No erro, fechamos o modal IMEDIATAMENTE antes de ativar a tela de erro
+      dispatch({ type: 'ANSWER_WRONG' });
+      setHasFailedQuestion(true);
+    }
   }
 
-  const questionIndex = Math.max(0, (state.position - 1) % QUIZ_QUESTIONS.length);
+  const questionIndex = Math.max(0, state.position - 1);
   const currentQuestion = QUIZ_QUESTIONS[questionIndex];
 
   if (!fontsLoaded) {
@@ -240,6 +274,35 @@ export default function QuizScreen() {
         <View style={styles.staticBoardContainer}>
           <BoardTrail currentPosition={state.position} />
         </View>
+
+        {hasFailedQuestion && (
+          <View style={styles.failureOverlay}>
+            <View style={styles.failureCard}>
+              <MaterialCommunityIcons name="close-circle" size={54} color="#D32F2F" />
+              <Text style={styles.failureText}>Resposta Incorreta!</Text>
+
+              <TouchableOpacity
+                style={styles.btnResetGame}
+                onPress={() => {
+                  setHasFailedQuestion(false);
+                  dispatch({ type: 'RESET' });
+                }}
+              >
+                <Text style={styles.btnResetText}>Recomeçar Minijogo</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.btnExitGame}
+                onPress={() => {
+                  dispatch({ type: 'RESET' });
+                  router.back();
+                }}
+              >
+                <Text style={styles.btnExitText}>Voltar para Tela Inicial</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
 
         {/* Dado Fixo no Canto Inferior Direito (Sem Mensagens) */}
         <View style={styles.absoluteDiceContainer}>
@@ -429,6 +492,54 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginBottom: 24,
     paddingHorizontal: 8,
+  },
+  failureOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 100,
+  },
+  failureCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    width: '80%',
+    maxWidth: 300,
+    borderRadius: 20,
+    padding: 24,
+    alignItems: 'center',
+    gap: 12,
+    elevation: 10,
+  },
+  failureText: {
+    fontFamily: 'Chewy_400Regular',
+    fontSize: 22,
+    color: '#333',
+    marginBottom: 8,
+  },
+  btnResetGame: {
+    backgroundColor: '#6D4C41',
+    width: '100%',
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  btnResetText: {
+    color: '#fff',
+    fontFamily: 'Chewy_400Regular',
+    fontSize: 16,
+  },
+  btnExitGame: {
+    borderWidth: 1.5,
+    borderColor: '#6D4C41',
+    width: '100%',
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  btnExitText: {
+    color: '#6D4C41',
+    fontFamily: 'Chewy_400Regular',
+    fontSize: 16,
   },
   introCircleBtn: {
     width: 70,

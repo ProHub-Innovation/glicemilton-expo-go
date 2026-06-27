@@ -53,14 +53,17 @@ const GRID_SIZE = INITIAL_MAZE[0].length;
 const CELL_SIZE = MAZE_CONTAINER_SIZE / GRID_SIZE;
 
 export default function LabirintoScreen() {
-  const [phase, setPhase] = useState<'intro' | 'game' | 'finished'>('intro');
+  const [phase, setPhase] = useState<'intro' | 'game' | 'finished' | 'game_over'>('intro');
   const [mazeMap, setMazeMap] = useState<string[][]>(INITIAL_MAZE);
   const [playerPos, setPlayerPos] = useState({ row: START_ROW, col: START_COL });
   const [score, setScore] = useState(0);
   const [hasWon, setHasWon] = useState(false);
   const [showIntroBtn, setShowIntroBtn] = useState(false);
 
+  const [timeLeft, setTimeLeft] = useState(45);
+
   const insets = useSafeAreaInsets();
+
   const [fontsLoaded] = useExpoFonts({ Chewy_400Regular });
 
   const { addPoints } = useGame();
@@ -77,6 +80,29 @@ export default function LabirintoScreen() {
       true
     );
   }, []);
+
+  useEffect(() => {
+    let timerId: ReturnType<typeof setInterval>;
+
+    // Só roda o relógio se estiver na fase 'game', não tiver ganho ainda e tiver tempo sobrando
+    if (phase === 'game' && !hasWon && timeLeft > 0) {
+      timerId = setInterval(() => {
+        setTimeLeft((prev) => prev - 1);
+      }, 1000);
+    } else if (timeLeft === 0 && phase === 'game') {
+      // Se o tempo zerar durante o jogo, aciona o Game Over
+      setPhase('game_over');
+    }
+
+    // Limpeza crucial para o relógio não bugar ao sair da tela
+    return () => {
+      if (timerId) clearInterval(timerId);
+    };
+  }, [phase, hasWon, timeLeft]);
+
+  const formattedTime = `${Math.floor(timeLeft / 60)
+    .toString()
+    .padStart(2, '0')}:${(timeLeft % 60).toString().padStart(2, '0')}`;
 
   const animatedPulseStyle = useAnimatedStyle(() => {
     return { transform: [{ scale: pulseAnim.value }] };
@@ -141,6 +167,7 @@ export default function LabirintoScreen() {
     setPlayerPos({ row: START_ROW, col: START_COL });
     setScore(0);
     setHasWon(false);
+    setTimeLeft(45);
     setPhase('game');
   };
 
@@ -218,6 +245,30 @@ export default function LabirintoScreen() {
     );
   }
 
+  if (phase === 'game_over') {
+    return (
+      <ImageBackground
+        source={require('@/assets/images/background.jpg')}
+        style={styles.finishedContainer}
+        resizeMode="cover"
+      >
+        <Animated.View entering={FadeIn} style={styles.finishedCard}>
+          <Text style={{ fontSize: 50 }}>⏰</Text>
+          <Text style={styles.finishedTitle}>O tempo acabou!</Text>
+          <Text style={styles.finishedSub}>O Glicemilton não conseguiu achar a saída a tempo.</Text>
+
+          <TouchableOpacity style={styles.btnFinished} onPress={reiniciarJogo}>
+            <Text style={styles.btnFinishedText}>Tentar Novamente</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.btnFinishedOutline} onPress={() => router.back()}>
+            <Text style={styles.btnFinishedOutlineText}>Voltar ao início</Text>
+          </TouchableOpacity>
+        </Animated.View>
+      </ImageBackground>
+    );
+  }
+
   // ==========================================
   // RENDERIZAÇÃO: FASE JOGO (LABIRINTO EM TELA CHEIA)
   // ==========================================
@@ -239,6 +290,18 @@ export default function LabirintoScreen() {
       <Text style={[styles.gameSubtitle, { marginTop: Math.max(insets.top + 60, 80) }]}>
         Ajude-o a encontrar a saída!
       </Text>
+
+      {/* 🔥 MOSTRADOR DO CRONÔMETRO */}
+      <View style={styles.timerBadge}>
+        <MaterialCommunityIcons
+          name="clock-outline"
+          size={20}
+          color={timeLeft <= 10 ? '#FF5252' : '#FFF'}
+        />
+        <Text style={[styles.timerText, timeLeft <= 10 && styles.timerTextDanger]}>
+          {formattedTime}
+        </Text>
+      </View>
 
       {/* GRADE DE COLISÕES INVISÍVEL (Alinhada exatamente por cima do desenho do labirinto) */}
       <View style={styles.mazeGridContainer}>
@@ -509,5 +572,23 @@ const styles = StyleSheet.create({
     color: '#7A5C4E',
     fontFamily: 'Chewy_400Regular',
     fontSize: 18,
+  },
+  timerBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginTop: 10,
+    gap: 6,
+  },
+  timerText: {
+    fontFamily: 'Chewy_400Regular',
+    fontSize: 22,
+    color: '#FFF',
+  },
+  timerTextDanger: {
+    color: '#FF5252', // Fica vermelho nos últimos 10 segundos
   },
 });
