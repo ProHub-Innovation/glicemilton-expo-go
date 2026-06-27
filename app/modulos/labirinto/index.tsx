@@ -84,21 +84,29 @@ export default function LabirintoScreen() {
   useEffect(() => {
     let timerId: ReturnType<typeof setInterval>;
 
-    // Só roda o relógio se estiver na fase 'game', não tiver ganho ainda e tiver tempo sobrando
-    if (phase === 'game' && !hasWon && timeLeft > 0) {
+    if (phase === 'game' && !hasWon) {
       timerId = setInterval(() => {
-        setTimeLeft((prev) => prev - 1);
+        // Atualização funcional de estado que não depende da variável externa
+        setTimeLeft((prev) => {
+          if (prev <= 1) {
+            clearInterval(timerId); // Interrompe de forma limpa na própria thread
+            return 0;
+          }
+          return prev - 1;
+        });
       }, 1000);
-    } else if (timeLeft === 0 && phase === 'game') {
-      // Se o tempo zerar durante o jogo, aciona o Game Over
-      setPhase('game_over');
     }
 
-    // Limpeza crucial para o relógio não bugar ao sair da tela
     return () => {
       if (timerId) clearInterval(timerId);
     };
-  }, [phase, hasWon, timeLeft]);
+  }, [phase, hasWon]);
+
+  useEffect(() => {
+    if (timeLeft === 0 && phase === 'game') {
+      setPhase('game_over');
+    }
+  }, [timeLeft, phase]);
 
   const formattedTime = `${Math.floor(timeLeft / 60)
     .toString()

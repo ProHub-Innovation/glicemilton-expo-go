@@ -100,6 +100,7 @@ function quizScreenReducer(state: QuizScreenState, action: QuizScreenAction): Qu
 const AnimatedTouchableOpacity = Animated.createAnimatedComponent(TouchableOpacity);
 
 export default function QuizScreen() {
+  const [sessionScore, setSessionScore] = useState(0);
   const [state, dispatch] = useReducer(quizScreenReducer, INITIAL_SCREEN_STATE);
   const { addPoints } = useGame();
 
@@ -148,20 +149,32 @@ export default function QuizScreen() {
 
   function handleAnswer(isCorrect: boolean) {
     if (isCorrect) {
-      // 1. Adiciona os pontos globalmente no acerto
-      addPoints('quiz', 10);
+      const isFinished = state.position === TOTAL_BOARD_SQUARES - 1; //
+      const newScore = sessionScore + 10;
+      setSessionScore(newScore);
+
       setHasFailedQuestion(false);
 
-      // 2. O reducer fecha o modal e verifica se vai para a tela de vitória
-      dispatch({ type: 'ANSWER_CORRECT' });
+      // 🔥 Apenas adiciona ao contexto global se o jogo chegou ao fim
+      if (isFinished) {
+        addPoints('quiz', newScore);
+      }
+
+      dispatch({ type: 'ANSWER_CORRECT' }); //
     } else {
-      // 3. No erro, fechamos o modal IMEDIATAMENTE antes de ativar a tela de erro
-      dispatch({ type: 'ANSWER_WRONG' });
+      dispatch({ type: 'ANSWER_WRONG' }); //
       setHasFailedQuestion(true);
     }
   }
 
-  const questionIndex = Math.max(0, state.position - 1);
+  let questionIndex = 0;
+
+  if (state.position === TOTAL_BOARD_SQUARES - 1) {
+    questionIndex = QUIZ_QUESTIONS.length - 1;
+  } else if (QUIZ_QUESTIONS.length > 1) {
+    questionIndex = Math.max(0, (state.position - 1) % (QUIZ_QUESTIONS.length - 1));
+  }
+
   const currentQuestion = QUIZ_QUESTIONS[questionIndex];
 
   if (!fontsLoaded) {
@@ -285,6 +298,7 @@ export default function QuizScreen() {
                 style={styles.btnResetGame}
                 onPress={() => {
                   setHasFailedQuestion(false);
+                  setSessionScore(0);
                   dispatch({ type: 'RESET' });
                 }}
               >
