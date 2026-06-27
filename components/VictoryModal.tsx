@@ -21,7 +21,7 @@ export default function VictoryModal({
 
   const handleClose = () => {
     // O fechamento obrigatoriamente redireciona o usuário de volta ao Dashboard limpo
-    router.replace('/onboarding');
+    router.replace('/(tabs)/onboarding');
   };
 
   return (

@@ -154,26 +154,22 @@ export default function LabirintoScreen() {
     const nextCell = mazeMap[nextRow][nextCol];
 
     if (nextCell.includes('SUGAR')) {
-      setScore((prev) => {
-        const newScore = prev + 10;
+      const isExit = nextCell.includes('EXIT');
 
-        // Se a célula também tem EXIT, registra a vitória com o score final correto
-        if (nextCell.includes('EXIT')) {
-          addPoints('labirinto', newScore);
-          setHasWon(true);
-          setPhase('finished');
-        }
+      setScore((prev) => prev + 10);
 
-        return newScore;
-      });
       setMazeMap((prevMap) => {
         const newMap = prevMap.map((row) => [...row]);
         newMap[nextRow][nextCol] = nextCell.replace('_SUGAR', '');
         return newMap;
       });
 
-      // Se tinha SUGAR e EXIT, já tratamos acima — sai aqui
-      if (nextCell.includes('EXIT')) return;
+      if (isExit) {
+        addPoints('labirinto', score + 10);
+        setHasWon(true);
+        setPhase('finished');
+        return;
+      }
     }
 
     if (nextCell.includes('EXIT')) {

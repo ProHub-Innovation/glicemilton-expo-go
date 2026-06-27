@@ -253,18 +253,24 @@ function AfericaoGame({ onFinish }: { onFinish: () => void }) {
   // Remede a hitbox do algodão2 toda vez que a fase entra em MOLHAR_ALGODAO,
   // garantindo que o measureInWindow aconteça após o layout estar estável na tela
   React.useEffect(() => {
+    const timers: any[] = [];
     if (fase === 'MOLHAR_ALGODAO') {
       // Tenta várias vezes com delays crescentes para garantir que o layout esteja pronto
       [300, 600, 1000].forEach((delay) => {
-        setTimeout(() => {
+        const timer = setTimeout(() => {
           algodao2ZoneRef.current?.measureInWindow((x, y, w, h) => {
             if (w > 0 && h > 0) {
               setAlgodao2Zone({ x, y, width: w, height: h });
             }
           });
         }, delay);
+        timers.push(timer);
       });
     }
+
+    return () => {
+      timers.forEach((timer) => clearTimeout(timer));
+    };
   }, [fase]);
 
   const handleTap = (itemName: string) => {
@@ -920,7 +926,7 @@ export default function VigiarTaxasScreen() {
     };
 
     if (palpite === classificacaoCorreta) {
-      addPoints('modulo6_vigiar_taxas' as any, 10);
+      addPoints('modulo6_vigiar_taxas', 10);
       setErrosConsecutivos(0);
       setShowVictory(true);
     } else {
