@@ -2,9 +2,9 @@ import { Chewy_400Regular } from '@expo-google-fonts/chewy';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFonts } from 'expo-font';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Image, Modal, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, SafeAreaView, StyleSheet, TouchableOpacity, View } from 'react-native';
 
-import { CARTOES_COLORS, CARTOES_THEORY, CardItem, TABULEIRO_CARTOES } from '@/constants/cartoes';
+import { CARTOES_COLORS, CardItem, TABULEIRO_CARTOES } from '@/constants/cartoes';
 
 export default function CardAssociationGrid({ onGameComplete }: { onGameComplete?: () => void }) {
   const [fontsLoaded] = useFonts({ Chewy_400Regular });
@@ -12,7 +12,6 @@ export default function CardAssociationGrid({ onGameComplete }: { onGameComplete
   const [firstSelected, setFirstSelected] = useState<CardItem | null>(null);
   const [matchedPairs, setMatchedPairs] = useState<Set<string>>(new Set());
   const [wrongIds, setWrongIds] = useState<Set<string>>(new Set());
-  const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false);
 
   const timerRef = useRef<any>(null);
 
@@ -36,9 +35,13 @@ export default function CardAssociationGrid({ onGameComplete }: { onGameComplete
     };
   }, []);
 
+  // --- LÓGICA DE VITÓRIA ATUALIZADA ---
   useEffect(() => {
     if (matchedPairs.size === 4) {
-      setShowSuccessModal(true);
+      // Adiciona um pequeno atraso para o usuário ver a última carta virar
+      setTimeout(() => {
+        onGameCompleteRef.current?.();
+      }, 500);
     }
   }, [matchedPairs]);
 
@@ -70,11 +73,6 @@ export default function CardAssociationGrid({ onGameComplete }: { onGameComplete
         }, 1200);
       }
     }
-  };
-
-  const handleFinishGame = () => {
-    setShowSuccessModal(false);
-    onGameCompleteRef.current?.();
   };
 
   return (
@@ -138,19 +136,6 @@ export default function CardAssociationGrid({ onGameComplete }: { onGameComplete
           })}
         </View>
       </View>
-
-      <Modal visible={showSuccessModal} transparent animationType="fade">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalCard}>
-            <Text style={styles.modalEmoji}>🏆</Text>
-            <Text style={styles.modalTitle}>{CARTOES_THEORY.successTitle}</Text>
-            <Text style={styles.modalMessage}>{CARTOES_THEORY.successMessage}</Text>
-            <TouchableOpacity style={styles.modalBtn} onPress={handleFinishGame}>
-              <Text style={styles.modalBtnText}>Concluir</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
     </SafeAreaView>
   );
 }
@@ -220,62 +205,5 @@ const styles = StyleSheet.create({
   cardError: {
     backgroundColor: CARTOES_COLORS.errorBg,
     borderColor: CARTOES_COLORS.errorBorder,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: CARTOES_COLORS.overlay,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 24,
-  },
-  modalCard: {
-    width: '100%',
-    maxWidth: 320,
-    paddingVertical: 24,
-    paddingHorizontal: 16,
-    borderRadius: 24,
-    alignItems: 'center',
-    borderWidth: 3,
-    borderColor: CARTOES_COLORS.brandDark,
-    backgroundColor: CARTOES_COLORS.white,
-    alignSelf: 'center',
-    elevation: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-  },
-  modalEmoji: {
-    fontSize: 54,
-    marginBottom: 12,
-  },
-  modalTitle: {
-    fontFamily: 'Chewy_400Regular',
-    fontSize: 30,
-    color: CARTOES_COLORS.brandDark,
-    marginBottom: 8,
-    textAlign: 'center',
-    paddingHorizontal: 12,
-  },
-  modalMessage: {
-    fontSize: 16,
-    color: CARTOES_COLORS.textMuted,
-    textAlign: 'center',
-    marginBottom: 24,
-    fontWeight: '500',
-    lineHeight: 22,
-    paddingHorizontal: 12,
-  },
-  modalBtn: {
-    backgroundColor: CARTOES_COLORS.brandDark,
-    paddingVertical: 14,
-    borderRadius: 12,
-    width: '90%',
-    alignItems: 'center',
-  },
-  modalBtnText: {
-    color: CARTOES_COLORS.white,
-    fontSize: 18,
-    fontFamily: 'Chewy_400Regular',
   },
 });

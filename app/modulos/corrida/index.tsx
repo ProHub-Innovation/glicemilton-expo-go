@@ -16,6 +16,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import RunnerGame from '@/components/runner/RunnerGame';
+import VictoryModal from '@/components/VictoryModal';
 import { RUNNER_ASSETS, RUNNER_CONFIG } from '@/constants/runner';
 
 type ScreenState =
@@ -385,8 +386,8 @@ export default function CorridaScreen() {
             onGameOver={handleGameOver}
           />
 
-          {/* Modal de Vitória / Derrota */}
-          <Modal visible={gameStatus !== 'PLAYING'} transparent animationType="slide">
+          {/* Modal de Derrota */}
+          <Modal visible={gameStatus === 'LOST'} transparent animationType="slide">
             <View style={styles.modalOverlay}>
               <View style={styles.modalCard}>
                 <View style={[styles.introHomeBtn, { position: 'absolute', top: -10, left: -5 }]}>
@@ -394,14 +395,10 @@ export default function CorridaScreen() {
                     <Ionicons name="home" size={24} color="#FFF" />
                   </TouchableOpacity>
                 </View>
-                <Text style={styles.modalEmoji}>{gameStatus === 'WON' ? '🏆' : '💥'}</Text>
-                <Text style={styles.modalTitle}>
-                  {gameStatus === 'WON' ? 'Corrida Concluída!' : 'Fim de Jogo!'}
-                </Text>
+                <Text style={styles.modalEmoji}>💥</Text>
+                <Text style={styles.modalTitle}>Fim de Jogo!</Text>
                 <Text style={styles.modalMessage}>
-                  {gameStatus === 'WON'
-                    ? `Incrível! Você se esquivou dos hábitos ruins e acumulou ${score} pontos saudáveis!`
-                    : 'Sua energia acabou! Cuidado com o excesso de doces e o sedentarismo no cotidiano.'}
+                  Sua energia acabou! Cuidado com o excesso de doces e o sedentarismo no cotidiano.
                 </Text>
                 <View style={styles.modalActions}>
                   <TouchableOpacity style={styles.modalBtnPrimary} onPress={resetGame}>
@@ -417,6 +414,9 @@ export default function CorridaScreen() {
               </View>
             </View>
           </Modal>
+
+          {/* Modal de Vitória — padrão do projeto */}
+          <VictoryModal visible={gameStatus === 'WON'} pointsEarned={score} moduleName="Corrida" />
         </SafeAreaView>
       </ImageBackground>
     );
