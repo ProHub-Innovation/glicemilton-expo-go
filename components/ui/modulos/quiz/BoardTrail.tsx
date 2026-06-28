@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View, DimensionValue, Image } from 'react-native';
+import { DimensionValue, Image, StyleSheet, Text, View } from 'react-native';
 
 interface BoardTrailProps {
   currentPosition: number;
@@ -73,7 +73,7 @@ export function BoardTrail({ currentPosition }: BoardTrailProps) {
             {index === currentPosition && (
               <View style={styles.mascotContainer}>
                 <Image
-                  source={require('@/assets/images/Glicemilton_feliz.png')}
+                  source={require('@/assets/images/glicemilton_feliz.png')}
                   style={styles.mascotToken}
                   resizeMode="contain"
                 />

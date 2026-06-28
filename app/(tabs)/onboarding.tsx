@@ -18,7 +18,15 @@ export default function DashboardScreen() {
   const { state } = useGame();
 
   const navigateToGame = (gameName: string) => {
-    Alert.alert('Em breve', `O módulo ${gameName} ainda está em desenvolvimento!`);
+    if (gameName === 'Vigiar Taxas' || gameName === 'Medir Glicemia') {
+      router.push('/modulos/vigiarTaxas');
+    } else if (gameName === 'Adaptação Saudável') {
+      router.push('/modulos/labirinto');
+    } else if (gameName === 'Atividade Física') {
+      router.push('/modulos/corrida'); // ← adicione isso
+    } else {
+      Alert.alert('Em breve', `O módulo ${gameName} ainda está em desenvolvimento!`);
+    }
   };
 
   return (
@@ -55,7 +63,7 @@ export default function DashboardScreen() {
         <View style={styles.bottomSection}>
           <AnimatedFloat>
             <Image
-              source={require('../../assets/images/Glicemilton_feliz.png')}
+              source={require('../../assets/images/glicemilton_feliz.png')}
               style={styles.characterImage}
               resizeMode="contain"
             />
@@ -75,7 +83,7 @@ export default function DashboardScreen() {
 
               <TouchableOpacity
                 style={[styles.moduleButton, { width: '22%' }]}
-                onPress={() => router.navigate('/modulos/labirinto')}
+                onPress={() => navigateToGame('Adaptação Saudável')}
               >
                 <Image
                   source={require('../../assets/images/icone_adaptacao_saudavel.png')}
@@ -117,7 +125,7 @@ export default function DashboardScreen() {
 
               <TouchableOpacity
                 style={[styles.moduleButton, { width: '24%' }]}
-                onPress={() => router.navigate('/modulos/vigiarTaxas')}
+                onPress={() => navigateToGame('Medir Glicemia')}
               >
                 <Image
                   source={require('../../assets/images/icone_vigiar_taxas.png')}
@@ -127,7 +135,7 @@ export default function DashboardScreen() {
 
               <TouchableOpacity
                 style={[styles.moduleButton, { width: '22%' }]}
-                onPress={() => router.navigate('/modulos/corrida')}
+                onPress={() => navigateToGame('Atividade Física')}
               >
                 <Image
                   source={require('../../assets/images/icone_atividade_fisica.png')}

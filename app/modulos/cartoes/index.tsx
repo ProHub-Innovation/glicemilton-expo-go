@@ -7,14 +7,28 @@ import React, { useCallback, useState } from 'react';
 import { Image, ImageBackground, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+// IMPORTAÇÃO DO ESTADO GLOBAL E DO NOVO MODAL
+import VictoryModal from '../../../components/VictoryModal';
+import { useGame } from '../../../context/GameContext';
+
 export default function CartoesScreen() {
   const [fontsLoaded] = useFonts({ Chewy_400Regular });
   const [showIntro, setShowIntro] = useState(true);
   const insets = useSafeAreaInsets();
 
+  // 1. Hook de pontos
+  const { addPoints } = useGame();
+
+  // 2. Controle de exibição do modal
+  const [showVictory, setShowVictory] = useState(false);
+
+  // 3. Atualização da lógica de vitória
   const handleGameComplete = useCallback(() => {
-    router.replace('/(tabs)/onboarding');
-  }, []);
+    // Adiciona os pontos
+    addPoints('modulo_cartoes' as any, 10);
+    // Exibe o modal festivo unificado
+    setShowVictory(true);
+  }, [addPoints]);
 
   if (!fontsLoaded) return null;
 
@@ -65,7 +79,7 @@ export default function CartoesScreen() {
 
   return (
     <ImageBackground
-      source={require('@/assets/images/background.jpg')}
+      source={require('../../../assets/images/cartas/fundo_zoom.jpg')}
       style={styles.container}
       resizeMode="cover"
     >
@@ -80,6 +94,9 @@ export default function CartoesScreen() {
       </TouchableOpacity>
 
       <CardAssociationGrid onGameComplete={handleGameComplete} />
+
+      {/* 4. MODAL DE VITÓRIA GLOBAL NO FINAL DA TELA */}
+      <VictoryModal visible={showVictory} pointsEarned={10} moduleName="Resolver Problemas" />
     </ImageBackground>
   );
 }

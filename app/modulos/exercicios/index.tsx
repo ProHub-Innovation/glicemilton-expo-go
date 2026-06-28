@@ -20,6 +20,7 @@ import {
 import { BoardTrail } from '@/components/ui/modulos/quiz/BoardTrail';
 import { DiceButton } from '@/components/ui/modulos/quiz/DiceButton';
 import { QuizModal } from '@/components/ui/modulos/quiz/QuizModal';
+import VictoryModal from '@/components/VictoryModal';
 import { QUIZ_QUESTIONS, TOTAL_BOARD_SQUARES } from '../../../constants/quiz';
 import { useGame } from '../../../context/GameContext';
 
@@ -247,20 +248,7 @@ export default function QuizScreen() {
         style={styles.container}
         resizeMode="cover"
       >
-        {/* NOVA CAIXA TRANSLÚCIDA AQUI */}
-        <View style={styles.finishedCard}>
-          <Text style={styles.finishedEmoji}>🏆</Text>
-          <Text style={styles.finishedTitle}>Você chegou ao fim!</Text>
-          <Text style={styles.finishedSub}>Parabéns!!!</Text>
-
-          <TouchableOpacity style={styles.btn} onPress={() => dispatch({ type: 'RESET' })}>
-            <Text style={styles.btnText}>Jogar novamente</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.btnOutline} onPress={() => router.back()}>
-            <Text style={styles.btnOutlineText}>Voltar ao início</Text>
-          </TouchableOpacity>
-        </View>
+        <VictoryModal visible={true} pointsEarned={sessionScore} moduleName="Reduzir os Riscos" />
       </ImageBackground>
     );
   }

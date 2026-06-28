@@ -1,3 +1,4 @@
+import VictoryModal from '@/components/VictoryModal';
 import { useGame } from '@/context/GameContext';
 import { Chewy_400Regular } from '@expo-google-fonts/chewy';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -153,13 +154,22 @@ export default function LabirintoScreen() {
     const nextCell = mazeMap[nextRow][nextCol];
 
     if (nextCell.includes('SUGAR')) {
+      const isExit = nextCell.includes('EXIT');
+
       setScore((prev) => prev + 10);
+
       setMazeMap((prevMap) => {
         const newMap = prevMap.map((row) => [...row]);
-        // Remove apenas a palavra SUGAR, mantendo as paredes intactas!
         newMap[nextRow][nextCol] = nextCell.replace('_SUGAR', '');
         return newMap;
       });
+
+      if (isExit) {
+        addPoints('labirinto', score + 10);
+        setHasWon(true);
+        setPhase('finished');
+        return;
+      }
     }
 
     if (nextCell.includes('EXIT')) {
@@ -226,29 +236,16 @@ export default function LabirintoScreen() {
     );
   }
 
-  // FASE 2: TELA FINAL DE PARABÉNS (FINISHED)
+  // FASE 2: TELA FINAL DE PARABÉNS — usa o VictoryModal padrão do projeto
+  // O modal é exibido sobre o fundo do jogo; score já contém os pontos finais corretos
   if (phase === 'finished') {
     return (
       <ImageBackground
         source={require('@/assets/images/background.jpg')}
-        style={styles.finishedContainer}
+        style={styles.background}
         resizeMode="cover"
       >
-        <Animated.View entering={FadeIn} style={styles.finishedCard}>
-          {/* ÍCONE DO TROFÉU IGUAL AOS OUTROS MÓDULOS */}
-          <Text style={{ fontSize: 50 }}>🏆</Text>
-
-          <Text style={styles.finishedTitle}>Você chegou ao fim!</Text>
-          <Text style={styles.finishedSub}>Açúcares Coletados: {score} pts</Text>
-
-          <TouchableOpacity style={styles.btnFinished} onPress={reiniciarJogo}>
-            <Text style={styles.btnFinishedText}>Jogar novamente</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.btnFinishedOutline} onPress={() => router.back()}>
-            <Text style={styles.btnFinishedOutlineText}>Voltar ao início</Text>
-          </TouchableOpacity>
-        </Animated.View>
+        <VictoryModal visible={true} pointsEarned={score} moduleName="Labirinto" />
       </ImageBackground>
     );
   }
@@ -342,7 +339,7 @@ export default function LabirintoScreen() {
                       style={{ justifyContent: 'center', alignItems: 'center' }}
                     >
                       <Image
-                        source={require('@/assets/images/Glicemilton_feliz.png')}
+                        source={require('@/assets/images/glicemilton_feliz.png')}
                         style={{
                           width: CELL_SIZE * 1.25,
                           height: CELL_SIZE * 1.25,
