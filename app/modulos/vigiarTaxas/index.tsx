@@ -15,7 +15,6 @@ import {
 } from 'react-native';
 
 // IMPORTAÇÃO DO ESTADO GLOBAL
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useGame } from '../../../context/GameContext';
 
 const { width, height } = Dimensions.get('window');
@@ -548,7 +547,7 @@ function AfericaoGame({ onFinish }: { onFinish: () => void }) {
 export default function VigiarTaxasScreen() {
   const router = useRouter();
   const { addPoints } = useGame();
-  const insets = useSafeAreaInsets();
+  //const insets = useSafeAreaInsets();
 
   const [step, setStep] = useState('intro');
   const [contextoMedicacao, setContextoMedicacao] = useState<'jejum' | 'alimentado' | null>(null);
