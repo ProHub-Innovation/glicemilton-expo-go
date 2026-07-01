@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Animated,
   Dimensions,
@@ -14,7 +14,8 @@ import {
   View,
 } from 'react-native';
 
-// IMPORTAÇÃO DO ESTADO GLOBAL (Ajuste o caminho se for diferente no seu projeto)
+// IMPORTAÇÃO DO ESTADO GLOBAL
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useGame } from '../../../context/GameContext';
 
 const { width, height } = Dimensions.get('window');
@@ -179,7 +180,6 @@ function MiniatureSetup() {
   );
 }
 
-// --- ENUM DA MÁQUINA DE ESTADOS DO MINIGAME ---
 type FasePasso =
   | 'SELECIONAR_DEDO'
   | 'ASSEPSIA'
@@ -328,7 +328,6 @@ function AfericaoGame({ onFinish }: { onFinish: () => void }) {
     if (lancetaOk && algodaoOk) {
       setInputBloqueado(true);
       setTimeout(() => {
-        // Exibe o nosso modal visual customizado ao invés do Alert nativo
         setShowSuccessModal(true);
       }, 500);
     }
@@ -519,7 +518,6 @@ function AfericaoGame({ onFinish }: { onFinish: () => void }) {
         />
       </View>
 
-      {/* --- NOVO MODAL DE SUCESSO DO MINIGAME COM A MESMA IDENTIDADE VISUAL --- */}
       {showSuccessModal && (
         <View style={styles.modalOverlay}>
           <View
@@ -549,18 +547,19 @@ function AfericaoGame({ onFinish }: { onFinish: () => void }) {
 // --- TELA PRINCIPAL QUE GERE O FLUXO ---
 export default function VigiarTaxasScreen() {
   const router = useRouter();
-
-  // Utilização do contexto global de jogo para atribuir pontos
   const { addPoints } = useGame();
+  const insets = useSafeAreaInsets();
 
   const [step, setStep] = useState('intro');
   const [contextoMedicacao, setContextoMedicacao] = useState<'jejum' | 'alimentado' | null>(null);
   const [glicemiaGerada, setGlicemiaGerada] = useState<number>(0);
-
-  // O gameKey permite forçar o React a destruir e recriar o minigame caso o usuário erre
   const [gameKey, setGameKey] = useState(0);
 
-  // Estados para o feedback visual da nova tela de alerta
+  // ✅ Estados e referências criados para gerenciar o efeito bolha e fade-in
+  const [showIntroBtn, setShowIntroBtn] = useState(false);
+  const btnOpacity = useRef(new Animated.Value(0)).current;
+  const homePulseAnim = useRef(new Animated.Value(1)).current;
+
   const [selectedGuess, setSelectedGuess] = useState<string | null>(null);
   const [correctAnswer, setCorrectAnswer] = useState<string | null>(null);
   const [alertConfig, setAlertConfig] = useState<{
@@ -570,7 +569,37 @@ export default function VigiarTaxasScreen() {
     message: string;
   } | null>(null);
 
-  // Inicia a fase de interpretação ao gerar um valor fictício e limpar estados anteriores
+  // ✅ Efeito 1: Delay de 1 segundo para transição do botão de avançar (Fase Intro)
+  useEffect(() => {
+    if (step === 'intro') {
+      const timer = setTimeout(() => {
+        setShowIntroBtn(true);
+        Animated.timing(btnOpacity, {
+          toValue: 1,
+          duration: 800,
+          useNativeDriver: true,
+        }).start();
+      }, 1000);
+
+      return () => clearTimeout(timer);
+    } else {
+      setShowIntroBtn(false);
+      btnOpacity.setValue(0);
+    }
+  }, [step, btnOpacity]);
+
+  // ✅ Efeito 2: Loop contínuo de pulsação (Efeito Bolha) para o botão Home
+  useEffect(() => {
+    const animation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(homePulseAnim, { toValue: 1.1, duration: 800, useNativeDriver: true }),
+        Animated.timing(homePulseAnim, { toValue: 1.0, duration: 800, useNativeDriver: true }),
+      ])
+    );
+    animation.start();
+    return () => animation.stop();
+  }, [homePulseAnim]);
+
   const iniciarInterpretacao = (estado: 'jejum' | 'alimentado') => {
     setContextoMedicacao(estado);
     setGlicemiaGerada(Math.floor(Math.random() * (250 - 50 + 1)) + 50);
@@ -580,9 +609,8 @@ export default function VigiarTaxasScreen() {
     setStep('result_interpretation');
   };
 
-  // Função para validar o palpite do usuário com as regras clínicas e ativar interface
   const verificarInterpretacao = (palpite: string) => {
-    if (selectedGuess) return; // Previne múltiplos cliques
+    if (selectedGuess) return;
 
     let classificacaoCorreta = '';
 
@@ -598,11 +626,9 @@ export default function VigiarTaxasScreen() {
       else classificacaoCorreta = 'hiperglicemia';
     }
 
-    // Grava o que o usuário escolheu e qual a certa
     setSelectedGuess(palpite);
     setCorrectAnswer(classificacaoCorreta);
 
-    // Mapeamento para exibir o nome bonito no alerta quando errar
     const nomesDasRespostas: Record<string, string> = {
       hipo: 'Hipoglicemia',
       meta: 'Na Meta',
@@ -623,21 +649,17 @@ export default function VigiarTaxasScreen() {
         visible: true,
         type: 'error',
         title: 'Atenção!',
-        // Exibe a resposta que era a correta e informa o reinício
         message: `Incorreto. A resposta certa era "${nomesDasRespostas[classificacaoCorreta]}".\nVamos gerar um novo valor para você tentar novamente!`,
       });
     }
   };
 
-  // Funções de estilo dinâmico para pintar os botões
   const getButtonStyle = (guessType: string) => {
-    if (!selectedGuess) {
-      return styles.guessButton; // Estilo inicial (Castanho neutro)
-    }
+    if (!selectedGuess) return styles.guessButton;
     if (guessType === correctAnswer) return [styles.guessButton, { backgroundColor: '#4CAF50' }];
     if (guessType === selectedGuess && guessType !== correctAnswer)
       return [styles.guessButton, { backgroundColor: '#E53935' }];
-    return [styles.guessButton, { backgroundColor: '#E0E0E0', elevation: 0 }]; // Outros botões ficam cinzentos
+    return [styles.guessButton, { backgroundColor: '#E0E0E0', elevation: 0 }];
   };
 
   const getButtonTextStyle = (guessType: string) => {
@@ -653,30 +675,43 @@ export default function VigiarTaxasScreen() {
           <ImageBackground
             source={require('../../../assets/images/background.jpg')}
             style={styles.background}
+            resizeMode="cover"
           >
-            <SafeAreaView style={styles.safeArea}>
-              <View style={styles.header}>
-                <TouchableOpacity style={styles.homeButton} onPress={() => router.back()}>
-                  <Ionicons name="home" size={24} color="white" />
-                </TouchableOpacity>
+            <View style={styles.introContainerClean}>
+              {/* O cardAnchor sustenta o encaixe tridimensional relativo do botão Home */}
+              <View style={styles.cardAnchor}>
+                {/* ✅ Botão Home readequado com pulsação infinita em escala */}
+                <Animated.View
+                  style={[styles.introHomeBtn, { transform: [{ scale: homePulseAnim }] }]}
+                >
+                  <TouchableOpacity onPress={() => router.back()}>
+                    <Ionicons name="home" size={24} color="white" />
+                  </TouchableOpacity>
+                </Animated.View>
+
+                <View style={styles.introCard}>
+                  <Text style={styles.introTitle}>Vigiar as taxas</Text>
+                  <Image
+                    source={require('../../../assets/images/icone_vigiar_taxas.png')}
+                    style={styles.introImage}
+                    resizeMode="contain"
+                  />
+                  <Text style={styles.introText}>
+                    É necessário verificar se as metas estão sendo atingidas, o que é crucial para
+                    prevenir complicações agudas e crônicas.
+                  </Text>
+
+                  {/* ✅ Botão de avançar entra com delay de 1 segundo e efeito fade-in */}
+                  {showIntroBtn && (
+                    <Animated.View style={{ opacity: btnOpacity, marginTop: 24 }}>
+                      <TouchableOpacity style={styles.navButton} onPress={() => setStep('story')}>
+                        <Ionicons name="chevron-forward" size={32} color="white" />
+                      </TouchableOpacity>
+                    </Animated.View>
+                  )}
+                </View>
               </View>
-              <View style={styles.introCard}>
-                <Text style={styles.introTitle}>Vigiar as taxas</Text>
-                <Image
-                  source={require('../../../assets/images/icone_vigiar_taxas.png')}
-                  style={styles.introImage}
-                  resizeMode="contain"
-                />
-                <Text style={styles.introText}>
-                  É necessário verificar se as metas estão sendo atingidas, o que é crucial para
-                  prevenir complicações agudas e crônicas.
-                </Text>
-                <View style={{ flex: 1 }} />
-                <TouchableOpacity style={styles.navButton} onPress={() => setStep('story')}>
-                  <Ionicons name="chevron-forward" size={32} color="white" />
-                </TouchableOpacity>
-              </View>
-            </SafeAreaView>
+            </View>
           </ImageBackground>
         );
 
@@ -688,9 +723,13 @@ export default function VigiarTaxasScreen() {
           >
             <SafeAreaView style={styles.safeArea}>
               <View style={styles.header}>
-                <TouchableOpacity style={styles.homeButton} onPress={() => router.back()}>
-                  <Ionicons name="home" size={24} color="white" />
-                </TouchableOpacity>
+                <Animated.View
+                  style={[styles.gameHomeBtn, { transform: [{ scale: homePulseAnim }] }]}
+                >
+                  <TouchableOpacity onPress={() => router.back()}>
+                    <Ionicons name="home" size={24} color="white" />
+                  </TouchableOpacity>
+                </Animated.View>
               </View>
               <View style={styles.characterStory} pointerEvents="none">
                 <Image
@@ -726,9 +765,13 @@ export default function VigiarTaxasScreen() {
           >
             <SafeAreaView style={styles.safeArea}>
               <View style={styles.header}>
-                <TouchableOpacity style={styles.homeButton} onPress={() => router.back()}>
-                  <Ionicons name="home" size={24} color="white" />
-                </TouchableOpacity>
+                <Animated.View
+                  style={[styles.gameHomeBtn, { transform: [{ scale: homePulseAnim }] }]}
+                >
+                  <TouchableOpacity onPress={() => router.back()}>
+                    <Ionicons name="home" size={24} color="white" />
+                  </TouchableOpacity>
+                </Animated.View>
               </View>
               <View style={styles.characterBottomCenter} pointerEvents="none">
                 <Image
@@ -761,9 +804,13 @@ export default function VigiarTaxasScreen() {
           >
             <SafeAreaView style={styles.safeArea}>
               <View style={styles.header}>
-                <TouchableOpacity style={styles.homeButton} onPress={() => router.back()}>
-                  <Ionicons name="home" size={24} color="white" />
-                </TouchableOpacity>
+                <Animated.View
+                  style={[styles.gameHomeBtn, { transform: [{ scale: homePulseAnim }] }]}
+                >
+                  <TouchableOpacity onPress={() => router.back()}>
+                    <Ionicons name="home" size={24} color="white" />
+                  </TouchableOpacity>
+                </Animated.View>
               </View>
               <View style={styles.characterBottomRight} pointerEvents="none">
                 <Image
@@ -775,13 +822,13 @@ export default function VigiarTaxasScreen() {
               <View style={styles.instructionCard}>
                 <Text style={styles.instructionTitle}>Instruções:</Text>
                 <View style={styles.listItem}>
-                  <View style={styles.listNumber}>
+                  <View style={styles.stylesListNumber}>
                     <Text style={styles.listNumberText}>1</Text>
                   </View>
                   <Text style={styles.listText}>Clique no dedo desejado pelo Glicemilton.</Text>
                 </View>
                 <View style={styles.listItem}>
-                  <View style={styles.listNumber}>
+                  <View style={styles.stylesListNumber}>
                     <Text style={styles.listNumberText}>2</Text>
                   </View>
                   <Text style={styles.listText}>
@@ -789,7 +836,7 @@ export default function VigiarTaxasScreen() {
                   </Text>
                 </View>
                 <View style={styles.listItem}>
-                  <View style={styles.listNumber}>
+                  <View style={styles.stylesListNumber}>
                     <Text style={styles.listNumberText}>3</Text>
                   </View>
                   <Text style={styles.listText}>
@@ -816,9 +863,13 @@ export default function VigiarTaxasScreen() {
           >
             <SafeAreaView style={styles.safeArea}>
               <View style={styles.header}>
-                <TouchableOpacity style={styles.homeButton} onPress={() => router.back()}>
-                  <Ionicons name="home" size={24} color="white" />
-                </TouchableOpacity>
+                <Animated.View
+                  style={[styles.gameHomeBtn, { transform: [{ scale: homePulseAnim }] }]}
+                >
+                  <TouchableOpacity onPress={() => router.back()}>
+                    <Ionicons name="home" size={24} color="white" />
+                  </TouchableOpacity>
+                </Animated.View>
               </View>
               <View style={styles.characterBottomRight} pointerEvents="none">
                 <Image
@@ -830,7 +881,7 @@ export default function VigiarTaxasScreen() {
               <View style={styles.instructionCard}>
                 <Text style={styles.instructionTitle}>Instruções:</Text>
                 <View style={styles.listItem}>
-                  <View style={styles.listNumber}>
+                  <View style={styles.stylesListNumber}>
                     <Text style={styles.listNumberText}>4</Text>
                   </View>
                   <Text style={styles.listText}>
@@ -838,13 +889,13 @@ export default function VigiarTaxasScreen() {
                   </Text>
                 </View>
                 <View style={styles.listItem}>
-                  <View style={styles.listNumber}>
+                  <View style={styles.stylesListNumber}>
                     <Text style={styles.listNumberText}>5</Text>
                   </View>
                   <Text style={styles.listText}>Aperte novamente até sair a segunda gota</Text>
                 </View>
                 <View style={styles.listItem}>
-                  <View style={styles.listNumber}>
+                  <View style={styles.stylesListNumber}>
                     <Text style={styles.listNumberText}>6</Text>
                   </View>
                   <Text style={styles.listText}>
@@ -871,16 +922,13 @@ export default function VigiarTaxasScreen() {
           >
             <SafeAreaView style={styles.safeArea}>
               <View style={styles.header}>
-                <TouchableOpacity style={styles.homeButton} onPress={() => router.back()}>
-                  <Ionicons name="home" size={24} color="white" />
-                </TouchableOpacity>
-              </View>
-              <View style={styles.characterBottomRight} pointerEvents="none">
-                <Image
-                  source={require('../../../assets/images/glicemilton_explicando.png')}
-                  style={styles.characterLarge}
-                  resizeMode="contain"
-                />
+                <Animated.View
+                  style={[styles.gameHomeBtn, { transform: [{ scale: homePulseAnim }] }]}
+                >
+                  <TouchableOpacity onPress={() => router.back()}>
+                    <Ionicons name="home" size={24} color="white" />
+                  </TouchableOpacity>
+                </Animated.View>
               </View>
               <View style={styles.instructionCard}>
                 <Text style={styles.instructionTitle}>Lembrando!</Text>
@@ -908,9 +956,13 @@ export default function VigiarTaxasScreen() {
           >
             <SafeAreaView style={styles.safeArea}>
               <View style={styles.header}>
-                <TouchableOpacity style={styles.homeButton} onPress={() => router.back()}>
-                  <Ionicons name="home" size={24} color="white" />
-                </TouchableOpacity>
+                <Animated.View
+                  style={[styles.gameHomeBtn, { transform: [{ scale: homePulseAnim }] }]}
+                >
+                  <TouchableOpacity onPress={() => router.back()}>
+                    <Ionicons name="home" size={24} color="white" />
+                  </TouchableOpacity>
+                </Animated.View>
               </View>
               <View style={styles.referenceCard}>
                 <Text style={styles.instructionTitle}>Valores de referência:</Text>
@@ -969,9 +1021,13 @@ export default function VigiarTaxasScreen() {
           >
             <SafeAreaView style={styles.safeArea}>
               <View style={styles.header}>
-                <TouchableOpacity style={styles.homeButton} onPress={() => setStep('reference')}>
-                  <Ionicons name="arrow-back" size={24} color="white" />
-                </TouchableOpacity>
+                <Animated.View
+                  style={[styles.gameHomeBtn, { transform: [{ scale: homePulseAnim }] }]}
+                >
+                  <TouchableOpacity onPress={() => setStep('reference')}>
+                    <Ionicons name="arrow-back" size={24} color="white" />
+                  </TouchableOpacity>
+                </Animated.View>
               </View>
 
               <View style={styles.clickTitleContainer}>
@@ -999,14 +1055,14 @@ export default function VigiarTaxasScreen() {
           >
             <SafeAreaView style={styles.safeAreaCenter}>
               <View style={styles.header}>
-                <TouchableOpacity
-                  style={styles.homeButton}
-                  onPress={() => setStep('click_glicemilton')}
+                <Animated.View
+                  style={[styles.gameHomeBtn, { transform: [{ scale: homePulseAnim }] }]}
                 >
-                  <Ionicons name="arrow-back" size={24} color="white" />
-                </TouchableOpacity>
+                  <TouchableOpacity onPress={() => setStep('click_glicemilton')}>
+                    <Ionicons name="arrow-back" size={24} color="white" />
+                  </TouchableOpacity>
+                </Animated.View>
               </View>
-              {/* Utilizando o gameKey para permitir recriar o minigame caso o usuário erre a interpretação */}
               <AfericaoGame key={gameKey} onFinish={() => setStep('context_selection')} />
             </SafeAreaView>
           </ImageBackground>
@@ -1021,9 +1077,13 @@ export default function VigiarTaxasScreen() {
           >
             <SafeAreaView style={styles.safeAreaCenter}>
               <View style={styles.header}>
-                <TouchableOpacity style={styles.homeButton} onPress={() => setStep('game')}>
-                  <Ionicons name="arrow-back" size={24} color="white" />
-                </TouchableOpacity>
+                <Animated.View
+                  style={[styles.gameHomeBtn, { transform: [{ scale: homePulseAnim }] }]}
+                >
+                  <TouchableOpacity onPress={() => setStep('game')}>
+                    <Ionicons name="arrow-back" size={24} color="white" />
+                  </TouchableOpacity>
+                </Animated.View>
               </View>
               <View style={styles.introCard}>
                 <Text style={styles.introTitle}>Para interpretar o resultado...</Text>
@@ -1055,15 +1115,15 @@ export default function VigiarTaxasScreen() {
           >
             <SafeAreaView style={styles.safeAreaCenter}>
               <View style={styles.header}>
-                <TouchableOpacity
-                  style={styles.homeButton}
-                  onPress={() => setStep('context_selection')}
+                <Animated.View
+                  style={[styles.gameHomeBtn, { transform: [{ scale: homePulseAnim }] }]}
                 >
-                  <Ionicons name="arrow-back" size={24} color="white" />
-                </TouchableOpacity>
+                  <TouchableOpacity onPress={() => setStep('context_selection')}>
+                    <Ionicons name="arrow-back" size={24} color="white" />
+                  </TouchableOpacity>
+                </Animated.View>
               </View>
 
-              {/* 1. O BALÃO DE AVALIAÇÃO AGORA FICA AQUI NO TOPO */}
               <View
                 style={[styles.referenceCard, { marginTop: 10, paddingVertical: 15, width: '95%' }]}
               >
@@ -1074,7 +1134,6 @@ export default function VigiarTaxasScreen() {
                   Baseado na tabela, classifique o valor de {glicemiaGerada} mg/dL:
                 </Text>
 
-                {/* Botões com cores dinâmicas baseadas na seleção */}
                 <View style={styles.guessGrid}>
                   <TouchableOpacity
                     activeOpacity={0.8}
@@ -1106,7 +1165,6 @@ export default function VigiarTaxasScreen() {
                   </TouchableOpacity>
                 </View>
 
-                {/* ALERTA CUSTOMIZADO IGUAL AO DA IMAGEM */}
                 {alertConfig && alertConfig.visible && (
                   <View
                     style={[
@@ -1122,9 +1180,8 @@ export default function VigiarTaxasScreen() {
                       style={styles.customAlertButton}
                       onPress={() => {
                         if (alertConfig.type === 'success') {
-                          router.replace('/'); // Vai para a tela principal
+                          router.replace('/');
                         } else {
-                          // Limpa e volta para a seleção de contexto (Jejum/Alimentado)
                           setAlertConfig(null);
                           setSelectedGuess(null);
                           setCorrectAnswer(null);
@@ -1138,7 +1195,6 @@ export default function VigiarTaxasScreen() {
                 )}
               </View>
 
-              {/* 2. O GLICEMILTON FICA NO CHÃO */}
               <View style={[styles.resultImageContainer, { marginTop: 'auto', marginBottom: 0 }]}>
                 <Image
                   source={require('../../../assets/images/glicemilton_glico.png')}
@@ -1146,7 +1202,6 @@ export default function VigiarTaxasScreen() {
                   resizeMode="contain"
                 />
 
-                {/* O LCD acompanha a imagem automaticamente */}
                 <View style={styles.lcdOverlay}>
                   <Text style={styles.lcdText}>{glicemiaGerada}</Text>
                 </View>
@@ -1171,28 +1226,56 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     zIndex: 20,
   },
-  homeButton: {
+  introContainerClean: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+    width: '100%',
+  },
+  cardAnchor: {
+    width: '100%',
+    maxWidth: 340,
+    position: 'relative',
+  },
+  introHomeBtn: {
+    position: 'absolute',
+    top: -15,
+    left: -10,
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    backgroundColor: '#6D4C41',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 3,
+    borderColor: '#FFF',
+    zIndex: 99,
+    elevation: 6,
+  },
+  gameHomeBtn: {
     width: 45,
     height: 45,
     borderRadius: 25,
-    backgroundColor: '#6C5141',
+    backgroundColor: '#6D4C41',
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#FFF',
     elevation: 5,
   },
-
   introCard: {
-    flex: 1,
-    backgroundColor: 'white',
-    alignSelf: 'center',
-    width: '90%',
-    maxWidth: 380,
-    borderRadius: 20,
-    padding: 30,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    width: '100%',
+    borderRadius: 24,
+    paddingVertical: 40,
+    paddingHorizontal: 24,
     alignItems: 'center',
     elevation: 8,
-    marginTop: 15,
-    marginBottom: 35,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
   },
   instructionCard: {
     backgroundColor: 'white',
@@ -1215,22 +1298,27 @@ const styles = StyleSheet.create({
     elevation: 8,
     marginTop: 10,
   },
-
-  introTitle: { fontSize: 32, fontFamily: 'Chewy_400Regular', color: '#6C5141', marginBottom: 20 },
+  introTitle: {
+    fontSize: 34,
+    fontFamily: 'Chewy_400Regular',
+    color: '#6D4C41',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
   instructionTitle: {
     fontSize: 30,
     fontFamily: 'Chewy_400Regular',
-    color: '#6C5141',
+    color: '#6D4C41',
     marginBottom: 15,
     textAlign: 'center',
   },
   introText: {
-    fontSize: 28,
-    fontFamily: 'Chewy_400Regular',
-    color: '#6C5141',
+    fontSize: 18,
+    color: '#5D4037',
     textAlign: 'center',
-    lineHeight: 36,
-    paddingHorizontal: 10,
+    lineHeight: 26,
+    fontWeight: '600',
+    marginBottom: 24,
   },
   floatingText: {
     fontSize: 28,
@@ -1252,7 +1340,6 @@ const styles = StyleSheet.create({
     textShadowRadius: 3,
     marginBottom: 10,
   },
-
   introImage: { width: 170, height: 170, marginBottom: 20 },
   storyContent: {
     flex: 1,
@@ -1269,14 +1356,12 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginHorizontal: 20,
   },
-
   clickTitleContainer: {
     marginTop: 30,
     alignItems: 'center',
     width: '100%',
     paddingHorizontal: 20,
   },
-
   thumbsContainerRow: { flexDirection: 'row', gap: 30, marginTop: 20, justifyContent: 'center' },
   thumbGreen: {
     width: 90,
@@ -1300,13 +1385,12 @@ const styles = StyleSheet.create({
     borderColor: '#FFCDD2',
     elevation: 5,
   },
-
   listItem: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 15, paddingRight: 10 },
-  listNumber: {
+  stylesListNumber: {
     width: 30,
     height: 30,
     borderRadius: 15,
-    backgroundColor: '#6C5141',
+    backgroundColor: '#6D4C41',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 10,
@@ -1316,36 +1400,33 @@ const styles = StyleSheet.create({
   listText: {
     flex: 1,
     fontSize: 18,
-    color: '#6C5141',
+    color: '#6D4C41',
     fontFamily: 'Chewy_400Regular',
     lineHeight: 22,
   },
-
   tableSectionTitle: {
     fontSize: 24,
     fontFamily: 'Chewy_400Regular',
-    color: '#6C5141',
+    color: '#6D4C41',
     textAlign: 'center',
     textDecorationLine: 'underline',
     marginBottom: 10,
   },
   tableRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 },
-  tableLeft: { fontSize: 16, fontFamily: 'Chewy_400Regular', color: '#6C5141' },
-  tableRight: { fontSize: 16, fontFamily: 'Chewy_400Regular', color: '#6C5141' },
-
+  tableLeft: { fontSize: 16, fontFamily: 'Chewy_400Regular', color: '#6D4C41' },
+  tableRight: { fontSize: 16, fontFamily: 'Chewy_400Regular', color: '#6D4C41' },
   characterBottomCenter: { position: 'absolute', bottom: -10, alignSelf: 'center', zIndex: 1 },
   characterStory: { position: 'absolute', bottom: 30, alignSelf: 'center', zIndex: 1 },
   characterBottomRight: { position: 'absolute', bottom: -10, right: -25, zIndex: 1 },
   characterLarge: { width: 270, height: 340 },
-
   navButton: {
     width: 70,
     height: 70,
     borderRadius: 35,
-    backgroundColor: '#6C5141',
+    backgroundColor: '#6D4C41',
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 6,
+    elevation: 4,
   },
   navButtonLeftFloat: { position: 'absolute', bottom: 40, left: 30, zIndex: 20 },
   navButtonPlay: {
@@ -1360,9 +1441,7 @@ const styles = StyleSheet.create({
     borderColor: '#DCEDC8',
     zIndex: 20,
   },
-
   gameContainer: { flex: 1, width: '100%', justifyContent: 'flex-end', paddingBottom: 10 },
-
   instructionBadge: {
     position: 'absolute',
     top: 60,
@@ -1373,16 +1452,13 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     zIndex: 50,
   },
-
   floatingTitleText: {
     fontSize: 20,
     fontFamily: 'Chewy_400Regular',
     color: 'white',
     textAlign: 'center',
   },
-
   cenaContainer: { position: 'relative', alignSelf: 'center', overflow: 'visible' },
-
   rockImageBase: { position: 'absolute', bottom: '-90%', zIndex: 2 },
   sharpsContainerFix: { position: 'absolute', bottom: '200%', left: '-5%', zIndex: 3 },
   trashImageFix: { position: 'absolute', bottom: '270%', left: '-4%', zIndex: 3 },
@@ -1396,7 +1472,6 @@ const styles = StyleSheet.create({
     height: '14%',
     zIndex: 11,
   },
-
   dedoHitbox: {
     position: 'absolute',
     left: '21%',
@@ -1406,7 +1481,6 @@ const styles = StyleSheet.create({
     zIndex: 200,
     backgroundColor: 'transparent',
   },
-
   miniatureVisualWrapper: { position: 'absolute', bottom: 60, left: 20, width: 250, height: 200 },
   hitboxGlicemilton: {
     position: 'absolute',
@@ -1418,21 +1492,17 @@ const styles = StyleSheet.create({
   },
   miniatureContainer: { flex: 1 },
   miniItemAbsolute: { position: 'absolute', zIndex: 4 },
-
-  // --- ESTILOS DAS NOVAS TELAS: RESULTADO E INTERPRETAÇÃO ---
   actionButton: {
     width: '100%',
     paddingVertical: 15,
     borderRadius: 15,
-    backgroundColor: '#6C5141',
+    backgroundColor: '#6D4C41',
     alignItems: 'center',
     elevation: 4,
     marginTop: 20,
   },
   actionButtonText: { color: 'white', fontSize: 22, fontFamily: 'Chewy_400Regular' },
-
   resultImageContainer: { width: 280, height: 350, alignSelf: 'center', position: 'relative' },
-
   lcdOverlay: {
     position: 'absolute',
     top: '56%',
@@ -1445,7 +1515,6 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
   lcdText: { fontSize: 13, color: '#333', fontFamily: 'Chewy_400Regular' },
-
   guessGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -1454,7 +1523,7 @@ const styles = StyleSheet.create({
     marginTop: 15,
   },
   guessButton: {
-    backgroundColor: '#6C5141',
+    backgroundColor: '#6D4C41',
     paddingVertical: 12,
     paddingHorizontal: 15,
     borderRadius: 10,
@@ -1463,8 +1532,6 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   guessButtonText: { color: 'white', fontSize: 18, fontFamily: 'Chewy_400Regular' },
-
-  // --- ESTILOS DO MODAL OVERLAY PARA O MINIGAME ---
   modalOverlay: {
     position: 'absolute',
     top: 0,
@@ -1476,8 +1543,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     zIndex: 1000,
   },
-
-  // --- ESTILOS DO ALERTA CUSTOMIZADO (CAIXA DE FEEDBACK E MINIGAME) ---
   customAlertContainer: {
     marginTop: 20,
     padding: 15,
@@ -1509,7 +1574,7 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   customAlertButton: {
-    backgroundColor: '#6C5141',
+    backgroundColor: '#6D4C41',
     paddingVertical: 12,
     paddingHorizontal: 30,
     borderRadius: 10,

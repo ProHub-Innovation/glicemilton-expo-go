@@ -2,8 +2,9 @@ import { Chewy_400Regular } from '@expo-google-fonts/chewy';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFonts } from 'expo-font';
 import { router } from 'expo-router';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
+  Animated,
   Image,
   ImageBackground,
   Modal,
@@ -37,8 +38,12 @@ export default function CorridaScreen() {
   const [gameStatus, setGameStatus] = useState<'PLAYING' | 'LOST' | 'WON'>('PLAYING');
   const [endReason, setEndReason] = useState<'HEALTH' | 'TIME' | null>(null);
 
-  // A estratégia da key impede o estado antigo de vazar no re-render
   const [gameKey, setGameKey] = useState<number>(0);
+
+  // ✅ Referências e estados criados para gerenciar o efeito bolha e fade-in
+  const [showIntroBtn, setShowIntroBtn] = useState(false);
+  const btnOpacity = useRef(new Animated.Value(0)).current;
+  const homePulseAnim = useRef(new Animated.Value(1)).current;
 
   // Monitor Central do Tempo Globals do Jogo
   useEffect(() => {
@@ -58,6 +63,48 @@ export default function CorridaScreen() {
 
     return () => clearInterval(timer);
   }, [gameStatus, currentScreen]);
+
+  // ✅ Efeito para o delay de surgimento do botão avançar na tela conceitual
+  useEffect(() => {
+    if (currentScreen === 'CONCEPT') {
+      const timer = setTimeout(() => {
+        setShowIntroBtn(true);
+        Animated.timing(btnOpacity, {
+          toValue: 1,
+          duration: 800,
+          useNativeDriver: true,
+        }).start();
+      }, 1000);
+
+      return () => clearTimeout(timer);
+    } else {
+      setShowIntroBtn(false);
+      btnOpacity.setValue(0);
+    }
+  }, [currentScreen, btnOpacity]);
+
+  // ✅ Loop contínuo que dita a animação em formato de bolha para o botão Home
+  useEffect(() => {
+    // Força o reset do valor inicial antes de acionar o motor nativo
+    homePulseAnim.setValue(1.0);
+
+    const animation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(homePulseAnim, {
+          toValue: 1.1,
+          duration: 800,
+          useNativeDriver: true, // Garante o envio direto para a GPU do celular
+        }),
+        Animated.timing(homePulseAnim, {
+          toValue: 1.0,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    animation.start();
+    return () => animation.stop();
+  }, [currentScreen, gameStatus]);
 
   const handleHUDUpdate = useCallback((newScore: number, newHealth: number) => {
     setScore(newScore);
@@ -82,23 +129,21 @@ export default function CorridaScreen() {
   if (!fontsLoaded) return null;
 
   // --- 1. Tela Conceitual ---
-  // 1. Tela Conceitual: Praticar Exercícios
   if (currentScreen === 'CONCEPT') {
     return (
       <ImageBackground
         source={RUNNER_ASSETS.bgLandscape}
         style={styles.fullscreenBg}
-        imageStyle={{ transform: [{ scale: 1.08 }, { translateY: 15 }] }}
+        //   imageStyle={{ transform: [{ scale: 1.08 }, { translateY: 15 }] }}
         resizeMode="cover"
       >
-        {/* O cardAnchor centraliza o conteúdo e serve de base absoluta para o botão de Home */}
         <View style={styles.cardAnchor}>
-          {/* Botão de Home Flutuante na quina superior esquerda do Card */}
-          <View style={styles.introHomeBtn}>
+          {/* ✅ Envolvido em Animated.View com o pulso ativo */}
+          <Animated.View style={[styles.introHomeBtn, { transform: [{ scale: homePulseAnim }] }]}>
             <TouchableOpacity onPress={() => router.back()}>
               <Ionicons name="home" size={24} color="#FFF" />
             </TouchableOpacity>
-          </View>
+          </Animated.View>
 
           <View style={styles.transparentOverlayCard}>
             <Text style={styles.introTitle}>Praticar exercícios</Text>
@@ -114,18 +159,24 @@ export default function CorridaScreen() {
               coração, controlando o peso, fortalecendo o corpo e a mente.
             </Text>
 
-            <TouchableOpacity
-              style={styles.brownCircleBtn}
-              onPress={() => setCurrentScreen('ASK_INSTRUCTIONS')}
-              activeOpacity={0.8}
-            >
-              <Ionicons name="chevron-forward" size={36} color="#FFF" />
-            </TouchableOpacity>
+            {/* ✅ Botão surge suavemente após 1 segundo */}
+            {showIntroBtn && (
+              <Animated.View style={{ opacity: btnOpacity }}>
+                <TouchableOpacity
+                  style={styles.brownCircleBtn}
+                  onPress={() => setCurrentScreen('ASK_INSTRUCTIONS')}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons name="chevron-forward" size={36} color="#FFF" />
+                </TouchableOpacity>
+              </Animated.View>
+            )}
           </View>
         </View>
       </ImageBackground>
     );
   }
+
   // --- 2. Tela Decisória ---
   if (currentScreen === 'ASK_INSTRUCTIONS') {
     return (
@@ -138,10 +189,13 @@ export default function CorridaScreen() {
         <SafeAreaView style={styles.introContainer}>
           <Text style={styles.questionTitle}>Precisa de instruções?</Text>
 
-          <View style={[styles.introHomeBtn, { position: 'absolute', top: 45, left: 20 }]}>
-            <TouchableOpacity onPress={() => router.back()}>
-              <Ionicons name="home" size={24} color="#FFF" />
-            </TouchableOpacity>
+          {/* ✅ Posicionado e animado com o efeito bolha */}
+          <View style={{ position: 'absolute', top: insets.top + 15, left: 20, zIndex: 99 }}>
+            <Animated.View style={[styles.gameHomeBtn, { transform: [{ scale: homePulseAnim }] }]}>
+              <TouchableOpacity onPress={() => router.back()}>
+                <Ionicons name="home" size={24} color="#FFF" />
+              </TouchableOpacity>
+            </Animated.View>
           </View>
 
           <View style={styles.decisionRow}>
@@ -182,11 +236,15 @@ export default function CorridaScreen() {
         resizeMode="cover"
       >
         <SafeAreaView style={styles.instructionContainer}>
-          <View style={[styles.introHomeBtn, { position: 'absolute', top: 65, left: 15 }]}>
-            <TouchableOpacity onPress={() => router.back()}>
-              <Ionicons name="home" size={24} color="#FFF" />
-            </TouchableOpacity>
+          {/* ✅ Botão Home padronizado e pulsando */}
+          <View style={{ position: 'absolute', top: insets.top + 15, left: 20, zIndex: 99 }}>
+            <Animated.View style={[styles.gameHomeBtn, { transform: [{ scale: homePulseAnim }] }]}>
+              <TouchableOpacity onPress={() => router.back()}>
+                <Ionicons name="home" size={24} color="#FFF" />
+              </TouchableOpacity>
+            </Animated.View>
           </View>
+
           <View style={styles.instructionCard}>
             <Text style={styles.instructionHeader}>Instruções:</Text>
             <View style={styles.comparisonRow}>
@@ -239,11 +297,15 @@ export default function CorridaScreen() {
         resizeMode="cover"
       >
         <SafeAreaView style={styles.instructionContainer}>
-          <View style={[styles.introHomeBtn, { position: 'absolute', top: 65, left: 15 }]}>
-            <TouchableOpacity onPress={() => router.back()}>
-              <Ionicons name="home" size={24} color="#FFF" />
-            </TouchableOpacity>
+          {/* ✅ Botão Home padronizado e pulsando */}
+          <View style={{ position: 'absolute', top: insets.top + 15, left: 20, zIndex: 99 }}>
+            <Animated.View style={[styles.gameHomeBtn, { transform: [{ scale: homePulseAnim }] }]}>
+              <TouchableOpacity onPress={() => router.back()}>
+                <Ionicons name="home" size={24} color="#FFF" />
+              </TouchableOpacity>
+            </Animated.View>
           </View>
+
           <View style={styles.instructionCard}>
             <Text style={styles.instructionHeader}>Instruções:</Text>
             <View style={styles.comparisonRow}>
@@ -296,11 +358,15 @@ export default function CorridaScreen() {
         resizeMode="cover"
       >
         <SafeAreaView style={styles.instructionContainer}>
-          <View style={[styles.introHomeBtn, { position: 'absolute', top: 65, left: 15 }]}>
-            <TouchableOpacity onPress={() => router.back()}>
-              <Ionicons name="home" size={24} color="#FFF" />
-            </TouchableOpacity>
+          {/* ✅ Botão Home padronizado e pulsando */}
+          <View style={{ position: 'absolute', top: insets.top + 15, left: 20, zIndex: 99 }}>
+            <Animated.View style={[styles.gameHomeBtn, { transform: [{ scale: homePulseAnim }] }]}>
+              <TouchableOpacity onPress={() => router.back()}>
+                <Ionicons name="home" size={24} color="#FFF" />
+              </TouchableOpacity>
+            </Animated.View>
           </View>
+
           <View style={styles.instructionCard}>
             <Text style={styles.instructionHeader}>Instruções:</Text>
             <View style={styles.comparisonRow}>
@@ -356,13 +422,23 @@ export default function CorridaScreen() {
         imageStyle={{ transform: [{ scale: 1.08 }, { translateY: 15 }] }}
         resizeMode="cover"
       >
-        <View style={[styles.introHomeBtn, { position: 'absolute', top: 110, left: 15 }]}>
-          <TouchableOpacity onPress={() => router.back()}>
-            <Ionicons name="home" size={24} color="#FFF" />
-          </TouchableOpacity>
+        {/* ✅ Botão Home flutuando na tela de jogo com pulsação controlada */}
+        <View style={{ position: 'absolute', top: insets.top + 90, left: 20, zIndex: 99 }}>
+          <Animated.View style={[styles.gameHomeBtn, { transform: [{ scale: homePulseAnim }] }]}>
+            <TouchableOpacity onPress={() => router.back()}>
+              <Ionicons name="home" size={24} color="#FFF" />
+            </TouchableOpacity>
+          </Animated.View>
         </View>
-        <SafeAreaView style={{ flex: 1, backgroundColor: 'transparent', paddingTop: insets.top }}>
-          {/* HUD Integrado no topo de forma translúcida */}
+
+        <SafeAreaView
+          style={{
+            flex: 1,
+            backgroundColor: 'transparent',
+            paddingTop: insets.top,
+            alignItems: 'center',
+          }}
+        >
           <View style={styles.hudOverlay}>
             <View style={styles.hudRow}>
               <Text style={styles.scoreText}>Pts: {score}</Text>
@@ -389,11 +465,17 @@ export default function CorridaScreen() {
           <Modal visible={gameStatus !== 'PLAYING'} transparent animationType="slide">
             <View style={styles.modalOverlay}>
               <View style={styles.modalCard}>
-                <View style={[styles.introHomeBtn, { position: 'absolute', top: -10, left: -5 }]}>
-                  <TouchableOpacity onPress={() => router.back()}>
-                    <Ionicons name="home" size={24} color="#FFF" />
-                  </TouchableOpacity>
+                {/* ✅ Botão Home pulsando também no modal de fim de jogo */}
+                <View style={{ position: 'absolute', top: -15, left: -10, zIndex: 99 }}>
+                  <Animated.View
+                    style={[styles.introHomeBtn, { transform: [{ scale: homePulseAnim }] }]}
+                  >
+                    <TouchableOpacity onPress={() => router.back()}>
+                      <Ionicons name="home" size={24} color="#FFF" />
+                    </TouchableOpacity>
+                  </Animated.View>
                 </View>
+
                 <Text style={styles.modalEmoji}>{gameStatus === 'WON' ? '🏆' : '💥'}</Text>
                 <Text style={styles.modalTitle}>
                   {gameStatus === 'WON' ? 'Corrida Concluída!' : 'Fim de Jogo!'}
@@ -442,7 +524,7 @@ const styles = StyleSheet.create({
     width: 70,
     height: 70,
     borderRadius: 35,
-    backgroundColor: '#6C5141',
+    backgroundColor: '#6D4C41',
     justifyContent: 'center',
     alignItems: 'center',
     elevation: 5,
@@ -515,7 +597,7 @@ const styles = StyleSheet.create({
   instructionHeader: {
     fontSize: 30,
     fontFamily: 'Chewy_400Regular',
-    color: '#6C5141',
+    color: '#6D4C41',
     marginBottom: 15,
     textAlign: 'center',
   },
@@ -545,10 +627,11 @@ const styles = StyleSheet.create({
     height: 400,
   },
   hudOverlay: {
+    width: '90%',
+    maxWidth: 360,
     backgroundColor: 'rgba(0, 0, 0, 0.4)',
     padding: 12,
     borderRadius: 16,
-    marginHorizontal: 20,
     marginTop: 10,
     marginBottom: 10,
   },
@@ -605,8 +688,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#FFF',
     borderWidth: 4,
-    borderColor: '#6C5141',
+    borderColor: '#6D4C41',
     elevation: 10,
+    position: 'relative',
   },
   modalEmoji: {
     fontSize: 56,
@@ -615,7 +699,7 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontFamily: 'Chewy_400Regular',
     fontSize: 32,
-    color: '#6C5141',
+    color: '#6D4C41',
     marginBottom: 12,
     textAlign: 'center',
   },
@@ -632,7 +716,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   modalBtnPrimary: {
-    backgroundColor: '#6C5141',
+    backgroundColor: '#6D4C41',
     paddingVertical: 14,
     borderRadius: 12,
     alignItems: 'center',
@@ -648,10 +732,10 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#6C5141',
+    borderColor: '#6D4C41',
   },
   modalBtnSecondaryText: {
-    color: '#6C5141',
+    color: '#6D4C41',
     fontSize: 16,
     fontWeight: 'bold',
   },
@@ -661,7 +745,7 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   transparentOverlayCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.95)', // Fundo translúcido do padrão
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
     borderRadius: 24,
     paddingVertical: 40,
     paddingHorizontal: 24,
@@ -675,12 +759,24 @@ const styles = StyleSheet.create({
     width: 46,
     height: 46,
     borderRadius: 23,
-    backgroundColor: '#8B5A2B', // Marrom original do projeto
+    backgroundColor: '#6D4C41',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 3,
     borderColor: '#FFF',
     zIndex: 99,
+    elevation: 6,
+  },
+  gameHomeBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#6D4C41',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#FFF',
+    elevation: 4,
   },
   introTitle: {
     fontFamily: 'Chewy_400Regular',

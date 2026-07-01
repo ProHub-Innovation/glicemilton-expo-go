@@ -37,7 +37,7 @@ export default function CardAssociationGrid({ onGameComplete }: { onGameComplete
   }, []);
 
   useEffect(() => {
-    if (matchedPairs.size === 4) {
+    if (matchedPairs.size === 8) {
       setShowSuccessModal(true);
     }
   }, [matchedPairs]);
@@ -179,11 +179,11 @@ const styles = StyleSheet.create({
   cardBase: {
     width: '24%',
     aspectRatio: 0.42,
-    borderRadius: 18,
+    borderRadius: 2,
     borderWidth: 2,
     position: 'relative',
     overflow: 'hidden',
-    elevation: 3,
+    elevation: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -232,8 +232,8 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 320,
     paddingVertical: 24,
-    paddingHorizontal: 16,
-    borderRadius: 24,
+    paddingHorizontal: 20,
+    borderRadius: 10,
     alignItems: 'center',
     borderWidth: 3,
     borderColor: CARTOES_COLORS.brandDark,
