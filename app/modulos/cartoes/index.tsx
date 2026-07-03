@@ -133,7 +133,7 @@ export default function CartoesScreen() {
   // --- TELA DO JOGO ATIVA (GRID DE ASSOCIAÇÃO) ---
   return (
     <ImageBackground
-      source={require('../../../assets/images/cartas/fundo_zoom.jpg')}
+      source={require('../../../assets/images/fundo_zoom.jpg')}
       style={styles.container}
       resizeMode="cover"
     >
