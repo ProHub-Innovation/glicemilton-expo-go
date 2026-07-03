@@ -2,7 +2,15 @@
 // Tipos e interfaces do estado global de jogo.
 // Exportados separadamente para uso em constantes e componentes sem importar o contexto inteiro.
 
-export type ModuleId = 'prato' | 'exercicios' | 'glicemia' | 'labirinto' | 'medicamentos' | 'quiz';
+export type ModuleId =
+  | 'prato'
+  | 'exercicios'
+  | 'glicemia'
+  | 'labirinto'
+  | 'medicamentos'
+  | 'quiz'
+  | 'modulo6_vigiar_taxas'
+  | 'modulo_cartoes';
 
 export interface ModuleScore {
   moduleId: ModuleId;

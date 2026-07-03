@@ -15,19 +15,30 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+// IMPORTAÇÃO DO ESTADO GLOBAL E DO NOVO MODAL
+import VictoryModal from '../../../components/VictoryModal';
+import { useGame } from '../../../context/GameContext';
+
 export default function CartoesScreen() {
   const [fontsLoaded] = useFonts({ Chewy_400Regular });
   const [showIntro, setShowIntro] = useState(true);
   const insets = useSafeAreaInsets();
 
-  // ✅ Estados e referências criados para gerenciar as animações
+  // --- Estados da branch feature (Animações) ---
   const [showIntroBtn, setShowIntroBtn] = useState(false);
   const btnOpacity = useRef(new Animated.Value(0)).current;
   const homePulseAnim = useRef(new Animated.Value(1)).current;
 
+  // --- Estados da branch developer (Pontuação e Vitória) ---
+  const { addPoints } = useGame();
+  const [showVictory, setShowVictory] = useState(false);
+
   const handleGameComplete = useCallback(() => {
-    router.replace('/(tabs)/onboarding');
-  }, []);
+    // Adiciona os pontos
+    addPoints('modulo_cartoes' as any, 10);
+    // Exibe o modal festivo unificado
+    setShowVictory(true);
+  }, [addPoints]);
 
   useEffect(() => {
     if (showIntro) {
@@ -122,7 +133,7 @@ export default function CartoesScreen() {
   // --- TELA DO JOGO ATIVA (GRID DE ASSOCIAÇÃO) ---
   return (
     <ImageBackground
-      source={require('../../../assets/images/fundo_azul.jpg')}
+      source={require('../../../assets/images/cartas/fundo_zoom.jpg')}
       style={styles.container}
       resizeMode="cover"
     >
@@ -141,6 +152,9 @@ export default function CartoesScreen() {
       </View>
 
       <CardAssociationGrid onGameComplete={handleGameComplete} />
+
+      {/* 4. MODAL DE VITÓRIA GLOBAL NO FINAL DA TELA */}
+      <VictoryModal visible={showVictory} pointsEarned={10} moduleName="Resolver Problemas" />
     </ImageBackground>
   );
 }

@@ -14,12 +14,12 @@ import {
   View,
 } from 'react-native';
 
-// IMPORTAÇÃO DO ESTADO GLOBAL
+// IMPORTAÇÃO DO ESTADO GLOBAL E DO NOVO MODAL
+import VictoryModal from '../../../components/VictoryModal';
 import { useGame } from '../../../context/GameContext';
 
 const { width, height } = Dimensions.get('window');
 
-// Tolerância de toque vs arraste, em pixels. Abaixo disso o gesto é um "tap".
 const TAP_TOLERANCE = 10;
 
 type DropZone = { x: number; y: number; width: number; height: number };
@@ -165,11 +165,19 @@ function MiniatureSetup() {
         style={[styles.miniItemAbsolute, { left: 215, bottom: 64, width: 20, height: 20 }]}
         resizeMode="contain"
       />
+
+      {/* Dois algodões na miniatura */}
       <Image
         source={require('../../../assets/images/algodao_seco.png')}
-        style={[styles.miniItemAbsolute, { left: 200, bottom: 60, width: 15, height: 15 }]}
+        style={[styles.miniItemAbsolute, { left: 195, bottom: 58, width: 15, height: 15 }]}
         resizeMode="contain"
       />
+      <Image
+        source={require('../../../assets/images/algodao_seco.png')}
+        style={[styles.miniItemAbsolute, { left: 208, bottom: 58, width: 15, height: 15 }]}
+        resizeMode="contain"
+      />
+
       <Image
         source={require('../../../assets/images/glicosimetro_desligado.png')}
         style={[styles.miniItemAbsolute, { left: 210, bottom: 48, width: 20, height: 25 }]}
@@ -181,6 +189,7 @@ function MiniatureSetup() {
 
 type FasePasso =
   | 'SELECIONAR_DEDO'
+  | 'MOLHAR_ALGODAO'
   | 'ASSEPSIA'
   | 'ABRIR_LANCETA'
   | 'FURO'
@@ -191,13 +200,14 @@ type FasePasso =
 
 const INSTRUCOES: Record<FasePasso, string> = {
   SELECIONAR_DEDO: '1. Clique no dedo do Glicemilton.',
-  ASSEPSIA: '2. Arraste o álcool até o dedo para higienizar.',
-  ABRIR_LANCETA: '3. Clique na lanceta para abri-la.',
-  FURO: '4. Arraste a lanceta aberta até o dedo para furar.',
-  LIMPAR_PRIMEIRA_GOTA: '5. Arraste o algodão seco até o dedo para limpar a primeira gota.',
-  SEGUNDA_GOTA: '6. Clique novamente no dedo para a segunda gota.',
-  AFERICAO: '7. Arraste o glicosímetro até a gota de sangue.',
-  DESCARTE: '8. Descarte a lanceta na caixa de perfurocortantes e o algodão na lixeira!',
+  MOLHAR_ALGODAO: '2. Arraste o álcool até o algodão da direita para umedecê-lo.',
+  ASSEPSIA: '3. Arraste o algodão umedecido até o dedo para higienizar.',
+  ABRIR_LANCETA: '4. Clique na lanceta para abri-la.',
+  FURO: '5. Arraste a lanceta aberta até o dedo para furar.',
+  LIMPAR_PRIMEIRA_GOTA: '6. Arraste o algodão seco até o dedo para limpar a primeira gota.',
+  SEGUNDA_GOTA: '7. Clique novamente no dedo para a segunda gota.',
+  AFERICAO: '8. Arraste o glicosímetro até a gota de sangue.',
+  DESCARTE: '9. Descarte a lanceta na caixa de perfurocortantes e o algodão na lixeira infectante!',
 };
 
 // --- COMPONENTE PRINCIPAL DO JOGO DE AFERIÇÃO ---
@@ -208,20 +218,27 @@ function AfericaoGame({ onFinish }: { onFinish: () => void }) {
   const [isSpraying, setIsSpraying] = useState(false);
   const [lancetaAberta, setLancetaAberta] = useState(false);
   const [lancetaDescartada, setLancetaDescartada] = useState(false);
-  const [algodaoSujo, setAlgodaoSujo] = useState(false);
-  const [algodaoDescartado, setAlgodaoDescartado] = useState(false);
   const [glicosimetroLigado, setGlicosimetroLigado] = useState(false);
+
+  // Estados dos DOIS algodões
+  const [algodao2Molhado, setAlgodao2Molhado] = useState(false);
+  const [algodao2Usado, setAlgodao2Usado] = useState(false); // Algodão direita: molhado com álcool → higieniza dedo → some
+  const [algodao1Sujo, setAlgodao1Sujo] = useState(false); // Algodão esquerda: limpa primeira gota → descarte
+  const [algodao1Descartado, setAlgodao1Descartado] = useState(false);
 
   const [inputBloqueado, setInputBloqueado] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [erroDescarte, setErroDescarte] = useState<string | null>(null);
 
   const dedoRef = useRef<View>(null);
   const caixaPerfuroRef = useRef<View>(null);
   const lixeiraRef = useRef<View>(null);
+  const algodao2ZoneRef = useRef<View>(null); // Algodão da DIREITA: alvo do álcool
 
   const [dedoZone, setDedoZone] = useState<DropZone | null>(null);
   const [caixaPerfuroZone, setCaixaPerfuroZone] = useState<DropZone | null>(null);
   const [lixeiraZone, setLixeiraZone] = useState<DropZone | null>(null);
+  const [algodao2Zone, setAlgodao2Zone] = useState<DropZone | null>(null); // Hitbox do algodão direita
 
   const medirZona = (ref: React.RefObject<View | null>, setZone: (z: DropZone) => void) => {
     setTimeout(() => {
@@ -232,6 +249,29 @@ function AfericaoGame({ onFinish }: { onFinish: () => void }) {
       });
     }, 500);
   };
+
+  // Remede a hitbox do algodão2 toda vez que a fase entra em MOLHAR_ALGODAO,
+  // garantindo que o measureInWindow aconteça após o layout estar estável na tela
+  React.useEffect(() => {
+    const timers: any[] = [];
+    if (fase === 'MOLHAR_ALGODAO') {
+      // Tenta várias vezes com delays crescentes para garantir que o layout esteja pronto
+      [300, 600, 1000].forEach((delay) => {
+        const timer = setTimeout(() => {
+          algodao2ZoneRef.current?.measureInWindow((x, y, w, h) => {
+            if (w > 0 && h > 0) {
+              setAlgodao2Zone({ x, y, width: w, height: h });
+            }
+          });
+        }, delay);
+        timers.push(timer);
+      });
+    }
+
+    return () => {
+      timers.forEach((timer) => clearTimeout(timer));
+    };
+  }, [fase]);
 
   const handleTap = (itemName: string) => {
     if (inputBloqueado) return;
@@ -246,7 +286,7 @@ function AfericaoGame({ onFinish }: { onFinish: () => void }) {
     if (inputBloqueado) return;
 
     if (fase === 'SELECIONAR_DEDO') {
-      setFase('ASSEPSIA');
+      setFase('MOLHAR_ALGODAO'); // Vai para a nova fase
       return;
     }
     if (fase === 'SEGUNDA_GOTA') {
@@ -260,23 +300,46 @@ function AfericaoGame({ onFinish }: { onFinish: () => void }) {
     if (inputBloqueado) return;
 
     const acertouDedo = pointInZone(moveX, moveY, dedoZone) || moveX > width * 0.55;
-    const acertouCaixa = pointInZone(moveX, moveY, caixaPerfuroZone) || moveX < width * 0.45;
-    const acertouLixo = pointInZone(moveX, moveY, lixeiraZone) || moveX < width * 0.45;
+    const acertouCaixa = pointInZone(moveX, moveY, caixaPerfuroZone);
+    const acertouLixo = pointInZone(moveX, moveY, lixeiraZone);
+
+    // Detecção do algodão2: usa a zona medida OU fallback por posição aproximada na tela
+    const algodao2PosX = POSICAO.algodao2[c].x;
+    const algodao2PosY = POSICAO.algodao2[c].y;
+    const algodao2W = ESCALA.algodao[c] * 0.5 * RATIO.algodao;
+    const algodao2H = ESCALA.algodao[c] * 0.5;
+    const acertouAlgodao2 =
+      pointInZone(moveX, moveY, algodao2Zone) ||
+      (moveX >= algodao2PosX &&
+        moveX <= algodao2PosX + algodao2W &&
+        moveY >= algodao2PosY &&
+        moveY <= algodao2PosY + algodao2H);
 
     switch (fase) {
-      case 'ASSEPSIA': {
-        if (itemName === 'alcool' && acertouDedo) {
+      case 'MOLHAR_ALGODAO': {
+        // Álcool deve acertar o algodão da DIREITA (algodao2)
+        if (itemName === 'alcool' && acertouAlgodao2) {
           setInputBloqueado(true);
           setIsSpraying(true);
 
           return new Promise<void>((resolve) => {
             setTimeout(() => {
               setIsSpraying(false);
+              setAlgodao2Molhado(true);
               setInputBloqueado(false);
-              setFase('ABRIR_LANCETA');
+              setFase('ASSEPSIA');
               resolve();
             }, 1000);
           });
+        }
+        break;
+      }
+
+      case 'ASSEPSIA': {
+        // Algodão DIREITA (molhado) higieniza o dedo e some
+        if (itemName === 'algodao2' && acertouDedo) {
+          setAlgodao2Usado(true);
+          setFase('ABRIR_LANCETA');
         }
         break;
       }
@@ -290,9 +353,10 @@ function AfericaoGame({ onFinish }: { onFinish: () => void }) {
       }
 
       case 'LIMPAR_PRIMEIRA_GOTA': {
-        if (itemName === 'algodao' && acertouDedo) {
+        // Algodão ESQUERDA (algodao1) limpa a primeira gota
+        if (itemName === 'algodao1' && acertouDedo) {
           setSangueVisible(false);
-          setAlgodaoSujo(true);
+          setAlgodao1Sujo(true);
           setFase('SEGUNDA_GOTA');
         }
         break;
@@ -310,10 +374,19 @@ function AfericaoGame({ onFinish }: { onFinish: () => void }) {
       case 'DESCARTE': {
         if (itemName === 'lanceta' && acertouCaixa) {
           setLancetaDescartada(true);
-          checkWin(true, algodaoDescartado);
-        } else if (itemName === 'algodao' && acertouLixo) {
-          setAlgodaoDescartado(true);
+          checkWin(true, algodao1Descartado);
+        } else if (itemName === 'lanceta' && acertouLixo) {
+          setErroDescarte(
+            'A lanceta é um perfurocortante e deve ser descartada na caixa amarela de perfurocortantes, não no lixo infectante!'
+          );
+        } else if (itemName === 'algodao1' && acertouLixo) {
+          // Algodão ESQUERDA (com sangue) vai para o lixo infectante
+          setAlgodao1Descartado(true);
           checkWin(lancetaDescartada, true);
+        } else if (itemName === 'algodao1' && acertouCaixa) {
+          setErroDescarte(
+            'O algodão com sangue é um resíduo infectante e deve ser descartado no lixo infectante (saco branco), não na caixa de perfurocortantes!'
+          );
         }
         break;
       }
@@ -332,10 +405,13 @@ function AfericaoGame({ onFinish }: { onFinish: () => void }) {
     }
   };
 
-  const alcoolDisabled = fase !== 'ASSEPSIA' || inputBloqueado;
+  const alcoolDisabled = fase !== 'MOLHAR_ALGODAO' || inputBloqueado;
+  // Algodão DIREITA: só fica ativo APÓS ser molhado, na fase ASSEPSIA
+  const algodao2Disabled = fase !== 'ASSEPSIA' || inputBloqueado;
   const lancetaDisabled =
     !(fase === 'ABRIR_LANCETA' || fase === 'FURO' || fase === 'DESCARTE') || inputBloqueado;
-  const algodaoDisabled =
+  // Algodão ESQUERDA: ativo apenas para limpar primeira gota e descartar
+  const algodao1Disabled =
     !(fase === 'LIMPAR_PRIMEIRA_GOTA' || fase === 'DESCARTE') || inputBloqueado;
   const glicosimetroDisabled = fase !== 'AFERICAO' || inputBloqueado;
 
@@ -346,9 +422,7 @@ function AfericaoGame({ onFinish }: { onFinish: () => void }) {
     pedra: 1.673,
     caixaPerfuro: 0.713,
     lixeira: 0.683,
-    alcoolFechado: 0.388,
     alcoolBorrifando: 0.545,
-    lancetaAberta: 2.705,
     lancetaAbrindo: 3.139,
     algodao: 1.02,
     glicosimetro: 0.52,
@@ -360,6 +434,126 @@ function AfericaoGame({ onFinish }: { onFinish: () => void }) {
 
   const TOUCH_AREA_HEIGHT = height;
   const offsetTop = TOUCH_AREA_HEIGHT - cenaHeight;
+
+  const cenarioAfastado = fase === 'SELECIONAR_DEDO';
+
+  const ESCALA = {
+    alcool: { afastado: cenaHeight * 0.6, zoom: cenaHeight * 1.5 },
+    lanceta: { afastado: cenaHeight * 0.8, zoom: cenaHeight * 1.5 },
+    algodao: { afastado: cenaHeight * 0.5, zoom: cenaHeight * 2.5 },
+    glicosimetro: { afastado: cenaHeight * 0.75, zoom: cenaHeight * 2 },
+    lixeira: { afastado: cenaHeight * 0.7, zoom: cenaHeight * 0.7 },
+    caixaPerfuro: { afastado: cenaHeight * 0.5, zoom: cenaHeight * 2 },
+  };
+
+  const POSICAO = {
+    alcool: {
+      afastado: { x: cenaWidth * 0.45, y: cenaHeight * -1.2 + offsetTop },
+      zoom: { x: cenaWidth * 0.65, y: cenaHeight * -1.2 + offsetTop },
+    },
+    lanceta: {
+      afastado: { x: cenaWidth * 0.65, y: cenaHeight * -0.7 + offsetTop },
+      zoom: { x: cenaWidth * 0.35, y: cenaHeight * -1.3 + offsetTop },
+    },
+    algodao1: {
+      // Algodão para higienizar (esquerda)
+      afastado: { x: cenaWidth * 0.28, y: cenaHeight * -0.67 + offsetTop },
+      zoom: { x: cenaWidth * 0.05, y: cenaHeight * -0.75 + offsetTop },
+    },
+    algodao2: {
+      // Algodão para sangue (direita)
+      afastado: { x: cenaWidth * 0.42, y: cenaHeight * -0.67 + offsetTop },
+      zoom: { x: cenaWidth * 0.25, y: cenaHeight * -0.75 + offsetTop },
+    },
+    glicosimetro: {
+      afastado: { x: cenaWidth * 0.5, y: cenaHeight * -0.47 + offsetTop },
+      zoom: { x: cenaWidth * 0.4, y: cenaHeight * -0.1 + offsetTop },
+    },
+  };
+
+  const HITBOX = {
+    dedo: {
+      afastado: {
+        left: '20%' as const,
+        top: '31%' as const,
+        width: '15%' as const,
+        height: '7%' as const,
+      },
+      zoom: {
+        right: '25%' as const,
+        top: '42%' as const,
+        width: '16%' as const,
+        height: '4%' as const,
+      },
+    },
+    lixeira: {
+      afastado: {
+        bottom: '270%' as const,
+        left: '-4%' as const,
+        width: cenaHeight * 0.7 * RATIO.lixeira,
+        height: cenaHeight * 0.7,
+      },
+      zoom: {
+        bottom: '280%' as const,
+        left: '0%' as const,
+        width: cenaHeight * 1.4 * RATIO.lixeira,
+        height: cenaHeight * 0.7,
+      },
+    },
+    caixaPerfuro: {
+      afastado: {
+        bottom: '200%' as const,
+        left: '-5%' as const,
+        width: cenaHeight * 0.65 * RATIO.caixaPerfuro,
+        height: cenaHeight * 0.5,
+      },
+      zoom: {
+        bottom: '160%' as const,
+        left: '-5%' as const,
+        width: cenaHeight * 1.2 * RATIO.caixaPerfuro,
+        height: cenaHeight * 0.5,
+      },
+    },
+  };
+
+  const VISUAL = {
+    lixeira: {
+      afastado: {
+        bottom: '180%' as const,
+        left: '2%' as const,
+        width: cenaHeight * 1 * RATIO.lixeira,
+        height: cenaHeight * 1.5,
+      },
+      zoom: {
+        bottom: '200%' as const,
+        left: '-4%' as const,
+        width: cenaHeight * 1.5 * RATIO.lixeira,
+        height: cenaHeight * 2,
+      },
+    },
+    caixaPerfuro: {
+      afastado: {
+        bottom: '90%' as const,
+        left: '15%' as const,
+        width: cenaHeight * 1 * RATIO.caixaPerfuro,
+        height: cenaHeight * 2,
+      },
+      zoom: {
+        bottom: '-90%' as const,
+        left: '-25%' as const,
+        width: cenaHeight * 2 * RATIO.caixaPerfuro,
+        height: cenaHeight * 5,
+      },
+    },
+  };
+
+  const c = cenarioAfastado ? 'afastado' : 'zoom';
+
+  const zIndexAlcool = alcoolDisabled ? 10 : 999;
+  const zIndexAlgodao2 = algodao2Disabled ? 11 : 999; // Direita
+  const zIndexLanceta = lancetaDisabled ? 12 : 999;
+  const zIndexAlgodao1 = algodao1Disabled ? 13 : 999; // Esquerda
+  const zIndexGlicosimetro = glicosimetroDisabled ? 14 : 999;
 
   return (
     <View style={styles.gameContainer}>
@@ -375,145 +569,246 @@ function AfericaoGame({ onFinish }: { onFinish: () => void }) {
           style={{ position: 'absolute', bottom: 0, left: 0, width: cenaWidth, height: cenaHeight }}
           pointerEvents="box-none"
         >
-          <Image
-            source={require('../../../assets/images/pedra.png')}
-            style={[
-              styles.rockImageBase,
-              { width: pedraWidth, height: pedraHeight, left: pedraLeft },
-            ]}
-            resizeMode="contain"
-          />
+          {cenarioAfastado ? (
+            <>
+              <Image
+                source={require('../../../assets/images/pedra.png')}
+                style={[
+                  styles.rockImageBase,
+                  { width: pedraWidth, height: pedraHeight, left: pedraLeft },
+                ]}
+                resizeMode="contain"
+              />
+
+              <View
+                style={[
+                  styles.characterWrapper,
+                  { width: cenaWidth * 0.4, height: cenaHeight * 3.35 },
+                ]}
+                pointerEvents="box-none"
+              >
+                <View style={styles.characterImageFill} pointerEvents="none">
+                  <Image
+                    source={require('../../../assets/images/glicemilton_aferindo.png')}
+                    style={{ width: '95%', height: '55%' }}
+                    resizeMode="contain"
+                  />
+                </View>
+
+                <TouchableOpacity
+                  ref={dedoRef}
+                  style={[
+                    { position: 'absolute', zIndex: 200, backgroundColor: 'transparent' },
+                    HITBOX.dedo.afastado,
+                  ]}
+                  onLayout={() => medirZona(dedoRef, setDedoZone)}
+                  onPress={handleDedoClick}
+                  activeOpacity={0.6}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                />
+              </View>
+            </>
+          ) : (
+            <>
+              <View style={styles.fullscreenHandWrapper} pointerEvents="box-none">
+                <Image
+                  source={require('../../../assets/images/fundo_mão.png')}
+                  style={{ width: '100%', height: '100%' }}
+                  resizeMode="cover"
+                />
+
+                {sangueVisible && (
+                  <View style={styles.bloodDropFullscreen} pointerEvents="none">
+                    <Image
+                      source={require('../../../assets/images/gota_de_sangue.png')}
+                      style={{ width: '100%', height: '100%' }}
+                      resizeMode="contain"
+                    />
+                  </View>
+                )}
+
+                <TouchableOpacity
+                  ref={dedoRef}
+                  style={[
+                    { position: 'absolute', zIndex: 200, backgroundColor: 'transparent' },
+                    HITBOX.dedo.zoom,
+                  ]}
+                  onLayout={() => medirZona(dedoRef, setDedoZone)}
+                  onPress={handleDedoClick}
+                  activeOpacity={0.6}
+                />
+              </View>
+            </>
+          )}
 
           <View
-            ref={caixaPerfuroRef}
-            style={[
-              styles.sharpsContainerFix,
-              { width: cenaHeight * 0.7 * RATIO.caixaPerfuro, height: cenaHeight * 0.5 },
-            ]}
-            onLayout={() => medirZona(caixaPerfuroRef, setCaixaPerfuroZone)}
+            style={[{ position: 'absolute', zIndex: 100 }, VISUAL.caixaPerfuro[c]]}
+            pointerEvents="none"
           >
             <Image
               source={require('../../../assets/images/caixa_de_perfurocortantes.png')}
-              style={{ width: '300%', height: '300%' }}
+              style={{ width: '100%', height: '100%' }}
               resizeMode="contain"
             />
           </View>
+          <View
+            ref={caixaPerfuroRef}
+            style={[
+              { position: 'absolute', zIndex: 101, backgroundColor: 'transparent' },
+              HITBOX.caixaPerfuro[c],
+            ]}
+            onLayout={() => medirZona(caixaPerfuroRef, setCaixaPerfuroZone)}
+          />
 
           <View
-            ref={lixeiraRef}
-            style={[
-              styles.trashImageFix,
-              { width: cenaHeight * 0.7 * RATIO.lixeira, height: cenaHeight * 0.7 },
-            ]}
-            onLayout={() => medirZona(lixeiraRef, setLixeiraZone)}
+            style={[{ position: 'absolute', zIndex: 100 }, VISUAL.lixeira[c]]}
+            pointerEvents="none"
           >
             <Image
               source={require('../../../assets/images/lixo_infectante.png')}
-              style={{ width: '200%', height: '200%' }}
+              style={{ width: '100%', height: '100%' }}
               resizeMode="contain"
             />
           </View>
-
           <View
-            style={[styles.characterWrapper, { width: cenaWidth * 0.4, height: cenaHeight * 3.35 }]}
-            pointerEvents="box-none"
-          >
-            <View style={styles.characterImageFill} pointerEvents="none">
-              <Image
-                source={require('../../../assets/images/glicemilton_aferindo.png')}
-                style={{ width: '95%', height: '55%' }}
-                resizeMode="contain"
-              />
-            </View>
+            ref={lixeiraRef}
+            style={[
+              { position: 'absolute', zIndex: 101, backgroundColor: 'transparent' },
+              HITBOX.lixeira[c],
+            ]}
+            onLayout={() => medirZona(lixeiraRef, setLixeiraZone)}
+          />
 
-            {sangueVisible && (
-              <View style={styles.bloodDrop} pointerEvents="none">
-                <Image
-                  source={require('../../../assets/images/gota_de_sangue.png')}
-                  style={{ width: '100%', height: '100%' }}
-                  resizeMode="contain"
-                />
-              </View>
-            )}
-
-            <TouchableOpacity
-              ref={dedoRef}
-              style={styles.dedoHitbox}
-              onLayout={() => medirZona(dedoRef, setDedoZone)}
-              onPress={handleDedoClick}
-              activeOpacity={0.6}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          {/* HITBOX INVISÍVEL DO ALGODÃO DIREITA (algodao2) PARA O ÁLCOOL ACERTAR */}
+          {!algodao2Usado && (
+            <View
+              ref={algodao2ZoneRef}
+              style={{
+                position: 'absolute',
+                left: POSICAO.algodao2[c].x,
+                top: POSICAO.algodao2[c].y,
+                width: ESCALA.algodao[c] * 0.5 * RATIO.algodao,
+                height: ESCALA.algodao[c] * 0.5,
+                zIndex: 1,
+                backgroundColor: 'transparent',
+              }}
+              onLayout={() => medirZona(algodao2ZoneRef, setAlgodao2Zone)}
             />
-          </View>
+          )}
         </View>
 
         <DraggableItem
+          key={`alcool-${c}-${ESCALA.alcool[c]}-${POSICAO.alcool[c].x}-${POSICAO.alcool[c].y}`}
           name="alcool"
           imageSource={
             isSpraying
               ? require('../../../assets/images/alcool_borrifando.png')
               : require('../../../assets/images/alcool.png')
           }
-          itemWidth={cenaHeight * 0.7 * RATIO.alcoolBorrifando}
-          itemHeight={cenaHeight * 0.7}
-          startX={cenaWidth * 0.45}
-          startY={cenaHeight * -1.25 + offsetTop}
+          itemWidth={
+            (cenarioAfastado ? ESCALA.alcool.afastado : ESCALA.alcool.zoom) * RATIO.alcoolBorrifando
+          }
+          itemHeight={cenarioAfastado ? ESCALA.alcool.afastado : ESCALA.alcool.zoom}
+          startX={POSICAO.alcool[c].x}
+          startY={POSICAO.alcool[c].y}
           onDrop={handleDrop}
           disabled={alcoolDisabled}
-          zIndex={90}
+          zIndex={zIndexAlcool}
         />
+
+        {/* ALGODÃO 1 — ESQUERDA: limpa primeira gota de sangue → descarte no lixo */}
+        {!algodao1Descartado && (
+          <DraggableItem
+            key={`algodao1-${c}-${ESCALA.algodao[c]}-${POSICAO.algodao1[c].x}-${POSICAO.algodao1[c].y}`}
+            name="algodao1"
+            imageSource={
+              algodao1Sujo
+                ? require('../../../assets/images/algodao_com_sangue.png')
+                : require('../../../assets/images/algodao_seco.png')
+            }
+            itemWidth={
+              (cenarioAfastado ? ESCALA.algodao.afastado : ESCALA.algodao.zoom) *
+              0.5 *
+              RATIO.algodao
+            }
+            itemHeight={(cenarioAfastado ? ESCALA.algodao.afastado : ESCALA.algodao.zoom) * 0.5}
+            startX={POSICAO.algodao1[c].x}
+            startY={POSICAO.algodao1[c].y}
+            onDrop={handleDrop}
+            disabled={algodao1Disabled}
+            zIndex={zIndexAlgodao1}
+          />
+        )}
 
         {!lancetaDescartada && (
           <DraggableItem
+            key={`lanceta-${c}-${ESCALA.lanceta[c]}-${POSICAO.lanceta[c].x}-${POSICAO.lanceta[c].y}`}
             name="lanceta"
             imageSource={
               lancetaAberta
                 ? require('../../../assets/images/lanceta_aberta.png')
                 : require('../../../assets/images/lanceta_abrindo.png')
             }
-            itemWidth={cenaHeight * 0.5 * RATIO.lancetaAbrindo}
-            itemHeight={cenaHeight * 0.5}
-            startX={cenaWidth * 0.35}
-            startY={cenaHeight * -0.9 + offsetTop}
+            itemWidth={
+              (cenarioAfastado ? ESCALA.lanceta.afastado : ESCALA.lanceta.zoom) *
+              0.1 *
+              RATIO.lancetaAbrindo
+            }
+            itemHeight={(cenarioAfastado ? ESCALA.lanceta.afastado : ESCALA.lanceta.zoom) * 0.5}
+            startX={POSICAO.lanceta[c].x}
+            startY={POSICAO.lanceta[c].y}
             onDrop={handleDrop}
             onTap={handleTap}
             disabled={lancetaDisabled}
-            zIndex={91}
+            zIndex={zIndexLanceta}
           />
         )}
 
-        {!algodaoDescartado && (
+        {/* ALGODÃO 2 — DIREITA: recebe álcool → higieniza dedo → some */}
+        {!algodao2Usado && (
           <DraggableItem
-            name="algodao"
+            key={`algodao2-${c}-${ESCALA.algodao[c]}-${POSICAO.algodao2[c].x}-${POSICAO.algodao2[c].y}`}
+            name="algodao2"
             imageSource={
-              algodaoSujo
-                ? require('../../../assets/images/algodao_com_sangue.png')
+              algodao2Molhado
+                ? require('../../../assets/images/algodao_molhado.png')
                 : require('../../../assets/images/algodao_seco.png')
             }
-            itemWidth={cenaHeight * 0.5 * RATIO.algodao}
-            itemHeight={cenaHeight * 0.5}
-            startX={cenaWidth * 0.35}
-            startY={cenaHeight * -0.75 + offsetTop}
+            itemWidth={
+              (cenarioAfastado ? ESCALA.algodao.afastado : ESCALA.algodao.zoom) *
+              0.5 *
+              RATIO.algodao
+            }
+            itemHeight={(cenarioAfastado ? ESCALA.algodao.afastado : ESCALA.algodao.zoom) * 0.5}
+            startX={POSICAO.algodao2[c].x}
+            startY={POSICAO.algodao2[c].y}
             onDrop={handleDrop}
-            disabled={algodaoDisabled}
-            zIndex={92}
+            disabled={algodao2Disabled}
+            zIndex={zIndexAlgodao2}
           />
         )}
 
         <DraggableItem
+          key={`glicosimetro-${c}-${ESCALA.glicosimetro[c]}-${POSICAO.glicosimetro[c].x}-${POSICAO.glicosimetro[c].y}`}
           name="glicosimetro"
           imageSource={
             glicosimetroLigado
               ? require('../../../assets/images/glicosimetro_ligado.png')
               : require('../../../assets/images/glicosimetro_desligado.png')
           }
-          itemWidth={cenaHeight * 0.5 * RATIO.glicosimetro}
-          itemHeight={cenaHeight * 0.5}
-          startX={cenaWidth * 0.55}
-          startY={cenaHeight * -0.56 + offsetTop}
+          itemWidth={
+            (cenarioAfastado ? ESCALA.glicosimetro.afastado : ESCALA.glicosimetro.zoom) *
+            0.5 *
+            RATIO.glicosimetro
+          }
+          itemHeight={
+            (cenarioAfastado ? ESCALA.glicosimetro.afastado : ESCALA.glicosimetro.zoom) * 0.5
+          }
+          startX={POSICAO.glicosimetro[c].x}
+          startY={POSICAO.glicosimetro[c].y}
           onDrop={handleDrop}
           disabled={glicosimetroDisabled}
-          zIndex={93}
+          zIndex={zIndexGlicosimetro}
         />
       </View>
 
@@ -539,6 +834,34 @@ function AfericaoGame({ onFinish }: { onFinish: () => void }) {
           </View>
         </View>
       )}
+
+      {erroDescarte && (
+        <View style={styles.modalOverlay}>
+          <View
+            style={[
+              styles.customAlertContainer,
+              {
+                backgroundColor: '#FFF3F3',
+                borderColor: '#E53935',
+                width: '85%',
+                maxWidth: 350,
+                elevation: 10,
+              },
+            ]}
+          >
+            <Text style={[styles.customAlertTitle, { color: '#E53935' }]}>
+              ⚠️ Descarte incorreto!
+            </Text>
+            <Text style={styles.customAlertMessage}>{erroDescarte}</Text>
+            <TouchableOpacity
+              style={[styles.customAlertButton, { backgroundColor: '#E53935' }]}
+              onPress={() => setErroDescarte(null)}
+            >
+              <Text style={styles.customAlertButtonText}>ENTENDI</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
     </View>
   );
 }
@@ -546,8 +869,9 @@ function AfericaoGame({ onFinish }: { onFinish: () => void }) {
 // --- TELA PRINCIPAL QUE GERE O FLUXO ---
 export default function VigiarTaxasScreen() {
   const router = useRouter();
+
   const { addPoints } = useGame();
-  //const insets = useSafeAreaInsets();
+  const [showVictory, setShowVictory] = useState(false);
 
   const [step, setStep] = useState('intro');
   const [contextoMedicacao, setContextoMedicacao] = useState<'jejum' | 'alimentado' | null>(null);
@@ -561,6 +885,8 @@ export default function VigiarTaxasScreen() {
 
   const [selectedGuess, setSelectedGuess] = useState<string | null>(null);
   const [correctAnswer, setCorrectAnswer] = useState<string | null>(null);
+  const [errosConsecutivos, setErrosConsecutivos] = useState(0);
+  const [avisoReferencia, setAvisoReferencia] = useState(false);
   const [alertConfig, setAlertConfig] = useState<{
     visible: boolean;
     type: 'success' | 'error';
@@ -636,25 +962,33 @@ export default function VigiarTaxasScreen() {
     };
 
     if (palpite === classificacaoCorreta) {
-      addPoints('modulo6_vigiar_taxas' as any, 10);
-      setAlertConfig({
-        visible: true,
-        type: 'success',
-        title: 'Excelente!',
-        message: 'Você interpretou o resultado corretamente! +10 Pontos!',
-      });
+      addPoints('modulo6_vigiar_taxas', 10);
+      setErrosConsecutivos(0);
+      setShowVictory(true);
     } else {
-      setAlertConfig({
-        visible: true,
-        type: 'error',
-        title: 'Atenção!',
-        message: `Incorreto. A resposta certa era "${nomesDasRespostas[classificacaoCorreta]}".\nVamos gerar um novo valor para você tentar novamente!`,
-      });
+      const novosErros = errosConsecutivos + 1;
+      setErrosConsecutivos(novosErros);
+
+      if (novosErros >= 2) {
+        // Segundo erro: mostra aviso antes de ir para a tela de referência
+        setErrosConsecutivos(0);
+        setAlertConfig(null);
+        setAvisoReferencia(true);
+      } else {
+        setAlertConfig({
+          visible: true,
+          type: 'error',
+          title: 'Atenção!',
+          message: `Incorreto. A resposta certa era "${nomesDasRespostas[classificacaoCorreta]}".\nVamos gerar um novo valor para você tentar novamente!`,
+        });
+      }
     }
   };
 
   const getButtonStyle = (guessType: string) => {
-    if (!selectedGuess) return styles.guessButton;
+    if (!selectedGuess) {
+      return styles.guessButton;
+    }
     if (guessType === correctAnswer) return [styles.guessButton, { backgroundColor: '#4CAF50' }];
     if (guessType === selectedGuess && guessType !== correctAnswer)
       return [styles.guessButton, { backgroundColor: '#E53935' }];
@@ -732,7 +1066,7 @@ export default function VigiarTaxasScreen() {
               </View>
               <View style={styles.characterStory} pointerEvents="none">
                 <Image
-                  source={require('../../../assets/images/Glicemilton_feliz.png')}
+                  source={require('../../../assets/images/glicemilton_feliz.png')}
                   style={styles.characterLarge}
                   resizeMode="contain"
                 />
@@ -740,7 +1074,7 @@ export default function VigiarTaxasScreen() {
               <View style={styles.storyContent}>
                 <View style={styles.textBackdrop}>
                   <Text style={styles.floatingText}>
-                    Usuário, eu convivo com Diabetes Mellitus tipo x e preciso que você interprete
+                    Usuário, eu convivo com Diabetes Mellitus tipo 2 e preciso que você interprete
                     meus resultados, tá bom?
                   </Text>
                 </View>
@@ -774,7 +1108,7 @@ export default function VigiarTaxasScreen() {
               </View>
               <View style={styles.characterBottomCenter} pointerEvents="none">
                 <Image
-                  source={require('../../../assets/images/Glicemilton_feliz.png')}
+                  source={require('../../../assets/images/glicemilton_feliz.png')}
                   style={styles.characterLarge}
                   resizeMode="contain"
                 />
@@ -1188,7 +1522,16 @@ export default function VigiarTaxasScreen() {
                         }
                       }}
                     >
-                      <Text style={styles.customAlertButtonText}>CONTINUAR</Text>
+                      <Text style={styles.customAlertButtonText}>TENTAR NOVAMENTE</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[
+                        styles.customAlertButton,
+                        { backgroundColor: '#6C5141', marginTop: 8 },
+                      ]}
+                      onPress={() => router.replace('/(tabs)/onboarding')}
+                    >
+                      <Text style={styles.customAlertButtonText}>VOLTAR AOS MINIGAMES</Text>
                     </TouchableOpacity>
                   </View>
                 )}
@@ -1205,6 +1548,44 @@ export default function VigiarTaxasScreen() {
                   <Text style={styles.lcdText}>{glicemiaGerada}</Text>
                 </View>
               </View>
+
+              <VictoryModal visible={showVictory} pointsEarned={10} moduleName="Medir Glicemia" />
+
+              {/* AVISO ANTES DE IR PARA A TELA DE REFERÊNCIA */}
+              {avisoReferencia && (
+                <View style={styles.modalOverlay}>
+                  <View
+                    style={[
+                      styles.customAlertContainer,
+                      {
+                        backgroundColor: '#FFF8E1',
+                        borderColor: '#F9A825',
+                        borderWidth: 2,
+                        width: '85%',
+                        maxWidth: 350,
+                        elevation: 10,
+                      },
+                    ]}
+                  >
+                    <Text style={[styles.customAlertTitle, { color: '#F57F17' }]}>⚠️ Atenção!</Text>
+                    <Text style={styles.customAlertMessage}>
+                      Você errou duas vezes seguidas. Preste bem atenção nos valores de referência
+                      que vamos mostrar agora — eles vão te ajudar a acertar na próxima!
+                    </Text>
+                    <TouchableOpacity
+                      style={[styles.customAlertButton, { backgroundColor: '#F9A825' }]}
+                      onPress={() => {
+                        setAvisoReferencia(false);
+                        setSelectedGuess(null);
+                        setCorrectAnswer(null);
+                        setStep('reference');
+                      }}
+                    >
+                      <Text style={styles.customAlertButtonText}>VER VALORES DE REFERÊNCIA</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              )}
             </SafeAreaView>
           </ImageBackground>
         );
@@ -1417,7 +1798,8 @@ const styles = StyleSheet.create({
   characterBottomCenter: { position: 'absolute', bottom: -10, alignSelf: 'center', zIndex: 1 },
   characterStory: { position: 'absolute', bottom: 30, alignSelf: 'center', zIndex: 1 },
   characterBottomRight: { position: 'absolute', bottom: -10, right: -25, zIndex: 1 },
-  characterLarge: { width: 270, height: 340 },
+  characterLarge: { width: 330, height: 410 },
+
   navButton: {
     width: 70,
     height: 70,
@@ -1459,9 +1841,27 @@ const styles = StyleSheet.create({
   },
   cenaContainer: { position: 'relative', alignSelf: 'center', overflow: 'visible' },
   rockImageBase: { position: 'absolute', bottom: '-90%', zIndex: 2 },
-  sharpsContainerFix: { position: 'absolute', bottom: '200%', left: '-5%', zIndex: 3 },
-  trashImageFix: { position: 'absolute', bottom: '270%', left: '-4%', zIndex: 3 },
+
   characterWrapper: { position: 'absolute', right: '0%', bottom: '0%', zIndex: 5 },
+
+  fullscreenHandWrapper: {
+    position: 'absolute',
+    width: width,
+    height: height + 100,
+    bottom: -50,
+    left: 0,
+    zIndex: 1,
+  },
+
+  bloodDropFullscreen: {
+    position: 'absolute',
+    right: '28%',
+    top: '40%',
+    width: '12%',
+    height: '10%',
+    zIndex: 11,
+  },
+
   characterImageFill: { width: '100%', height: '100%' },
   bloodDrop: {
     position: 'absolute',
@@ -1553,10 +1953,6 @@ const styles = StyleSheet.create({
   customAlertError: {
     backgroundColor: '#FFF0F0',
     borderColor: '#E53935',
-  },
-  customAlertSuccess: {
-    backgroundColor: '#F0FFF0',
-    borderColor: '#4CAF50',
   },
   customAlertTitle: {
     fontSize: 24,

@@ -2,9 +2,9 @@ import { Chewy_400Regular } from '@expo-google-fonts/chewy';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useFonts } from 'expo-font';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Image, Modal, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, SafeAreaView, StyleSheet, TouchableOpacity, View } from 'react-native';
 
-import { CARTOES_COLORS, CARTOES_THEORY, CardItem, TABULEIRO_CARTOES } from '@/constants/cartoes';
+import { CARTOES_COLORS, CardItem, TABULEIRO_CARTOES } from '@/constants/cartoes';
 
 export default function CardAssociationGrid({ onGameComplete }: { onGameComplete?: () => void }) {
   const [fontsLoaded] = useFonts({ Chewy_400Regular });
@@ -12,7 +12,6 @@ export default function CardAssociationGrid({ onGameComplete }: { onGameComplete
   const [firstSelected, setFirstSelected] = useState<CardItem | null>(null);
   const [matchedPairs, setMatchedPairs] = useState<Set<string>>(new Set());
   const [wrongIds, setWrongIds] = useState<Set<string>>(new Set());
-  const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false);
 
   const timerRef = useRef<any>(null);
 
@@ -36,9 +35,17 @@ export default function CardAssociationGrid({ onGameComplete }: { onGameComplete
     };
   }, []);
 
+  // --- LÓGICA DE VITÓRIA ATUALIZADA ---
   useEffect(() => {
-    if (matchedPairs.size === 8) {
-      setShowSuccessModal(true);
+// Lógica de finalização combinada
+    if (matchedPairs.size === 8) { // Ajuste para 4 se o jogo atual tiver apenas 4 pares
+      // Adiciona um pequeno atraso para o usuário ver a última carta virar (veio da developer)
+      setTimeout(() => {
+        setShowSuccessModal(true); // Abre o modal (veio da sua feature)
+        
+        // Se precisar avisar o componente pai que o jogo acabou, descomente a linha abaixo:
+        // onGameCompleteRef.current?.(); 
+      }, 500);
     }
   }, [matchedPairs]);
 
@@ -70,11 +77,6 @@ export default function CardAssociationGrid({ onGameComplete }: { onGameComplete
         }, 1200);
       }
     }
-  };
-
-  const handleFinishGame = () => {
-    setShowSuccessModal(false);
-    onGameCompleteRef.current?.();
   };
 
   return (
@@ -138,19 +140,6 @@ export default function CardAssociationGrid({ onGameComplete }: { onGameComplete
           })}
         </View>
       </View>
-
-      <Modal visible={showSuccessModal} transparent animationType="fade">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalCard}>
-            <Text style={styles.modalEmoji}>🏆</Text>
-            <Text style={styles.modalTitle}>{CARTOES_THEORY.successTitle}</Text>
-            <Text style={styles.modalMessage}>{CARTOES_THEORY.successMessage}</Text>
-            <TouchableOpacity style={styles.modalBtn} onPress={handleFinishGame}>
-              <Text style={styles.modalBtnText}>Concluir</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
     </SafeAreaView>
   );
 }
@@ -221,7 +210,7 @@ const styles = StyleSheet.create({
     backgroundColor: CARTOES_COLORS.errorBg,
     borderColor: CARTOES_COLORS.errorBorder,
   },
-  modalOverlay: {
+modalOverlay: {
     flex: 1,
     backgroundColor: CARTOES_COLORS.overlay,
     justifyContent: 'center',

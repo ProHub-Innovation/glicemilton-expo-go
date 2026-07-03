@@ -1,3 +1,4 @@
+import VictoryModal from '@/components/VictoryModal';
 import { useGame } from '@/context/GameContext';
 import { Chewy_400Regular } from '@expo-google-fonts/chewy';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -53,14 +54,17 @@ const GRID_SIZE = INITIAL_MAZE[0].length;
 const CELL_SIZE = MAZE_CONTAINER_SIZE / GRID_SIZE;
 
 export default function LabirintoScreen() {
-  const [phase, setPhase] = useState<'intro' | 'game' | 'finished'>('intro');
+  const [phase, setPhase] = useState<'intro' | 'game' | 'finished' | 'game_over'>('intro');
   const [mazeMap, setMazeMap] = useState<string[][]>(INITIAL_MAZE);
   const [playerPos, setPlayerPos] = useState({ row: START_ROW, col: START_COL });
   const [score, setScore] = useState(0);
   const [hasWon, setHasWon] = useState(false);
   const [showIntroBtn, setShowIntroBtn] = useState(false);
 
+  const [timeLeft, setTimeLeft] = useState(45);
+
   const insets = useSafeAreaInsets();
+
   const [fontsLoaded] = useExpoFonts({ Chewy_400Regular });
 
   const { addPoints } = useGame();
@@ -77,6 +81,37 @@ export default function LabirintoScreen() {
       true
     );
   }, []);
+
+  useEffect(() => {
+    let timerId: ReturnType<typeof setInterval>;
+
+    if (phase === 'game' && !hasWon) {
+      timerId = setInterval(() => {
+        // Atualização funcional de estado que não depende da variável externa
+        setTimeLeft((prev) => {
+          if (prev <= 1) {
+            clearInterval(timerId); // Interrompe de forma limpa na própria thread
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+
+    return () => {
+      if (timerId) clearInterval(timerId);
+    };
+  }, [phase, hasWon]);
+
+  useEffect(() => {
+    if (timeLeft === 0 && phase === 'game') {
+      setPhase('game_over');
+    }
+  }, [timeLeft, phase]);
+
+  const formattedTime = `${Math.floor(timeLeft / 60)
+    .toString()
+    .padStart(2, '0')}:${(timeLeft % 60).toString().padStart(2, '0')}`;
 
   const animatedPulseStyle = useAnimatedStyle(() => {
     return { transform: [{ scale: pulseAnim.value }] };
@@ -119,13 +154,22 @@ export default function LabirintoScreen() {
     const nextCell = mazeMap[nextRow][nextCol];
 
     if (nextCell.includes('SUGAR')) {
+      const isExit = nextCell.includes('EXIT');
+
       setScore((prev) => prev + 10);
+
       setMazeMap((prevMap) => {
         const newMap = prevMap.map((row) => [...row]);
-        // Remove apenas a palavra SUGAR, mantendo as paredes intactas!
         newMap[nextRow][nextCol] = nextCell.replace('_SUGAR', '');
         return newMap;
       });
+
+      if (isExit) {
+        addPoints('labirinto', score + 10);
+        setHasWon(true);
+        setPhase('finished');
+        return;
+      }
     }
 
     if (nextCell.includes('EXIT')) {
@@ -141,6 +185,7 @@ export default function LabirintoScreen() {
     setPlayerPos({ row: START_ROW, col: START_COL });
     setScore(0);
     setHasWon(false);
+    setTimeLeft(45);
     setPhase('game');
   };
 
@@ -191,8 +236,21 @@ export default function LabirintoScreen() {
     );
   }
 
-  // FASE 2: TELA FINAL DE PARABÉNS (FINISHED)
+  // FASE 2: TELA FINAL DE PARABÉNS — usa o VictoryModal padrão do projeto
+  // O modal é exibido sobre o fundo do jogo; score já contém os pontos finais corretos
   if (phase === 'finished') {
+    return (
+      <ImageBackground
+        source={require('@/assets/images/background.jpg')}
+        style={styles.background}
+        resizeMode="cover"
+      >
+        <VictoryModal visible={true} pointsEarned={score} moduleName="Labirinto" />
+      </ImageBackground>
+    );
+  }
+
+  if (phase === 'game_over') {
     return (
       <ImageBackground
         source={require('@/assets/images/background.jpg')}
@@ -200,14 +258,12 @@ export default function LabirintoScreen() {
         resizeMode="cover"
       >
         <Animated.View entering={FadeIn} style={styles.finishedCard}>
-          {/* ÍCONE DO TROFÉU IGUAL AOS OUTROS MÓDULOS */}
-          <Text style={{ fontSize: 50 }}>🏆</Text>
-
-          <Text style={styles.finishedTitle}>Você chegou ao fim!</Text>
-          <Text style={styles.finishedSub}>Açúcares Coletados: {score} pts</Text>
+          <Text style={{ fontSize: 50 }}>⏰</Text>
+          <Text style={styles.finishedTitle}>O tempo acabou!</Text>
+          <Text style={styles.finishedSub}>O Glicemilton não conseguiu achar a saída a tempo.</Text>
 
           <TouchableOpacity style={styles.btnFinished} onPress={reiniciarJogo}>
-            <Text style={styles.btnFinishedText}>Jogar novamente</Text>
+            <Text style={styles.btnFinishedText}>Tentar Novamente</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.btnFinishedOutline} onPress={() => router.back()}>
@@ -240,6 +296,18 @@ export default function LabirintoScreen() {
         Ajude-o a encontrar a saída!
       </Text>
 
+      {/* 🔥 MOSTRADOR DO CRONÔMETRO */}
+      <View style={styles.timerBadge}>
+        <MaterialCommunityIcons
+          name="clock-outline"
+          size={20}
+          color={timeLeft <= 10 ? '#FF5252' : '#FFF'}
+        />
+        <Text style={[styles.timerText, timeLeft <= 10 && styles.timerTextDanger]}>
+          {formattedTime}
+        </Text>
+      </View>
+
       {/* GRADE DE COLISÕES INVISÍVEL (Alinhada exatamente por cima do desenho do labirinto) */}
       <View style={styles.mazeGridContainer}>
         {mazeMap.map((row, rowIndex) => (
@@ -271,7 +339,7 @@ export default function LabirintoScreen() {
                       style={{ justifyContent: 'center', alignItems: 'center' }}
                     >
                       <Image
-                        source={require('@/assets/images/Glicemilton_feliz.png')}
+                        source={require('@/assets/images/glicemilton_feliz.png')}
                         style={{
                           width: CELL_SIZE * 1.25,
                           height: CELL_SIZE * 1.25,
@@ -509,5 +577,23 @@ const styles = StyleSheet.create({
     color: '#7A5C4E',
     fontFamily: 'Chewy_400Regular',
     fontSize: 18,
+  },
+  timerBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginTop: 10,
+    gap: 6,
+  },
+  timerText: {
+    fontFamily: 'Chewy_400Regular',
+    fontSize: 22,
+    color: '#FFF',
+  },
+  timerTextDanger: {
+    color: '#FF5252', // Fica vermelho nos últimos 10 segundos
   },
 });

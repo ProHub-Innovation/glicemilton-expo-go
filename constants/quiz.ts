@@ -490,4 +490,36 @@ export const QUIZ_QUESTIONS: QuizQuestion[] = [
     ],
     correctId: 'c',
   },
+  {
+    id: 'q16',
+    question:
+      'Antes de aplicar a insulina, o que o Glicemilton deve fazer para reduzir o risco de erros na administração?',
+    options: [
+      {
+        id: 'a',
+        text: 'Aplicar a insulina sem conferir o rótulo do frasco ou da caneta.',
+        explanation:
+          'Incorreto, pois conferir o medicamento antes da aplicação é essencial para evitar trocas e erros de dose.',
+      },
+      {
+        id: 'b',
+        text: 'Conferir o tipo de insulina, a dose prescrita e a validade antes da aplicação.',
+        explanation:
+          'Correto, verificar o tipo de insulina, a dose prescrita e a validade do medicamento ajuda a garantir uma aplicação segura e eficaz, reduzindo o risco de complicações.',
+      },
+      {
+        id: 'c',
+        text: 'Pedir para outra pessoa escolher a dose por ele.',
+        explanation:
+          'Incorreto, a dose deve seguir a prescrição da equipe de saúde, e não ser escolhida por outra pessoa.',
+      },
+      {
+        id: 'd',
+        text: 'Aplicar uma dose maior quando a glicemia estiver alta, sem orientação profissional.',
+        explanation:
+          'Incorreto, aumentar a dose por conta própria pode provocar hipoglicemia grave; qualquer ajuste deve ser feito com orientação da equipe de saúde.',
+      },
+    ],
+    correctId: 'b',
+  },
 ];

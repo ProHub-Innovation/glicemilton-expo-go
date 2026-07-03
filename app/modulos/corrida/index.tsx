@@ -17,6 +17,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import RunnerGame from '@/components/runner/RunnerGame';
+import VictoryModal from '@/components/VictoryModal';
 import { RUNNER_ASSETS, RUNNER_CONFIG } from '@/constants/runner';
 
 type ScreenState =
@@ -104,7 +105,7 @@ export default function CorridaScreen() {
     );
     animation.start();
     return () => animation.stop();
-  }, [currentScreen, gameStatus]);
+  }, [currentScreen, gameStatus, homePulseAnim]);
 
   const handleHUDUpdate = useCallback((newScore: number, newHealth: number) => {
     setScore(newScore);
@@ -461,8 +462,8 @@ export default function CorridaScreen() {
             onGameOver={handleGameOver}
           />
 
-          {/* Modal de Vitória / Derrota */}
-          <Modal visible={gameStatus !== 'PLAYING'} transparent animationType="slide">
+          {/* Modal de Derrota */}
+          <Modal visible={gameStatus === 'LOST'} transparent animationType="slide">
             <View style={styles.modalOverlay}>
               <View style={styles.modalCard}>
                 {/* ✅ Botão Home pulsando também no modal de fim de jogo */}
@@ -476,14 +477,12 @@ export default function CorridaScreen() {
                   </Animated.View>
                 </View>
 
-                <Text style={styles.modalEmoji}>{gameStatus === 'WON' ? '🏆' : '💥'}</Text>
-                <Text style={styles.modalTitle}>
-                  {gameStatus === 'WON' ? 'Corrida Concluída!' : 'Fim de Jogo!'}
-                </Text>
+                {/* ✅ Lógica Estática de Derrota Resolvida */}
+                <Text style={styles.modalEmoji}>💥</Text>
+                <Text style={styles.modalTitle}>Fim de Jogo!</Text>
+
                 <Text style={styles.modalMessage}>
-                  {gameStatus === 'WON'
-                    ? `Incrível! Você se esquivou dos hábitos ruins e acumulou ${score} pontos saudáveis!`
-                    : 'Sua energia acabou! Cuidado com o excesso de doces e o sedentarismo no cotidiano.'}
+                  Sua energia acabou! Cuidado com o excesso de doces e o sedentarismo no cotidiano.
                 </Text>
                 <View style={styles.modalActions}>
                   <TouchableOpacity style={styles.modalBtnPrimary} onPress={resetGame}>
@@ -499,6 +498,9 @@ export default function CorridaScreen() {
               </View>
             </View>
           </Modal>
+
+          {/* Modal de Vitória — padrão do projeto */}
+          <VictoryModal visible={gameStatus === 'WON'} pointsEarned={score} moduleName="Corrida" />
         </SafeAreaView>
       </ImageBackground>
     );

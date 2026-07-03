@@ -1,19 +1,23 @@
-import React, { useState, useRef, useEffect } from 'react';
-import {
-  StyleSheet,
-  Text,
-  View,
-  ImageBackground,
-  TouchableOpacity,
-  Image,
-  Modal,
-  Animated,
-} from 'react-native';
-import { router } from 'expo-router';
-import { useFonts as useExpoFonts } from 'expo-font';
 import { Chewy_400Regular } from '@expo-google-fonts/chewy';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useFonts as useExpoFonts } from 'expo-font';
+import { router } from 'expo-router';
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  Animated,
+  Image,
+  ImageBackground,
+  Modal,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+// IMPORTAÇÃO DO ESTADO GLOBAL E DO NOVO MODAL
+import VictoryModal from '../../../components/VictoryModal';
+import { useGame } from '../../../context/GameContext';
 
 type Phase = 'intro' | 'storage' | 'application' | 'finished';
 
@@ -29,20 +33,27 @@ export default function MedicamentosScreen() {
   const homePulseAnim = useRef(new Animated.Value(1)).current;
 
   const insets = useSafeAreaInsets();
+  const { addPoints } = useGame();
+
+  // EFEITO NOVO: Dá os pontos assim que a fase finaliza
+  useEffect(() => {
+    if (phase === 'finished') {
+      addPoints('modulo_medicamentos' as any, 10);
+    }
+  }, [phase, addPoints]);
 
   useEffect(() => {
     if (phase === 'intro') {
       const timer = setTimeout(() => {
-        setShowIntroBtn(true); // Mostra o botão no código
+        setShowIntroBtn(true);
         Animated.timing(btnOpacity, {
-          // Faz a animação de opacidade de 0 para 1
           toValue: 1,
-          duration: 800, // Duração do efeito de surgimento (0.8 segundos)
+          duration: 800,
           useNativeDriver: true,
         }).start();
       }, 1000);
 
-      return () => clearTimeout(timer); // Limpa o timer se o usuário sair antes
+      return () => clearTimeout(timer);
     }
   }, [phase, btnOpacity]);
 
@@ -119,19 +130,18 @@ export default function MedicamentosScreen() {
     );
   }
 
-  // FASE 2: ARMAZENAMENTO (CENA DO QUARTO - COM ACESSIBILIDADE E RESPONSIVIDADE)
+  // FASE 2: ARMAZENAMENTO
   if (phase === 'storage') {
     return (
       <View style={styles.storageWrapper}>
         <View style={styles.topBackground} />
         <View style={styles.bottomBackground} />
 
-        {/* CONTAINER COM ASPECT RATIO PARA TRAVAR A PROPORÇÃO */}
         <View style={styles.gameBoardStorage}>
           <ImageBackground
             source={require('@/assets/images/armazenamento_insulina.png')}
             style={styles.background}
-            resizeMode="cover" // Como a proporção está travada pelo gameBoard, usamos cover
+            resizeMode="cover"
           >
             <TouchableOpacity
               style={[styles.topHomeBtn, { top: Math.max(insets.top + 10, 40) }]}
@@ -148,7 +158,6 @@ export default function MedicamentosScreen() {
             </Text>
 
             <View style={styles.interactiveArea}>
-              {/* HITBOX DA ESQUERDA - Criado-mudo no Sol (Errado) */}
               <TouchableOpacity
                 style={[
                   styles.invisibleButton,
@@ -164,10 +173,8 @@ export default function MedicamentosScreen() {
                 accessible={true}
                 accessibilityRole="button"
                 accessibilityLabel="Criado-mudo sob a luz do sol"
-                accessibilityHint="Toque para escolher este local para armazenar a insulina"
               />
 
-              {/* HITBOX DA DIREITA - Criado-mudo na Sombra (Certo) */}
               <TouchableOpacity
                 style={[
                   styles.invisibleButton,
@@ -183,7 +190,6 @@ export default function MedicamentosScreen() {
                 accessible={true}
                 accessibilityRole="button"
                 accessibilityLabel="Criado-mudo na sombra"
-                accessibilityHint="Toque para escolher este local para armazenar a insulina"
               />
             </View>
 
@@ -198,14 +204,12 @@ export default function MedicamentosScreen() {
     );
   }
 
-  // FASE 3: LOCAIS DE APLICAÇÃO (CENA DA COZINHA - COM ACESSIBILIDADE E RESPONSIVIDADE)
-  if (phase === 'application') {
+  // FASE 3 E FASE 4 (A tela fica congelada na cozinha, com o modal por cima)
+  if (phase === 'application' || phase === 'finished') {
     return (
       <View style={styles.storageWrapper}>
-        {/* Fundo neutro (cor pastel que combina com a cozinha) para preencher as bordas em telas ultra-longas ou tablets */}
         <View style={[styles.topBackground, { backgroundColor: '#EAD7C3', bottom: 0 }]} />
 
-        {/* CONTAINER MÁGICO QUE TRAVA A PROPORÇÃO DA COZINHA */}
         <View style={styles.gameBoardApplication}>
           <ImageBackground
             source={require('@/assets/images/uso_insulina.jpg')}
@@ -217,7 +221,6 @@ export default function MedicamentosScreen() {
             </Text>
 
             <View style={styles.interactiveArea}>
-              {/* ÁREA DE ERRO GIGANTE */}
               <TouchableOpacity
                 style={styles.wrongAreaFull}
                 activeOpacity={1}
@@ -231,11 +234,9 @@ export default function MedicamentosScreen() {
                 accessible={true}
                 accessibilityRole="button"
                 accessibilityLabel="Área incorreta do cenário"
-                accessibilityHint="Qualquer toque aqui indicará um local incorreto de aplicação"
               />
 
-              {/* ÁREAS CORRETAS MAPEADAS COM ACESSIBILIDADE */}
-              <TouchableOpacity // Braço Esquerdo
+              <TouchableOpacity
                 style={[
                   styles.invisibleButton,
                   {
@@ -252,10 +253,9 @@ export default function MedicamentosScreen() {
                 accessible={true}
                 accessibilityRole="button"
                 accessibilityLabel="Braço esquerdo do personagem"
-                accessibilityHint="Toque duas vezes para selecionar o braço como local de aplicação"
               />
 
-              <TouchableOpacity // Braço Direito
+              <TouchableOpacity
                 style={[
                   styles.invisibleButton,
                   {
@@ -272,10 +272,9 @@ export default function MedicamentosScreen() {
                 accessible={true}
                 accessibilityRole="button"
                 accessibilityLabel="Braço direito do personagem"
-                accessibilityHint="Toque duas vezes para selecionar o braço como local de aplicação"
               />
 
-              <TouchableOpacity // Barriga (Região Abdominal)
+              <TouchableOpacity
                 style={[
                   styles.invisibleButton,
                   { top: '73%', left: '41%', width: '30%', height: '8%' },
@@ -290,10 +289,9 @@ export default function MedicamentosScreen() {
                 accessible={true}
                 accessibilityRole="button"
                 accessibilityLabel="Barriga, região abdominal"
-                accessibilityHint="Toque duas vezes para selecionar o abdómen como local de aplicação"
               />
 
-              <TouchableOpacity // Pernas / Coxas
+              <TouchableOpacity
                 style={[
                   styles.invisibleButton,
                   { top: '81%', left: '43%', width: '33%', height: '8%' },
@@ -308,7 +306,6 @@ export default function MedicamentosScreen() {
                 accessible={true}
                 accessibilityRole="button"
                 accessibilityLabel="Coxas, região das pernas"
-                accessibilityHint="Toque duas vezes para selecionar as coxas como local de aplicação"
               />
             </View>
 
@@ -318,7 +315,6 @@ export default function MedicamentosScreen() {
               onClose={handleCloseFeedback}
             />
 
-            {/* BOTÃO DE VOLTAR NO TOPO DO NÓ JSX COM ACESSIBILIDADE */}
             <TouchableOpacity
               style={[styles.topHomeBtn, { top: Math.max(insets.top + 10, 40) }]}
               onPress={() => router.back()}
@@ -328,31 +324,16 @@ export default function MedicamentosScreen() {
             >
               <MaterialCommunityIcons name="home" size={24} color="#fff" />
             </TouchableOpacity>
+
+            {/* MODAL DE VITÓRIA GLOBAL NO FINAL DA TELA */}
+            <VictoryModal
+              visible={phase === 'finished'}
+              pointsEarned={10}
+              moduleName="Tomar Medicamentos"
+            />
           </ImageBackground>
         </View>
       </View>
-    );
-  }
-
-  // FASE 4: TELA FINAL
-  if (phase === 'finished') {
-    return (
-      <ImageBackground
-        source={require('@/assets/images/background.jpg')}
-        style={styles.background}
-        resizeMode="cover"
-      >
-        <View style={styles.finishedCard}>
-          <Text style={styles.emojiTrophy}>🏅</Text>
-          <Text style={styles.introTitle}>Parabéns!</Text>
-          <Text style={styles.introText}>
-            Você aprendeu perfeitamente como armazenar e aplicar sua insulina.
-          </Text>
-          <TouchableOpacity style={styles.introCircleBtn} onPress={() => router.back()}>
-            <MaterialCommunityIcons name="check" size={38} color="#fff" />
-          </TouchableOpacity>
-        </View>
-      </ImageBackground>
     );
   }
 
@@ -435,7 +416,6 @@ const styles = StyleSheet.create({
   invisibleButton: {
     position: 'absolute',
     zIndex: 30,
-    //backgroundColor: 'rgba(255, 0, 0, 0.4)',
   },
   wrongAreaFull: {
     position: 'absolute',
@@ -444,7 +424,6 @@ const styles = StyleSheet.create({
     left: '28%',
     right: '18%',
     zIndex: 10,
-    //backgroundColor: 'rgba(80, 250, 29, 0.4)',
   },
 
   storageWrapper: {
@@ -455,19 +434,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#000',
   },
-  // Tabuleiro do Quarto (1080x1920 = 9/16)
   gameBoardStorage: {
     width: '100%',
     maxHeight: '100%',
-    aspectRatio: 1080 / 1920, // Proporção exata da imagem do armazenamento
+    aspectRatio: 1080 / 1920,
     overflow: 'hidden',
   },
-
-  // Tabuleiro da Cozinha (535x1024)
   gameBoardApplication: {
     width: '100%',
     maxHeight: '100%',
-    aspectRatio: 535 / 1024, // Proporção exata da imagem do uso de insulina
+    aspectRatio: 535 / 1024,
     overflow: 'hidden',
   },
   topBackground: {
@@ -538,15 +514,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     elevation: 8,
   },
-  finishedCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    width: '85%',
-    borderRadius: 24,
-    padding: 40,
-    alignItems: 'center',
-    elevation: 8,
-    gap: 16,
-  },
   introHomeBtn: {
     position: 'absolute',
     top: -15,
@@ -586,5 +553,4 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     elevation: 4,
   },
-  emojiTrophy: { fontSize: 64 },
 });
