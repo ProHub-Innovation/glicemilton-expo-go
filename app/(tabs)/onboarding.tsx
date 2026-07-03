@@ -1,5 +1,6 @@
+import { useGame } from '@/context/GameContext';
 import { useRouter } from 'expo-router';
-import React, { useContext } from 'react';
+import React from 'react';
 import {
   Alert,
   Image,
@@ -11,15 +12,21 @@ import {
   View,
 } from 'react-native';
 import { AnimatedFloat } from '../../components/AnimatedElements';
-import { ScoreContext } from '../../contexts/ScoreContext';
 
 export default function DashboardScreen() {
   const router = useRouter();
-  const { score } = useContext(ScoreContext);
+  const { state } = useGame();
 
   const navigateToGame = (gameName: string) => {
-    // Usando o Alert nativo do React Native para evitar problemas de compatibilidade
-    Alert.alert('Navegação', `Navegando para o módulo: ${gameName}`);
+    if (gameName === 'Vigiar Taxas' || gameName === 'Medir Glicemia') {
+      router.push('/modulos/vigiarTaxas');
+    } else if (gameName === 'Adaptação Saudável') {
+      router.push('/modulos/labirinto');
+    } else if (gameName === 'Atividade Física') {
+      router.push('/modulos/corrida'); // ← adicione isso
+    } else {
+      Alert.alert('Em breve', `O módulo ${gameName} ainda está em desenvolvimento!`);
+    }
   };
 
   return (
@@ -30,7 +37,6 @@ export default function DashboardScreen() {
       imageStyle={{ transform: [{ scale: 1.08 }, { translateY: 15 }] }}
     >
       <SafeAreaView style={styles.safeArea}>
-        {/* PARTE SUPERIOR */}
         <View style={styles.topCard}>
           <View style={styles.cardHeader}>
             <View style={styles.glicemiaLabel}>
@@ -48,29 +54,26 @@ export default function DashboardScreen() {
               <Text style={styles.glicemiaUnit}>mg/dL</Text>
             </View>
             <View style={styles.scoreContainer}>
-              <Text style={styles.scoreLabel}>Pontos</Text>
-              <Text style={styles.scoreValue}>{score}</Text>
+              <Text style={styles.scoreLabel}>Points</Text>
+              <Text style={styles.scoreValue}>{state.totalPoints}</Text>
             </View>
           </View>
         </View>
 
-        {/* PARTE INFERIOR */}
         <View style={styles.bottomSection}>
           <AnimatedFloat>
             <Image
-              source={require('../../assets/images/Glicemilton feliz.png')}
+              source={require('../../assets/images/glicemilton_feliz.png')}
               style={styles.characterImage}
               resizeMode="contain"
             />
           </AnimatedFloat>
 
-          {/* GRID COM OS NOMES DE ARQUIVO CORRIGIDOS PARA O PADRÃO (SNAKE_CASE) */}
           <View style={styles.bottomGrid}>
-            {/* LINHA 1 */}
             <View style={styles.gridRow}>
               <TouchableOpacity
                 style={[styles.moduleButton, { width: '22%' }]}
-                onPress={() => navigateToGame('Reduzir Riscos')}
+                onPress={() => router.navigate('/modulos/exercicios')}
               >
                 <Image
                   source={require('../../assets/images/icone_reduzir_os_riscos.png')}
@@ -90,7 +93,7 @@ export default function DashboardScreen() {
 
               <TouchableOpacity
                 style={[styles.moduleButton, { width: '22%' }]}
-                onPress={() => navigateToGame('Comer Saudavelmente')}
+                onPress={() => router.navigate('/modulos/prato')}
               >
                 <Image
                   source={require('../../assets/images/icone_comer_saudavelmente.png')}
@@ -99,11 +102,10 @@ export default function DashboardScreen() {
               </TouchableOpacity>
             </View>
 
-            {/* LINHA 2 */}
             <View style={styles.gridRow}>
               <TouchableOpacity
                 style={[styles.moduleButton, { width: '22%' }]}
-                onPress={() => navigateToGame('Tomar Medicamentos')}
+                onPress={() => router.navigate('/modulos/medicamentos')}
               >
                 <Image
                   source={require('../../assets/images/icone_tomar_medicamentos.png')}
@@ -113,7 +115,7 @@ export default function DashboardScreen() {
 
               <TouchableOpacity
                 style={[styles.moduleButton, { width: '22%' }]}
-                onPress={() => navigateToGame('Resolver Problemas')}
+                onPress={() => router.navigate('/modulos/cartoes')}
               >
                 <Image
                   source={require('../../assets/images/icone_resolver_problemas.png')}
@@ -123,7 +125,7 @@ export default function DashboardScreen() {
 
               <TouchableOpacity
                 style={[styles.moduleButton, { width: '24%' }]}
-                onPress={() => navigateToGame('Vigiar Taxas')}
+                onPress={() => navigateToGame('Medir Glicemia')}
               >
                 <Image
                   source={require('../../assets/images/icone_vigiar_taxas.png')}

@@ -1,36 +1,556 @@
+import { Chewy_400Regular } from '@expo-google-fonts/chewy';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useFonts as useExpoFonts } from 'expo-font';
 import { router } from 'expo-router';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  Animated,
+  Image,
+  ImageBackground,
+  Modal,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-export default function EmBreve() {
+// IMPORTAÇÃO DO ESTADO GLOBAL E DO NOVO MODAL
+import VictoryModal from '../../../components/VictoryModal';
+import { useGame } from '../../../context/GameContext';
+
+type Phase = 'intro' | 'storage' | 'application' | 'finished';
+
+export default function MedicamentosScreen() {
+  const [phase, setPhase] = useState<Phase>('intro');
+  const [feedbackVisible, setFeedbackVisible] = useState(false);
+  const [feedbackData, setFeedbackData] = useState({ isCorrect: false, title: '', message: '' });
+
+  const [showIntroBtn, setShowIntroBtn] = useState(false);
+  const btnOpacity = useRef(new Animated.Value(0)).current;
+
+  const [fontsLoaded] = useExpoFonts({ Chewy_400Regular });
+  const homePulseAnim = useRef(new Animated.Value(1)).current;
+
+  const insets = useSafeAreaInsets();
+  const { addPoints } = useGame();
+
+  // EFEITO NOVO: Dá os pontos assim que a fase finaliza
+  useEffect(() => {
+    if (phase === 'finished') {
+      addPoints('modulo_medicamentos' as any, 10);
+    }
+  }, [phase, addPoints]);
+
+  useEffect(() => {
+    if (phase === 'intro') {
+      const timer = setTimeout(() => {
+        setShowIntroBtn(true);
+        Animated.timing(btnOpacity, {
+          toValue: 1,
+          duration: 800,
+          useNativeDriver: true,
+        }).start();
+      }, 1000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [phase, btnOpacity]);
+
+  useEffect(() => {
+    const animation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(homePulseAnim, { toValue: 1.1, duration: 800, useNativeDriver: true }),
+        Animated.timing(homePulseAnim, { toValue: 1.0, duration: 800, useNativeDriver: true }),
+      ])
+    );
+    animation.start();
+    return () => animation.stop();
+  }, [homePulseAnim]);
+
+  if (!fontsLoaded) return null;
+
+  function showFeedback(isCorrect: boolean, title: string, message: string) {
+    setFeedbackData({ isCorrect, title, message });
+    setFeedbackVisible(true);
+  }
+
+  function handleCloseFeedback() {
+    setFeedbackVisible(false);
+    if (feedbackData.isCorrect) {
+      if (phase === 'storage') setPhase('application');
+      else if (phase === 'application') setPhase('finished');
+    }
+  }
+
+  // ==================== RENDERIZAÇÃO DAS FASES ====================
+
+  // FASE 1: INTRODUÇÃO
+  if (phase === 'intro') {
+    return (
+      <ImageBackground
+        source={require('@/assets/images/background.jpg')}
+        style={styles.background}
+        resizeMode="cover"
+      >
+        <View style={styles.introContainerClean}>
+          <View style={styles.cardAnchor}>
+            <Animated.View style={[styles.introHomeBtn, { transform: [{ scale: homePulseAnim }] }]}>
+              <TouchableOpacity onPress={() => router.back()}>
+                <MaterialCommunityIcons name="home" size={24} color="#fff" />
+              </TouchableOpacity>
+            </Animated.View>
+
+            <View style={styles.introCard}>
+              <Text style={styles.introTitle}>Tomar os medicamentos</Text>
+              <Image
+                source={require('@/assets/images/icone_tomar_medicamentos.png')}
+                style={styles.introIcon}
+                resizeMode="contain"
+              />
+              <Text style={styles.introText}>
+                Administrar seus medicamentos de forma responsável, seguindo rigorosamente a
+                prescrição médica, é essencial para o autocuidado no diabetes.
+              </Text>
+
+              {showIntroBtn && (
+                <Animated.View style={{ opacity: btnOpacity }}>
+                  <TouchableOpacity
+                    style={styles.introCircleBtn}
+                    onPress={() => setPhase('storage')}
+                  >
+                    <MaterialCommunityIcons name="chevron-right" size={38} color="#fff" />
+                  </TouchableOpacity>
+                </Animated.View>
+              )}
+            </View>
+          </View>
+        </View>
+      </ImageBackground>
+    );
+  }
+
+  // FASE 2: ARMAZENAMENTO
+  if (phase === 'storage') {
+    return (
+      <View style={styles.storageWrapper}>
+        <View style={styles.topBackground} />
+        <View style={styles.bottomBackground} />
+
+        <View style={styles.gameBoardStorage}>
+          <ImageBackground
+            source={require('@/assets/images/armazenamento_insulina.png')}
+            style={styles.background}
+            resizeMode="cover"
+          >
+            <TouchableOpacity
+              style={[styles.topHomeBtn, { top: Math.max(insets.top + 10, 40) }]}
+              onPress={() => router.back()}
+              accessible={true}
+              accessibilityRole="button"
+              accessibilityLabel="Voltar para a tela inicial"
+            >
+              <MaterialCommunityIcons name="home" size={24} color="#fff" />
+            </TouchableOpacity>
+
+            <Text style={styles.gameTitle}>
+              Qual melhor local para armazenar a caneta de insulina em uso?
+            </Text>
+
+            <View style={styles.interactiveArea}>
+              <TouchableOpacity
+                style={[
+                  styles.invisibleButton,
+                  { top: '48%', left: '10%', width: '28%', height: '18%' },
+                ]}
+                onPress={() =>
+                  showFeedback(
+                    false,
+                    'Atenção!',
+                    'O calor e o contato direto com o sol podem estragar a insulina. Tente novamente!'
+                  )
+                }
+                accessible={true}
+                accessibilityRole="button"
+                accessibilityLabel="Criado-mudo sob a luz do sol"
+              />
+
+              <TouchableOpacity
+                style={[
+                  styles.invisibleButton,
+                  { top: '48%', right: '12%', width: '28%', height: '18%' },
+                ]}
+                onPress={() =>
+                  showFeedback(
+                    true,
+                    'Parabéns!',
+                    'Você escolheu o local correto! A caneta em uso deve ficar protegida da luz solar e do calor excessivo.'
+                  )
+                }
+                accessible={true}
+                accessibilityRole="button"
+                accessibilityLabel="Criado-mudo na sombra"
+              />
+            </View>
+
+            <FeedbackModal
+              visible={feedbackVisible}
+              data={feedbackData}
+              onClose={handleCloseFeedback}
+            />
+          </ImageBackground>
+        </View>
+      </View>
+    );
+  }
+
+  // FASE 3 E FASE 4 (A tela fica congelada na cozinha, com o modal por cima)
+  if (phase === 'application' || phase === 'finished') {
+    return (
+      <View style={styles.storageWrapper}>
+        <View style={[styles.topBackground, { backgroundColor: '#EAD7C3', bottom: 0 }]} />
+
+        <View style={styles.gameBoardApplication}>
+          <ImageBackground
+            source={require('@/assets/images/uso_insulina.jpg')}
+            style={styles.background}
+            resizeMode="cover"
+          >
+            <Text style={styles.gameTitle}>
+              Quais são os locais corretos de aplicação da caneta de insulina?
+            </Text>
+
+            <View style={styles.interactiveArea}>
+              <TouchableOpacity
+                style={styles.wrongAreaFull}
+                activeOpacity={1}
+                onPress={() =>
+                  showFeedback(
+                    false,
+                    'Ops!',
+                    'Este não é o local correto. A insulina deve ser aplicada na barriga, coxas ou parte posterior dos braços.'
+                  )
+                }
+                accessible={true}
+                accessibilityRole="button"
+                accessibilityLabel="Área incorreta do cenário"
+              />
+
+              <TouchableOpacity
+                style={[
+                  styles.invisibleButton,
+                  {
+                    top: '58%',
+                    left: '22%',
+                    width: '14%',
+                    height: '13%',
+                    transform: [{ rotate: '-82deg' }],
+                  },
+                ]}
+                onPress={() =>
+                  showFeedback(true, 'Parabéns!', 'Os braços são ótimos locais para aplicação!')
+                }
+                accessible={true}
+                accessibilityRole="button"
+                accessibilityLabel="Braço esquerdo do personagem"
+              />
+
+              <TouchableOpacity
+                style={[
+                  styles.invisibleButton,
+                  {
+                    top: '63%',
+                    right: '24%',
+                    width: '15%',
+                    height: '10.5%',
+                    transform: [{ rotate: '35deg' }],
+                  },
+                ]}
+                onPress={() =>
+                  showFeedback(true, 'Parabéns!', 'Excelente! O braço é um local recomendado.')
+                }
+                accessible={true}
+                accessibilityRole="button"
+                accessibilityLabel="Braço direito do personagem"
+              />
+
+              <TouchableOpacity
+                style={[
+                  styles.invisibleButton,
+                  { top: '73%', left: '41%', width: '30%', height: '8%' },
+                ]}
+                onPress={() =>
+                  showFeedback(
+                    true,
+                    'Parabéns!',
+                    'A barriga (região abdominal) é um dos melhores locais para absorção da insulina!'
+                  )
+                }
+                accessible={true}
+                accessibilityRole="button"
+                accessibilityLabel="Barriga, região abdominal"
+              />
+
+              <TouchableOpacity
+                style={[
+                  styles.invisibleButton,
+                  { top: '81%', left: '43%', width: '33%', height: '8%' },
+                ]}
+                onPress={() =>
+                  showFeedback(
+                    true,
+                    'Parabéns!',
+                    'As coxas são locais seguros e muito usados para aplicar a insulina.'
+                  )
+                }
+                accessible={true}
+                accessibilityRole="button"
+                accessibilityLabel="Coxas, região das pernas"
+              />
+            </View>
+
+            <FeedbackModal
+              visible={feedbackVisible}
+              data={feedbackData}
+              onClose={handleCloseFeedback}
+            />
+
+            <TouchableOpacity
+              style={[styles.topHomeBtn, { top: Math.max(insets.top + 10, 40) }]}
+              onPress={() => router.back()}
+              accessible={true}
+              accessibilityRole="button"
+              accessibilityLabel="Voltar para o menu principal"
+            >
+              <MaterialCommunityIcons name="home" size={24} color="#fff" />
+            </TouchableOpacity>
+
+            {/* MODAL DE VITÓRIA GLOBAL NO FINAL DA TELA */}
+            <VictoryModal
+              visible={phase === 'finished'}
+              pointsEarned={10}
+              moduleName="Tomar Medicamentos"
+            />
+          </ImageBackground>
+        </View>
+      </View>
+    );
+  }
+
+  return null;
+}
+
+interface FeedbackModalProps {
+  visible: boolean;
+  data: { isCorrect: boolean; title: string; message: string };
+  onClose: () => void;
+}
+
+function FeedbackModal({ visible, data, onClose }: FeedbackModalProps) {
   return (
-    <View style={styles.container}>
-      <Text style={styles.emoji}>🚧</Text>
-      <Text style={styles.title}>Em breve</Text>
-      <Text style={styles.sub}>Este módulo está sendo desenvolvido</Text>
-      <TouchableOpacity style={styles.btn} onPress={() => router.back()}>
-        <Text style={styles.btnText}>Voltar</Text>
-      </TouchableOpacity>
-    </View>
+    <Modal visible={visible} transparent animationType="fade">
+      <View style={styles.modalOverlay}>
+        <View style={[styles.modalCard, data.isCorrect ? styles.modalCorrect : styles.modalWrong]}>
+          <Text
+            style={[
+              styles.modalTitle,
+              data.isCorrect ? { color: '#2E7D32' } : { color: '#C62828' },
+            ]}
+          >
+            {data.title}
+          </Text>
+          <Text style={styles.modalMessage}>{data.message}</Text>
+          <TouchableOpacity
+            style={[
+              styles.modalBtn,
+              data.isCorrect ? { backgroundColor: '#4CAF50' } : { backgroundColor: '#E53935' },
+            ]}
+            onPress={onClose}
+          >
+            <Text style={styles.modalBtnText}>Continuar</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
   );
 }
 
+// ==================== ESTILOS LIMPOS ====================
 const styles = StyleSheet.create({
-  container: {
+  background: {
     flex: 1,
-    alignItems: 'center',
+    width: '100%',
+    height: '100%',
     justifyContent: 'center',
-    backgroundColor: '#FAFAFA',
-    gap: 12,
+    alignItems: 'center',
   },
-  emoji: { fontSize: 48 },
-  title: { fontSize: 22, fontWeight: '800', color: '#1A1A1A' },
-  sub: { fontSize: 14, color: '#888' },
-  btn: {
-    marginTop: 8,
-    backgroundColor: '#FF4B4B',
-    paddingHorizontal: 24,
+  topHomeBtn: {
+    position: 'absolute',
+    left: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#8B5A2B',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#FFF',
+    zIndex: 50,
+  },
+  gameTitle: {
+    position: 'absolute',
+    top: 100,
+    fontFamily: 'Chewy_400Regular',
+    fontSize: 30,
+    color: '#FFF',
+    textAlign: 'center',
+    paddingHorizontal: 20,
+    textShadowColor: 'rgba(0,0,0,0.6)',
+    textShadowOffset: { width: 1, height: 2 },
+    textShadowRadius: 3,
+    zIndex: 10,
+  },
+
+  // Áreas Interativas
+  interactiveArea: { flex: 1, width: '100%', position: 'relative' },
+  invisibleButton: {
+    position: 'absolute',
+    zIndex: 30,
+  },
+  wrongAreaFull: {
+    position: 'absolute',
+    top: '33%',
+    bottom: '10%',
+    left: '28%',
+    right: '18%',
+    zIndex: 10,
+  },
+
+  storageWrapper: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#000',
+  },
+  gameBoardStorage: {
+    width: '100%',
+    maxHeight: '100%',
+    aspectRatio: 1080 / 1920,
+    overflow: 'hidden',
+  },
+  gameBoardApplication: {
+    width: '100%',
+    maxHeight: '100%',
+    aspectRatio: 535 / 1024,
+    overflow: 'hidden',
+  },
+  topBackground: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: '50%',
+    backgroundColor: '#894C16',
+  },
+  bottomBackground: {
+    position: 'absolute',
+    top: '50%',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#613915',
+  },
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalCard: {
+    width: '85%',
+    padding: 24,
+    borderRadius: 16,
+    alignItems: 'center',
+    borderWidth: 3,
+    backgroundColor: '#FFF',
+  },
+  modalCorrect: { borderColor: '#4CAF50' },
+  modalWrong: { borderColor: '#E53935' },
+  modalTitle: { fontSize: 28, fontFamily: 'Chewy_400Regular', marginBottom: 12 },
+  modalMessage: {
+    fontSize: 16,
+    color: '#333',
+    textAlign: 'center',
+    marginBottom: 20,
+    fontWeight: '500',
+    lineHeight: 22,
+  },
+  modalBtn: {
     paddingVertical: 12,
-    borderRadius: 12,
+    paddingHorizontal: 32,
+    borderRadius: 8,
+    width: '100%',
+    alignItems: 'center',
   },
-  btnText: { color: '#fff', fontWeight: '700' },
+  modalBtnText: { color: '#FFF', fontSize: 18, fontFamily: 'Chewy_400Regular' },
+
+  introContainerClean: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+    backgroundColor: 'rgba(0,0,0,0.1)',
+    width: '100%',
+  },
+  cardAnchor: { width: '100%', maxWidth: 340, position: 'relative' },
+  introCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    borderRadius: 24,
+    paddingVertical: 40,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+    elevation: 8,
+  },
+  introHomeBtn: {
+    position: 'absolute',
+    top: -15,
+    left: -10,
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    backgroundColor: '#8B5A2B',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 3,
+    borderColor: '#FFF',
+    zIndex: 99,
+  },
+  introIcon: { width: 140, height: 140, marginVertical: 20 },
+  introTitle: {
+    fontFamily: 'Chewy_400Regular',
+    fontSize: 34,
+    color: '#6D4C41',
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+  introText: {
+    fontSize: 18,
+    color: '#5D4037',
+    textAlign: 'center',
+    lineHeight: 26,
+    fontWeight: '600',
+    marginBottom: 24,
+  },
+  introCircleBtn: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    backgroundColor: '#6D4C41',
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 4,
+  },
 });

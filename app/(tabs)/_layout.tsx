@@ -1,13 +1,28 @@
+import { Chewy_400Regular, useFonts } from '@expo-google-fonts/chewy';
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import React from 'react';
-
-// 1. Importe o ScoreProvider aqui no topo!
+import { ActivityIndicator, View } from 'react-native';
 import { ScoreProvider } from '../../contexts/ScoreContext';
 
 export default function TabLayout() {
+  // Carrega a fonte uma única vez para todo o app
+  const [fontsLoaded] = useFonts({
+    Chewy_400Regular,
+  });
+
+  // Mostra um ícone de carregamento enquanto a fonte não estiver pronta
+  if (!fontsLoaded) {
+    return (
+      <View
+        style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#222' }}
+      >
+        <ActivityIndicator size="large" color="#FF4B4B" />
+      </View>
+    );
+  }
+
   return (
-    // 2. Abrace o componente <Tabs> com o <ScoreProvider>
     <ScoreProvider>
       <Tabs
         screenOptions={{
@@ -15,7 +30,6 @@ export default function TabLayout() {
           headerShown: false,
         }}
       >
-        {/* 1. Tela Inicial (Home) */}
         <Tabs.Screen
           name="index"
           options={{
@@ -24,7 +38,6 @@ export default function TabLayout() {
           }}
         />
 
-        {/* 2. Tela de Login (two) - Oculta da barra inferior */}
         <Tabs.Screen
           name="two"
           options={{
@@ -33,7 +46,6 @@ export default function TabLayout() {
           }}
         />
 
-        {/* 3. Tela de Jogos (Onboarding / Dashboard) */}
         <Tabs.Screen
           name="onboarding"
           options={{
