@@ -37,10 +37,14 @@ export default function CardAssociationGrid({ onGameComplete }: { onGameComplete
 
   // --- LÓGICA DE VITÓRIA ATUALIZADA ---
   useEffect(() => {
-    if (matchedPairs.size === 4) {
-      // Adiciona um pequeno atraso para o usuário ver a última carta virar
+// Lógica de finalização combinada
+    if (matchedPairs.size === 8) { // Ajuste para 4 se o jogo atual tiver apenas 4 pares
+      // Adiciona um pequeno atraso para o usuário ver a última carta virar (veio da developer)
       setTimeout(() => {
-        onGameCompleteRef.current?.();
+        setShowSuccessModal(true); // Abre o modal (veio da sua feature)
+        
+        // Se precisar avisar o componente pai que o jogo acabou, descomente a linha abaixo:
+        // onGameCompleteRef.current?.(); 
       }, 500);
     }
   }, [matchedPairs]);
@@ -164,11 +168,11 @@ const styles = StyleSheet.create({
   cardBase: {
     width: '24%',
     aspectRatio: 0.42,
-    borderRadius: 18,
+    borderRadius: 2,
     borderWidth: 2,
     position: 'relative',
     overflow: 'hidden',
-    elevation: 3,
+    elevation: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -205,5 +209,62 @@ const styles = StyleSheet.create({
   cardError: {
     backgroundColor: CARTOES_COLORS.errorBg,
     borderColor: CARTOES_COLORS.errorBorder,
+  },
+modalOverlay: {
+    flex: 1,
+    backgroundColor: CARTOES_COLORS.overlay,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+  },
+  modalCard: {
+    width: '100%',
+    maxWidth: 320,
+    paddingVertical: 24,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    borderWidth: 3,
+    borderColor: CARTOES_COLORS.brandDark,
+    backgroundColor: CARTOES_COLORS.white,
+    alignSelf: 'center',
+    elevation: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+  },
+  modalEmoji: {
+    fontSize: 54,
+    marginBottom: 12,
+  },
+  modalTitle: {
+    fontFamily: 'Chewy_400Regular',
+    fontSize: 30,
+    color: CARTOES_COLORS.brandDark,
+    marginBottom: 8,
+    textAlign: 'center',
+    paddingHorizontal: 12,
+  },
+  modalMessage: {
+    fontSize: 16,
+    color: CARTOES_COLORS.textMuted,
+    textAlign: 'center',
+    marginBottom: 24,
+    fontWeight: '500',
+    lineHeight: 22,
+    paddingHorizontal: 12,
+  },
+  modalBtn: {
+    backgroundColor: CARTOES_COLORS.brandDark,
+    paddingVertical: 14,
+    borderRadius: 12,
+    width: '90%',
+    alignItems: 'center',
+  },
+  modalBtnText: {
+    color: CARTOES_COLORS.white,
+    fontSize: 18,
+    fontFamily: 'Chewy_400Regular',
   },
 });

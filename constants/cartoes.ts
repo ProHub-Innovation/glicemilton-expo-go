@@ -14,7 +14,7 @@ export const CARTOES_COLORS = {
   primary: GLICEMIA_COLORS.primary,
   white: GLICEMIA_COLORS.white,
   containerBg: GLICEMIA_COLORS.background,
-  brandDark: '#795548',
+  brandDark: '#6D4C41', // Unificado com o Design System central
   selectedBorder: GLICEMIA_COLORS.selectionOrange,
   selectedBg: GLICEMIA_COLORS.selectionOrangeBg,
   successBg: '#AED581',
@@ -36,61 +36,126 @@ export const CARTOES_THEORY = {
     'Você associou todos os problemas diários às suas respectivas soluções clínicas com maestria!',
 };
 
+// Mapeamento dos 8 pares sequenciais vindos do Drive (Problemas vs Soluções)
 export const TABULEIRO_CARTOES: CardItem[] = [
+  // Par 1
   {
     id: 'p1',
     pairId: 'par_1',
     type: 'PROBLEMA',
-    image: require('../assets/images/cartas/formiga_hipoglicemia_sintoma_1.png'),
-    alt: 'Formiga com tontura e suor frio, representando os sintomas de hipoglicemia.',
+    image: require('../assets/images/cartas/Jogo 1.png'),
+    alt: 'Obstáculo diário 1 sobre manejo glicêmico.',
   },
   {
     id: 's1',
     pairId: 'par_1',
     type: 'SOLUCAO',
-    image: require('../assets/images/cartas/formiga_hipoglicemia_solucao_1.png'),
-    alt: 'Formiga ingerindo açúcar rápido para reverter a crise de hipoglicemia.',
+    image: require('../assets/images/cartas/Jogo 1.1.png'),
+    alt: 'Solução recomendada para o obstáculo 1.',
   },
+  // Par 2
   {
     id: 'p2',
     pairId: 'par_2',
     type: 'PROBLEMA',
-    image: require('../assets/images/cartas/formiga_hipoglicemia_sintoma_2.png'),
-    alt: 'Formiga desanimada ao lado de uma cama, ilustrando fraqueza por baixa taxa de açúcar.',
+    image: require('../assets/images/cartas/Jogo 2.png'),
+    alt: 'Obstáculo diário 2 sobre manejo glicêmico.',
   },
   {
     id: 's2',
     pairId: 'par_2',
     type: 'SOLUCAO',
-    image: require('../assets/images/cartas/formiga_hipoglicemia_solucao_2.png'),
-    alt: 'Formiga comendo uma refeição balanceada para estabilização das taxas.',
+    image: require('../assets/images/cartas/Jogo 2.2.png'),
+    alt: 'Solução recomendada para o obstáculo 2.',
   },
+  // Par 3
   {
     id: 'p3',
     pairId: 'par_3',
     type: 'PROBLEMA',
-    image: require('../assets/images/cartas/formiga_hipoglicemia_sintoma_3.png'),
-    alt: 'Formiga desorientada durante caminhada ao ar livre.',
+    image: require('../assets/images/cartas/Jogo 3.png'),
+    alt: 'Obstáculo diário 3 sobre manejo glicêmico.',
   },
   {
     id: 's3',
     pairId: 'par_3',
     type: 'SOLUCAO',
-    image: require('../assets/images/cartas/formiga_hipoglicemia_solucao_3.png'),
-    alt: 'Formiga pausando o exercício e monitorando a glicemia com o glicosímetro.',
+    image: require('../assets/images/cartas/Jogo 3.3.png'),
+    alt: 'Solução recomendada para o obstáculo 3.',
   },
+  // Par 4
   {
     id: 'p4',
     pairId: 'par_4',
     type: 'PROBLEMA',
-    image: require('../assets/images/cartas/formiga_hipoglicemia_sintoma_4.png'),
-    alt: 'Gráfico mostrando alimentos inadequados e uma ambulância de emergência ao fundo.',
+    image: require('../assets/images/cartas/Jogo 4.png'),
+    alt: 'Obstáculo diário 4 sobre manejo glicêmico.',
   },
   {
     id: 's4',
     pairId: 'par_4',
     type: 'SOLUCAO',
-    image: require('../assets/images/cartas/formiga_hipoglicemia_solucao_4.png'),
-    alt: 'Formiga agindo com cautela ao volante de um carro, simbolizando prevenção de riscos.',
+    image: require('../assets/images/cartas/Jogo 4.4.png'),
+    alt: 'Solução recomendada para o obstáculo 4.',
+  },
+  // Par 5
+  {
+    id: 'p5',
+    pairId: 'par_5',
+    type: 'PROBLEMA',
+    image: require('../assets/images/cartas/Jogo 5.png'),
+    alt: 'Obstáculo diário 5 sobre manejo glicêmico.',
+  },
+  {
+    id: 's5',
+    pairId: 'par_5',
+    type: 'SOLUCAO',
+    image: require('../assets/images/cartas/Jogo 5.5.png'),
+    alt: 'Solução recomendada para o obstáculo 5.',
+  },
+  // Par 6
+  {
+    id: 'p6',
+    pairId: 'par_6',
+    type: 'PROBLEMA',
+    image: require('../assets/images/cartas/Jogo 6.png'),
+    alt: 'Obstáculo diário 6 sobre manejo glicêmico.',
+  },
+  {
+    id: 's6',
+    pairId: 'par_6',
+    type: 'SOLUCAO',
+    image: require('../assets/images/cartas/Jogo 6.6.png'),
+    alt: 'Solução recomendada para o obstáculo 6.',
+  },
+  // Par 7
+  {
+    id: 'p7',
+    pairId: 'par_7',
+    type: 'PROBLEMA',
+    image: require('../assets/images/cartas/Jogo 7.png'),
+    alt: 'Obstáculo diário 7 sobre manejo glicêmico.',
+  },
+  {
+    id: 's7',
+    pairId: 'par_7',
+    type: 'SOLUCAO',
+    image: require('../assets/images/cartas/Jogo 7.7.png'),
+    alt: 'Solução recomendada para o obstáculo 7.',
+  },
+  // Par 8
+  {
+    id: 'p8',
+    pairId: 'par_8',
+    type: 'PROBLEMA',
+    image: require('../assets/images/cartas/Jogo 8.png'),
+    alt: 'Obstáculo diário 8 sobre manejo glicêmico.',
+  },
+  {
+    id: 's8',
+    pairId: 'par_8',
+    type: 'SOLUCAO',
+    image: require('../assets/images/cartas/Jogo 8.8.png'),
+    alt: 'Solução recomendada para o obstáculo 8.',
   },
 ];
