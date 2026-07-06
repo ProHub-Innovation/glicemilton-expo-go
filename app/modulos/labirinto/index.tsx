@@ -27,13 +27,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-// ==========================================
-// 1. CONFIGURAÇÕES DA MATRIZ POR BORDAS (9x9)
-// ==========================================
-// "T" = Parede em Cima | "B" = Parede Em Baixo
-// "L" = Parede na Esquerda | "R" = Parede na Direita
-// "0" = Caminho totalmente aberto
-
 const INITIAL_MAZE = [
   ['EXIT', 'T', 'TB_SUGAR', 'TR', 'TL', 'TR', 'TL', 'TB', 'TR'], // Linha 0
   ['LRB', 'LR', 'LRT', 'LB', 'BR', 'LB', 'BR', 'LRT', 'LR'], // Linha 1
@@ -87,10 +80,9 @@ export default function LabirintoScreen() {
 
     if (phase === 'game' && !hasWon) {
       timerId = setInterval(() => {
-        // Atualização funcional de estado que não depende da variável externa
         setTimeLeft((prev) => {
           if (prev <= 1) {
-            clearInterval(timerId); // Interrompe de forma limpa na própria thread
+            clearInterval(timerId);
             return 0;
           }
           return prev - 1;
@@ -131,7 +123,6 @@ export default function LabirintoScreen() {
 
     const currentCellWalls = mazeMap[playerPos.row][playerPos.col];
 
-    // 🔥 COLISÃO POR BORDA: Bloqueia se a célula atual tiver a parede na direção do clique
     if (direction === 'UP' && currentCellWalls.includes('T')) return;
     if (direction === 'DOWN' && currentCellWalls.includes('B')) return;
     if (direction === 'LEFT' && currentCellWalls.includes('L')) return;
@@ -147,10 +138,8 @@ export default function LabirintoScreen() {
     if (nextRow < 0 || nextRow >= mazeMap.length || nextCol < 0 || nextCol >= mazeMap[0].length)
       return;
 
-    // Atualiza a posição do Glicemilton
     setPlayerPos({ row: nextRow, col: nextCol });
 
-    // Checa itens na nova célula usando strings
     const nextCell = mazeMap[nextRow][nextCol];
 
     if (nextCell.includes('SUGAR')) {
@@ -188,10 +177,6 @@ export default function LabirintoScreen() {
     setTimeLeft(45);
     setPhase('game');
   };
-
-  // ==========================================
-  // RENDERIZAÇÃO: FASE INTRODUÇÃO
-  // ==========================================
 
   if (phase === 'intro') {
     return (
@@ -236,8 +221,6 @@ export default function LabirintoScreen() {
     );
   }
 
-  // FASE 2: TELA FINAL DE PARABÉNS — usa o VictoryModal padrão do projeto
-  // O modal é exibido sobre o fundo do jogo; score já contém os pontos finais corretos
   if (phase === 'finished') {
     return (
       <ImageBackground
@@ -274,17 +257,12 @@ export default function LabirintoScreen() {
     );
   }
 
-  // ==========================================
-  // RENDERIZAÇÃO: FASE JOGO (LABIRINTO EM TELA CHEIA)
-  // ==========================================
   return (
-    /* 🔥 AQUI ESTÁ A MÁGICA: A sua imagem virou o fundo de toda a tela do jogo! */
     <ImageBackground
       source={require('@/assets/images/mapa_completo.png')}
       style={styles.gameContainer}
       resizeMode="contain"
     >
-      {/* Botão de Home flutuando no topo */}
       <TouchableOpacity
         style={[styles.topHomeBtn, { top: Math.max(insets.top, 20) }]}
         onPress={() => router.back()}
@@ -296,7 +274,6 @@ export default function LabirintoScreen() {
         Ajude-o a encontrar a saída!
       </Text>
 
-      {/* 🔥 MOSTRADOR DO CRONÔMETRO */}
       <View style={styles.timerBadge}>
         <MaterialCommunityIcons
           name="clock-outline"
@@ -308,7 +285,6 @@ export default function LabirintoScreen() {
         </Text>
       </View>
 
-      {/* GRADE DE COLISÕES INVISÍVEL (Alinhada exatamente por cima do desenho do labirinto) */}
       <View style={styles.mazeGridContainer}>
         {mazeMap.map((row, rowIndex) => (
           <View key={`row-${rowIndex}`} style={styles.row}>
@@ -316,7 +292,6 @@ export default function LabirintoScreen() {
               const isPlayer = playerPos.row === rowIndex && playerPos.col === colIndex;
               return (
                 <View key={`cell-${rowIndex}-${colIndex}`} style={styles.cell}>
-                  {/* BÔNUS (Cubinho de açúcar) */}
                   {cell.includes('SUGAR') && !isPlayer && (
                     <Animated.View entering={ZoomIn}>
                       <Image
@@ -327,19 +302,17 @@ export default function LabirintoScreen() {
                     </Animated.View>
                   )}
 
-                  {/* SINALIZADOR DA SAÍDA: Mudou de cell === 4 para incluir 'EXIT' */}
                   {cell.includes('EXIT') && !isPlayer && (
                     <View style={styles.invisibleExitAnchor} />
                   )}
 
-                  {/* JOGADOR (Formiguinha) */}
                   {isPlayer && (
                     <Animated.View
                       entering={ZoomIn.duration(150)}
                       style={{ justifyContent: 'center', alignItems: 'center' }}
                     >
                       <Image
-                        source={require('../../../assets/images/shared/glicemilton_feliz.png')}
+                        source={require('../../../assets/images/glicemilton_feliz.png')}
                         style={{
                           width: CELL_SIZE * 1.25,
                           height: CELL_SIZE * 1.25,
@@ -356,7 +329,6 @@ export default function LabirintoScreen() {
         ))}
       </View>
 
-      {/* TECLADO DIRECIONAL EM DIAMANTE */}
       <View style={styles.controlsArea}>
         <TouchableOpacity style={styles.dPadBtn} onPress={() => movePlayer('UP')}>
           <MaterialCommunityIcons name="arrow-up" size={28} color="#FFF" />
@@ -534,7 +506,7 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
   },
   finishedIcon: {
-    width: 120, // Tamanho ideal para o ícone/troféu do cartão
+    width: 120,
     height: 120,
     marginBottom: 10,
   },
@@ -593,6 +565,6 @@ const styles = StyleSheet.create({
     color: '#FFF',
   },
   timerTextDanger: {
-    color: '#FF5252', // Fica vermelho nos últimos 10 segundos
+    color: '#FF5252',
   },
 });
