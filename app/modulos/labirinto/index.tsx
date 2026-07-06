@@ -339,7 +339,7 @@ export default function LabirintoScreen() {
                       style={{ justifyContent: 'center', alignItems: 'center' }}
                     >
                       <Image
-                        source={require('@/assets/images/glicemilton_feliz.png')}
+                        source={require('../../../assets/images/shared/glicemilton_feliz.png')}
                         style={{
                           width: CELL_SIZE * 1.25,
                           height: CELL_SIZE * 1.25,
@@ -440,7 +440,6 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
 
-  /* 🔥 AJUSTADO: Removido paddingHorizontal para o plano de fundo tocar as bordas do aparelho */
   gameContainer: {
     flex: 1,
     alignItems: 'center',
