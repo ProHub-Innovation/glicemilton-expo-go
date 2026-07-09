@@ -1,37 +1,32 @@
-import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  ImageBackground,
-  TouchableOpacity,
-  FlatList,
-  StyleSheet,
-  Image,
-  Dimensions,
-} from 'react-native';
-import { router } from 'expo-router';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { GestureHandlerRootView, GestureDetector, Gesture } from 'react-native-gesture-handler';
-import { useFonts as useExpoFonts } from 'expo-font';
 import { Chewy_400Regular } from '@expo-google-fonts/chewy';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useFonts as useExpoFonts } from 'expo-font';
+import { router } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import {
+  FlatList,
+  Image,
+  ImageBackground,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  useWindowDimensions,
+} from 'react-native';
+import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import Animated, {
   FadeIn,
   FadeOut,
+  runOnJS,
   useAnimatedStyle,
   useSharedValue,
-  withSpring,
-  runOnJS,
   withRepeat,
   withSequence,
+  withSpring,
   withTiming,
 } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-const { height: SCREEN_HEIGHT } = Dimensions.get('window');
-
-// ==========================================
-// 1. TIPAGENS E DADOS DOS ALIMENTOS
-// ==========================================
 type Phase = 'intro' | 'chart' | 'game';
 type FoodCategory = 'carbs' | 'drinks' | 'proteins' | 'vegetables' | 'fruits';
 
@@ -50,9 +45,7 @@ export type FoodItem = {
   uniqueId?: string;
 };
 
-// BANCO DE DADOS COMPLETO
 const FOOD_DATABASE: FoodItem[] = [
-  // 🍞 CARBOIDRATOS
   {
     id: 'c1',
     name: 'Pão francês',
@@ -149,8 +142,6 @@ const FOOD_DATABASE: FoodItem[] = [
     plateSliceImage: require('@/assets/images/prato/carboidratos/bolo_milho.png'),
     color: '#FFB300',
   },
-
-  // 🥩 PROTEÍNAS
   {
     id: 'p1',
     name: 'Coxa de frango',
@@ -247,8 +238,6 @@ const FOOD_DATABASE: FoodItem[] = [
     plateSliceImage: require('@/assets/images/prato/proteinas/nuggets.png'),
     color: '#FFB300',
   },
-
-  // 🥬 VEGETAIS
   {
     id: 'v1',
     name: 'Alface',
@@ -345,8 +334,6 @@ const FOOD_DATABASE: FoodItem[] = [
     plateSliceImage: require('@/assets/images/prato/vegetais/brocolis.png'),
     color: '#388E3C',
   },
-
-  // 🍎 FRUTAS
   {
     id: 'f1',
     name: 'Banana prata',
@@ -443,8 +430,6 @@ const FOOD_DATABASE: FoodItem[] = [
     plateSliceImage: require('@/assets/images/prato/frutas/melancia.png'),
     color: '#EF5350',
   },
-
-  // ☕ BEBIDAS E EXTRAS
   {
     id: 'b1',
     name: 'Café sem açúcar',
@@ -529,7 +514,6 @@ const FOOD_DATABASE: FoodItem[] = [
     plateSliceImage: require('@/assets/images/prato/bebidas/agua_coco.png'),
     color: '#AED581',
   },
-  // --- DAQUI PARA BAIXO SÃO SÓLIDOS (Vão para o prato) ---
   {
     id: 'b8',
     name: 'Brigadeiro',
@@ -610,7 +594,6 @@ const FOOD_DATABASE: FoodItem[] = [
   },
 ];
 
-// O SEU ARRAY COM AS IMAGENS CUSTOMIZADAS EM VEZ DE ÍCONES
 const MENU_BUTTONS = [
   {
     id: 'carbs',
@@ -635,9 +618,6 @@ const MENU_BUTTONS = [
   },
 ] as const;
 
-// ==========================================
-// 2. COMPONENTE ARRASTÁVEL (O Alimento Selecionado)
-// ==========================================
 interface DraggableFoodProps {
   item: FoodItem;
   onDropInPlate: (item: FoodItem) => void;
@@ -658,7 +638,6 @@ function DraggableFood({ item, onDropInPlate }: DraggableFoodProps) {
     })
     .onEnd((event) => {
       isDragging.value = false;
-      // Arrasta 100px para CIMA -> Solta no prato!
       if (event.translationY < -100) {
         runOnJS(onDropInPlate)(item);
       }
@@ -680,7 +659,6 @@ function DraggableFood({ item, onDropInPlate }: DraggableFoodProps) {
   return (
     <GestureDetector gesture={panGesture}>
       <Animated.View style={[styles.stagedFoodBadge, animatedStyle]}>
-        {/* A MÁGICA ACONTECE AQUI: Agora ele verifica se tem imagem! */}
         <View
           style={[
             styles.stagedFoodIcon,
@@ -703,18 +681,15 @@ function DraggableFood({ item, onDropInPlate }: DraggableFoodProps) {
             </Text>
           )}
         </View>
-
         <Text style={styles.stagedFoodLabel}>Arraste até o prato!</Text>
       </Animated.View>
     </GestureDetector>
   );
 }
 
-// ==========================================
-// 3. TELA PRINCIPAL (Fluxo de 3 Fases)
-// ==========================================
 export default function PratoScreen() {
   const pulseAnim = useSharedValue(1);
+  const { height: windowHeight } = useWindowDimensions();
 
   useEffect(() => {
     pulseAnim.value = withRepeat(
@@ -725,7 +700,7 @@ export default function PratoScreen() {
       -1,
       true
     );
-  }, []);
+  }, [pulseAnim]);
 
   const animatedPulseStyle = useAnimatedStyle(() => {
     return { transform: [{ scale: pulseAnim.value }] };
@@ -733,23 +708,21 @@ export default function PratoScreen() {
 
   const [phase, setPhase] = useState<Phase>('intro');
   const [plateItems, setPlateItems] = useState<FoodItem[]>([]);
-
   const [activeCategory, setActiveCategory] = useState<FoodCategory | null>(null);
   const [stagedFood, setStagedFood] = useState<FoodItem | null>(null);
 
   const insets = useSafeAreaInsets();
   const [showIntroBtn, setShowIntroBtn] = useState(false);
 
-  // Animação da Bottom Sheet (Lista Branca) - AGORA COM WITHTIMING (SEM QUICAR)
-  const bottomSheetY = useSharedValue(SCREEN_HEIGHT);
+  const bottomSheetY = useSharedValue(1500);
 
   useEffect(() => {
     if (activeCategory) {
       bottomSheetY.value = withTiming(0, { duration: 300 });
     } else {
-      bottomSheetY.value = withTiming(SCREEN_HEIGHT, { duration: 300 });
+      bottomSheetY.value = withTiming(windowHeight, { duration: 300 });
     }
-  }, [activeCategory]);
+  }, [activeCategory, windowHeight, bottomSheetY]);
 
   const animatedSheetStyle = useAnimatedStyle(() => {
     return { transform: [{ translateY: bottomSheetY.value }] };
@@ -773,22 +746,17 @@ export default function PratoScreen() {
 
   const handleDropInPlate = (food: FoodItem) => {
     setPlateItems((prev) => {
-      // Criamos um identificador único para ESTA porção específica
       const foodInstance = {
         ...food,
         uniqueId: `${food.id}-${Date.now()}-${Math.random()}`,
       };
 
-      // REGRA DA BEBIDA ÚNICA: Se for uma bebida legítima (não sólida)
       if (food.category === 'drinks' && !food.isSolid) {
-        // Remove qualquer outra bebida não sólida antiga
         const mesaSemBebidas = prev.filter(
           (item) => !(item.category === 'drinks' && !item.isSolid)
         );
         return [...mesaSemBebidas, foodInstance];
       }
-
-      // Para os alimentos e extras sólidos, permite acumular porções livremente!
       return [...prev, foodInstance];
     });
     setStagedFood(null);
@@ -803,11 +771,9 @@ export default function PratoScreen() {
 
   const visibleFoods = FOOD_DATABASE.filter((food) => food.category === activeCategory);
 
-  // FILTROS DA MESA (Para separar bebida da comida)
   const drinksOnTable = plateItems.filter((item) => item.category === 'drinks' && !item.isSolid);
   const foodOnPlate = plateItems.filter((item) => item.category !== 'drinks' || item.isSolid);
 
-  // FASE 1: INTRODUÇÃO
   if (phase === 'intro') {
     return (
       <ImageBackground
@@ -822,7 +788,6 @@ export default function PratoScreen() {
                 <MaterialCommunityIcons name="home" size={24} color="#fff" />
               </TouchableOpacity>
             </Animated.View>
-
             <View style={styles.introCard}>
               <Text style={styles.introTitle}>Alimentação saudável</Text>
               <Image
@@ -848,7 +813,6 @@ export default function PratoScreen() {
     );
   }
 
-  // FASE 2: GRÁFICO
   if (phase === 'chart') {
     return (
       <ImageBackground
@@ -863,7 +827,6 @@ export default function PratoScreen() {
                 <MaterialCommunityIcons name="home" size={24} color="#fff" />
               </TouchableOpacity>
             </Animated.View>
-
             <View style={styles.introCard}>
               <Text style={styles.introTitle}>O prato ideal é composto por:</Text>
               <Image
@@ -885,44 +848,29 @@ export default function PratoScreen() {
     );
   }
 
-  // FASE 3: O MINIGAME (COM BOTTOM SHEET E ÁREA DE BEBIDAS)
-  if (phase === 'game') {
-    return (
-      <GestureHandlerRootView style={{ flex: 1, backgroundColor: '#80A060', overflow: 'hidden' }}>
-        <ImageBackground
-          source={require('@/assets/images/prato/fundo_verde.png')}
-          style={styles.background}
-          resizeMode="cover"
-        >
+  return (
+    <GestureHandlerRootView style={styles.rootGestureView}>
+      <ImageBackground
+        source={require('@/assets/images/prato/fundo_verde.png')}
+        style={styles.background}
+        resizeMode="cover"
+      >
+        <View style={styles.tabletGameArea}>
           <Animated.View
             style={[styles.topHomeBtn, { top: Math.max(insets.top + 10, 40) }, animatedPulseStyle]}
           >
-            <TouchableOpacity
-              onPress={() => router.back()}
-              style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
-            >
+            <TouchableOpacity onPress={() => router.back()} style={styles.homeBtnTouch}>
               <MaterialCommunityIcons name="home" size={24} color="#fff" />
             </TouchableOpacity>
           </Animated.View>
 
-          <Text
-            style={[
-              styles.titleText,
-              {
-                color: '#FFF',
-                marginTop: Math.max(insets.top + 20, 60),
-                textShadowColor: 'rgba(0,0,0,0.3)',
-              },
-            ]}
-          >
+          <Text style={[styles.titleText, { marginTop: Math.max(insets.top + 20, 60) }]}>
             Monte seu prato
           </Text>
 
           <Text style={styles.subtitle}>O que você vai comer agora?</Text>
 
-          {/* MAIN GAME AREA */}
           <View style={styles.mainGameArea}>
-            {/* MENU LATERAL VERTICAL (C/ AS SUAS IMAGENS CUSTOMIZADAS) */}
             <View style={styles.sideMenu}>
               {MENU_BUTTONS.map((btn) => (
                 <TouchableOpacity
@@ -937,43 +885,33 @@ export default function PratoScreen() {
               ))}
             </View>
 
-            {/* ÁREA DA MESA (Bebidas em cima, Prato embaixo) */}
             <View style={styles.tableArea}>
-              {/* ÁREA DAS BEBIDAS */}
               <View style={styles.drinkArea}>
                 {drinksOnTable.length === 0 && (
                   <Text style={styles.dragHintTextDrinks}>Bebida</Text>
                 )}
                 {drinksOnTable.map((item, index) => (
                   <Animated.View
-                    key={`drink-${item.uniqueId}`} //  MUDOU AQUI
+                    key={`drink-${item.uniqueId}`}
                     entering={FadeIn}
                     exiting={FadeOut}
-                    style={{ position: 'absolute', zIndex: index }}
+                    style={styles.absoluteItem}
                   >
-                    {/* MUDOU O PARAMETRO DO ONPRESS AQUI: */}
+                    {/* 🔥 O SEGREDO AQUI: Faltava o style={styles.foodItemTouch} para o botão não colapsar! */}
                     <TouchableOpacity
                       activeOpacity={0.8}
                       onPress={() => handleRemoveFromPlate(item.uniqueId!)}
+                      style={styles.foodItemTouch}
                     >
                       {item.plateSliceImage ? (
                         <Image
                           source={item.plateSliceImage}
-                          style={{ width: 85, height: 85 }}
+                          style={styles.drinkImageProportional}
                           resizeMode="contain"
                         />
                       ) : (
-                        <View
-                          style={{
-                            backgroundColor: item.color,
-                            paddingVertical: 10,
-                            paddingHorizontal: 15,
-                            borderRadius: 10,
-                            borderWidth: 2,
-                            borderColor: '#FFF',
-                          }}
-                        >
-                          <Text style={{ fontWeight: 'bold', fontSize: 14 }}>{item.name}</Text>
+                        <View style={[styles.fallbackFoodView, { backgroundColor: item.color }]}>
+                          <Text style={styles.fallbackFoodText}>{item.name}</Text>
                         </View>
                       )}
                     </TouchableOpacity>
@@ -981,7 +919,6 @@ export default function PratoScreen() {
                 ))}
               </View>
 
-              {/* ÁREA DO PRATO */}
               <View style={styles.plateArea}>
                 <ImageBackground
                   source={require('@/assets/images/prato/prato_vazio.png')}
@@ -991,39 +928,30 @@ export default function PratoScreen() {
                   {foodOnPlate.length === 0 && (
                     <Text style={styles.dragHintText}>Pegue o alimento{'\n'}e solte aqui</Text>
                   )}
-
                   <View style={styles.plateInsideContainer}>
                     {foodOnPlate.map((item, index) => (
                       <Animated.View
-                        key={`food-${item.uniqueId}`} //  MUDOU AQUI
+                        key={`food-${item.uniqueId}`}
                         entering={FadeIn}
                         exiting={FadeOut}
-                        style={{ margin: -12, zIndex: index }}
+                        style={styles.foodItemWrapper}
                       >
-                        {/* MUDOU O PARAMETRO DO ONPRESS AQUI: */}
                         <TouchableOpacity
                           activeOpacity={0.8}
                           onPress={() => handleRemoveFromPlate(item.uniqueId!)}
-                          style={{ justifyContent: 'center', alignItems: 'center' }}
+                          style={styles.foodItemTouch}
                         >
                           {item.plateSliceImage ? (
                             <Image
                               source={item.plateSliceImage}
-                              style={{ width: 80, height: 80 }}
+                              style={styles.foodImageProportional}
                               resizeMode="contain"
                             />
                           ) : (
                             <View
-                              style={{
-                                backgroundColor: item.color,
-                                paddingVertical: 10,
-                                paddingHorizontal: 15,
-                                borderRadius: 10,
-                                borderWidth: 2,
-                                borderColor: '#FFF',
-                              }}
+                              style={[styles.fallbackFoodView, { backgroundColor: item.color }]}
                             >
-                              <Text style={{ fontWeight: 'bold', fontSize: 14 }}>{item.name}</Text>
+                              <Text style={styles.fallbackFoodText}>{item.name}</Text>
                             </View>
                           )}
                         </TouchableOpacity>
@@ -1035,7 +963,6 @@ export default function PratoScreen() {
             </View>
           </View>
 
-          {/* DASHBOARD DE TOTAIS */}
           <View style={styles.statsPanel}>
             <View style={styles.statBox}>
               <Text style={styles.statText}>Carboidratos: {totalCarbs}g</Text>
@@ -1045,14 +972,12 @@ export default function PratoScreen() {
             </View>
           </View>
 
-          {/* O ALIMENTO PRONTO PARA ARRASTAR */}
           {stagedFood && !activeCategory && (
             <View style={styles.stagingArea}>
               <DraggableFood item={stagedFood} onDropInPlate={handleDropInPlate} />
             </View>
           )}
 
-          {/* LISTA BRANCA (BOTTOM SHEET) */}
           <Animated.View style={[styles.bottomSheet, animatedSheetStyle]}>
             <View style={styles.bottomSheetHeader}>
               <Text style={styles.bottomSheetTitle}>
@@ -1078,37 +1003,24 @@ export default function PratoScreen() {
                   style={styles.sheetListItem}
                   onPress={() => handleSelectFood(item)}
                 >
-                  {/* VERIFICA SE TEM IMAGEM PARA MOSTRAR NA LISTA */}
                   <View
                     style={[
                       styles.sheetListItemIcon,
-                      {
-                        backgroundColor: item.conveyorImage ? 'transparent' : item.color,
-                        overflow: 'hidden',
-                      },
+                      { backgroundColor: item.conveyorImage ? 'transparent' : item.color },
                     ]}
                   >
                     {item.conveyorImage ? (
                       <Image
                         source={item.conveyorImage}
-                        style={{ width: '100%', height: '100%' }}
+                        style={styles.sheetItemImageFill}
                         resizeMode="contain"
                       />
                     ) : (
-                      <Text
-                        style={{
-                          fontSize: 10,
-                          fontWeight: 'bold',
-                          color: '#333',
-                          textAlign: 'center',
-                        }}
-                        numberOfLines={2}
-                      >
+                      <Text style={styles.fallbackIconText} numberOfLines={2}>
                         {item.name}
                       </Text>
                     )}
                   </View>
-
                   <View style={styles.sheetListItemTextContainer}>
                     <Text style={styles.sheetListItemName}>{item.name}</Text>
                     <Text style={styles.sheetListItemPortion}>{item.portion}</Text>
@@ -1120,24 +1032,30 @@ export default function PratoScreen() {
               )}
             />
           </Animated.View>
-        </ImageBackground>
-      </GestureHandlerRootView>
-    );
-  }
-
-  return null;
+        </View>
+      </ImageBackground>
+    </GestureHandlerRootView>
+  );
 }
 
-// ==========================================
-// 4. ESTILOS
-// ==========================================
 const styles = StyleSheet.create({
+  rootGestureView: {
+    flex: 1,
+    backgroundColor: '#80A060',
+    overflow: 'hidden',
+  },
   background: {
     flex: 1,
     width: '100%',
     height: '100%',
     alignItems: 'center',
     backgroundColor: '#80A060',
+  },
+  tabletGameArea: {
+    flex: 1,
+    width: '100%',
+    maxWidth: 600,
+    alignSelf: 'center',
   },
   topHomeBtn: {
     position: 'absolute',
@@ -1150,14 +1068,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     zIndex: 50,
   },
+  homeBtnTouch: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   titleText: {
     fontSize: 34,
     fontWeight: 'bold',
-    color: '#6D4C41',
+    color: '#FFF',
     textAlign: 'center',
     marginBottom: 5,
+    textShadowColor: 'rgba(0,0,0,0.3)',
+    textShadowOffset: { width: 1, height: 2 },
+    textShadowRadius: 3,
   },
-
   subtitle: {
     fontWeight: '100',
     fontFamily: 'Chewy_400Regular',
@@ -1167,8 +1092,6 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     marginBottom: 10,
   },
-
-  // LAYOUT DA FASE 3
   mainGameArea: {
     flexDirection: 'row',
     width: '100%',
@@ -1177,19 +1100,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     zIndex: 1,
   },
-
-  // MENU LATERAL
   sideMenu: {
-    width: 70,
+    width: '15%',
+    maxWidth: 80,
     justifyContent: 'center',
     alignItems: 'center',
     gap: 15,
     zIndex: 10,
   },
   menuBtn: {
-    width: 54,
-    height: 54,
-    borderRadius: 27,
+    width: '100%',
+    aspectRatio: 1,
+    borderRadius: 999,
     backgroundColor: '#8B9C73',
     justifyContent: 'center',
     alignItems: 'center',
@@ -1197,45 +1119,42 @@ const styles = StyleSheet.create({
     borderColor: '#A3C27C',
     elevation: 4,
   },
-  menuBtnActive: { backgroundColor: '#5D4037', borderColor: '#FFF', transform: [{ scale: 1.1 }] },
-
-  // A CLASSE QUE IMPEDE O SEU ÍCONE DE VAZAR OU SUMIR:
-  menuCustomIcon: {
-    width: 60, // Largura controlada
-    height: 60, // Altura controlada
-    // tintColor: '#FFF',
+  menuBtnActive: {
+    backgroundColor: '#5D4037',
+    borderColor: '#FFF',
+    transform: [{ scale: 1.1 }],
   },
-
-  // ÁREA DA MESA E BEBIDAS
+  menuCustomIcon: {
+    width: '110%',
+    height: '110%',
+  },
   tableArea: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
   drinkArea: {
-    width: 105,
-    height: 105,
+    width: 110,
+    height: 110,
+    borderRadius: 55,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 10,
     borderWidth: 2,
     borderColor: 'rgba(255, 255, 255, 0.4)',
     borderStyle: 'dashed',
-    borderRadius: 52.5,
-    position: 'relative',
   },
-
-  // PRATO
   plateArea: {
-    justifyContent: 'center',
+    width: '100%',
     alignItems: 'center',
+    justifyContent: 'center',
   },
   plateImage: {
-    width: 340,
-    height: 340,
+    width: '95%',
+    maxWidth: 380,
+    aspectRatio: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    position: 'relative',
   },
   dragHintText: {
     color: '#b3a5998a',
@@ -1252,21 +1171,75 @@ const styles = StyleSheet.create({
     position: 'absolute',
   },
   plateInsideContainer: {
-    width: '80%',
-    height: '80%',
+    width: '65%',
+    height: '65%',
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
     alignContent: 'center',
     alignItems: 'center',
   },
-
-  // DASHBOARD DE TOTAIS
-  statsPanel: { paddingHorizontal: 20, paddingBottom: 20, gap: 8, zIndex: 5, width: '100%' },
-  statBox: { backgroundColor: '#628641', padding: 12, borderRadius: 10, elevation: 3 },
-  statText: { fontSize: 16, color: '#FFF', fontWeight: 'bold', textAlign: 'center' },
-
-  // ÁREA DE PREPARO
+  foodItemWrapper: {
+    width: '28%',
+    aspectRatio: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    margin: '1.5%',
+  },
+  foodItemTouch: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  foodImageProportional: {
+    width: '100%',
+    height: '100%',
+  },
+  drinkImageProportional: {
+    width: '80%',
+    height: '80%',
+  },
+  absoluteItem: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  fallbackFoodView: {
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#FFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  fallbackFoodText: {
+    fontWeight: 'bold',
+    fontSize: 12,
+    textAlign: 'center',
+  },
+  statsPanel: {
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+    gap: 8,
+    zIndex: 5,
+    width: '100%',
+  },
+  statBox: {
+    backgroundColor: '#628641',
+    padding: 12,
+    borderRadius: 10,
+    elevation: 3,
+  },
+  statText: {
+    fontSize: 16,
+    color: '#FFF',
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
   stagingArea: {
     position: 'absolute',
     bottom: 110,
@@ -1286,7 +1259,7 @@ const styles = StyleSheet.create({
   stagedFoodIcon: {
     width: 74,
     height: 74,
-    borderRadius: 37, // Metade da largura para continuar redondo
+    borderRadius: 37,
     borderColor: '#FFF',
     justifyContent: 'center',
     alignItems: 'center',
@@ -1303,8 +1276,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 14,
   },
-
-  // BOTTOM SHEET
   bottomSheet: {
     position: 'absolute',
     bottom: 0,
@@ -1342,7 +1313,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5F5F5',
     borderRadius: 20,
   },
-
   sheetListItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1359,6 +1329,17 @@ const styles = StyleSheet.create({
     marginRight: 15,
     borderWidth: 1,
     borderColor: '#DDD',
+    overflow: 'hidden',
+  },
+  sheetItemImageFill: {
+    width: '100%',
+    height: '100%',
+  },
+  fallbackIconText: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: '#333',
+    textAlign: 'center',
   },
   sheetListItemTextContainer: {
     flex: 1,
@@ -1386,8 +1367,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#F57F17',
   },
-
-  // ESTILOS DAS FASES 1 E 2
   chartImage: { width: 250, height: 250, marginBottom: 10 },
   sourceText: {
     fontSize: 13,
