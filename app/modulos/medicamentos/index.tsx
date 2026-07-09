@@ -41,17 +41,16 @@ export default function MedicamentosScreen() {
   const STORAGE_ASPECT = 1080 / 1920;
   const APPLICATION_ASPECT = 535 / 1024;
 
-  const storageWidth = Math.min(windowWidth, windowHeight * STORAGE_ASPECT, 480);
-  const storageHeight = storageWidth / STORAGE_ASPECT;
-
   const headerSpace = Math.max(insets.top, 20) + 110;
   const availableHeight = windowHeight - headerSpace - Math.max(insets.bottom, 20);
+  const storageWidth = Math.min(windowWidth, availableHeight * STORAGE_ASPECT, 480);
+  const storageHeight = storageWidth / STORAGE_ASPECT;
   const appHeight = availableHeight;
   const appWidth = appHeight * APPLICATION_ASPECT;
 
   useEffect(() => {
     if (phase === 'finished') {
-      addPoints('modulo_medicamentos' as any, 10);
+      addPoints('medicamentos', 10);
     }
   }, [phase, addPoints]);
 

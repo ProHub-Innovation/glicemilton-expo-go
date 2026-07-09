@@ -145,7 +145,7 @@ export default function QuizScreen() {
       setHasFailedQuestion(false);
 
       if (isFinished) {
-        addPoints('quiz', newScore);
+        addPoints('exercicios', newScore);
       }
 
       dispatch({ type: 'ANSWER_CORRECT' });
