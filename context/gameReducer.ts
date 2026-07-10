@@ -31,7 +31,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     case 'RESET_SESSION': {
       return {
         ...INITIAL_STATE,
-        sessionStartedAt: action.payload.sessionStartedAt, // novo timestamp para a sessão reiniciada
+        sessionStartedAt: action.payload.sessionStartedAt,
       };
     }
 

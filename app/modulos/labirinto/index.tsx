@@ -243,7 +243,6 @@ export default function LabirintoScreen() {
       style={styles.gameContainer}
       resizeMode="cover"
     >
-      {/* 🔥 AJUSTE AQUI: O Math.max agora garante PELO MENOS 40px de margem no topo, para não colar na bateria/relógio */}
       <View style={[styles.header, { marginTop: Math.max(insets.top, 20) + 20 }]}>
         <TouchableOpacity style={styles.topHomeBtn} onPress={() => router.back()}>
           <MaterialCommunityIcons name="home" size={24} color="#fff" />
@@ -303,7 +302,6 @@ export default function LabirintoScreen() {
         </ImageBackground>
       </View>
 
-      {/* D-Pad (Controles) */}
       <View style={[styles.controlsArea, { paddingBottom: Math.max(insets.bottom, 20) + 10 }]}>
         <TouchableOpacity style={styles.dPadBtn} onPress={() => movePlayer('UP')}>
           <MaterialCommunityIcons name="arrow-up" size={28} color="#FFF" />

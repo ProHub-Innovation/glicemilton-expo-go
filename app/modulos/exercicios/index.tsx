@@ -286,7 +286,6 @@ export default function QuizScreen() {
           </View>
         )}
 
-        {/* ✅ O SEGREDO ESTÁ AQUI: pointerEvents="box-none" permite clicar no tabuleiro, mas posiciona o dado perfeitamente */}
         <View style={styles.absoluteDiceContainer} pointerEvents="box-none">
           <DiceButton lastRoll={state.lastRoll} isLocked={state.isLocked} onRoll={handleRoll} />
         </View>

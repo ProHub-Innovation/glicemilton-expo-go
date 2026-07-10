@@ -36,16 +36,6 @@ export function GameProvider({ children }: GameProviderProps) {
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>;
 }
 
-/**
- * Acessa o estado global de jogo.
- *
- * @throws {Error} Se chamado fora de um <GameProvider>.
- *
- * @example
- * const { state, addPoints } = useGame();
- * addPoints('quiz', 10);
- */
-
 export function useGame(): GameContextValue {
   const context = useContext(GameContext);
 
