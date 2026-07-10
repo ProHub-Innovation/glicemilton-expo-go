@@ -6,13 +6,13 @@ import { useFonts as useExpoFonts } from 'expo-font';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
-  Dimensions,
   Image,
   ImageBackground,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
+  useWindowDimensions,
 } from 'react-native';
 import Animated, {
   FadeIn,
@@ -25,50 +25,37 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
-
-// ==========================================
-// 1. CONFIGURAÇÕES DA MATRIZ POR BORDAS (9x9)
-// ==========================================
-// "T" = Parede em Cima | "B" = Parede Em Baixo
-// "L" = Parede na Esquerda | "R" = Parede na Direita
-// "0" = Caminho totalmente aberto
-
 const INITIAL_MAZE = [
-  ['EXIT', 'T', 'TB_SUGAR', 'TR', 'TL', 'TR', 'TL', 'TB', 'TR'], // Linha 0
-  ['LRB', 'LR', 'LRT', 'LB', 'BR', 'LB', 'BR', 'LRT', 'LR'], // Linha 1
-  ['LT_SUGAR', 'B', 'R', 'LT', 'TR', 'LT', 'BT', 'R_SUGAR', 'LR'], // Linha 2
-  ['LB', 'TR', 'LB', 'BR', 'LB', 'BR', 'LTR', 'LBR', 'LR'], // Linha 3
-  ['LT', 'B', 'T', 'TRB', 'LT', 'T', 'R', 'LT', 'BR'], // Linha 4
-  ['LB', 'TR', 'L', 'TB', 'BR_SUGAR', 'LR', 'LR', 'LB', 'TR'], // Linha 5
-  ['LT', 'BR', 'LB', 'TR', 'LTR', 'LR', 'LB', 'TRB', 'LR'], // Linha 6
-  ['LB', 'TR', 'BLT', 'B', 'R', 'LB', 'BT', 'RT', 'LBR_SUGAR'], // Linha 7
-  ['BLT', 'B_SUGAR', 'BT', 'BTR', 'BL', 'BT', 'TBR', 'BL', 'BRT'], // Linha 8
+  ['EXIT', 'T', 'TB_SUGAR', 'TR', 'TL', 'TR', 'TL', 'TB', 'TR'],
+  ['LRB', 'LR', 'LRT', 'LB', 'BR', 'LB', 'BR', 'LRT', 'LR'],
+  ['LT_SUGAR', 'B', 'R', 'LT', 'TR', 'LT', 'BT', 'R_SUGAR', 'LR'],
+  ['LB', 'TR', 'LB', 'BR', 'LB', 'BR', 'LTR', 'LBR', 'LR'],
+  ['LT', 'B', 'T', 'TRB', 'LT', 'T', 'R', 'LT', 'BR'],
+  ['LB', 'TR', 'L', 'TB', 'BR_SUGAR', 'LR', 'LR', 'LB', 'TR'],
+  ['LT', 'BR', 'LB', 'TR', 'LTR', 'LR', 'LB', 'TRB', 'LR'],
+  ['LB', 'TR', 'BLT', 'B', 'R', 'LB', 'BT', 'RT', 'LBR_SUGAR'],
+  ['BLT', 'B_SUGAR', 'BT', 'BTR', 'BL', 'BT', 'TBR', 'BL', 'BRT'],
 ];
 
 const START_ROW = 8;
 const START_COL = 8;
 
-const MAZE_CONTAINER_SIZE = SCREEN_WIDTH - 40;
-const GRID_SIZE = INITIAL_MAZE[0].length;
-const CELL_SIZE = MAZE_CONTAINER_SIZE / GRID_SIZE;
-
 export default function LabirintoScreen() {
+  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
+
+  const BOARD_SIZE = Math.min(windowWidth * 0.95, windowHeight * 0.5, 450);
+
   const [phase, setPhase] = useState<'intro' | 'game' | 'finished' | 'game_over'>('intro');
   const [mazeMap, setMazeMap] = useState<string[][]>(INITIAL_MAZE);
   const [playerPos, setPlayerPos] = useState({ row: START_ROW, col: START_COL });
   const [score, setScore] = useState(0);
   const [hasWon, setHasWon] = useState(false);
   const [showIntroBtn, setShowIntroBtn] = useState(false);
-
   const [timeLeft, setTimeLeft] = useState(45);
 
   const insets = useSafeAreaInsets();
-
   const [fontsLoaded] = useExpoFonts({ Chewy_400Regular });
-
   const { addPoints } = useGame();
-
   const pulseAnim = useSharedValue(1);
 
   useEffect(() => {
@@ -80,24 +67,21 @@ export default function LabirintoScreen() {
       -1,
       true
     );
-  }, []);
+  }, [pulseAnim]);
 
   useEffect(() => {
     let timerId: ReturnType<typeof setInterval>;
-
     if (phase === 'game' && !hasWon) {
       timerId = setInterval(() => {
-        // Atualização funcional de estado que não depende da variável externa
         setTimeLeft((prev) => {
           if (prev <= 1) {
-            clearInterval(timerId); // Interrompe de forma limpa na própria thread
+            clearInterval(timerId);
             return 0;
           }
           return prev - 1;
         });
       }, 1000);
     }
-
     return () => {
       if (timerId) clearInterval(timerId);
     };
@@ -113,9 +97,7 @@ export default function LabirintoScreen() {
     .toString()
     .padStart(2, '0')}:${(timeLeft % 60).toString().padStart(2, '0')}`;
 
-  const animatedPulseStyle = useAnimatedStyle(() => {
-    return { transform: [{ scale: pulseAnim.value }] };
-  });
+  const animatedPulseStyle = useAnimatedStyle(() => ({ transform: [{ scale: pulseAnim.value }] }));
 
   useEffect(() => {
     if (phase === 'intro') {
@@ -128,10 +110,8 @@ export default function LabirintoScreen() {
 
   const movePlayer = (direction: 'UP' | 'DOWN' | 'LEFT' | 'RIGHT') => {
     if (hasWon) return;
-
     const currentCellWalls = mazeMap[playerPos.row][playerPos.col];
 
-    // 🔥 COLISÃO POR BORDA: Bloqueia se a célula atual tiver a parede na direção do clique
     if (direction === 'UP' && currentCellWalls.includes('T')) return;
     if (direction === 'DOWN' && currentCellWalls.includes('B')) return;
     if (direction === 'LEFT' && currentCellWalls.includes('L')) return;
@@ -147,17 +127,12 @@ export default function LabirintoScreen() {
     if (nextRow < 0 || nextRow >= mazeMap.length || nextCol < 0 || nextCol >= mazeMap[0].length)
       return;
 
-    // Atualiza a posição do Glicemilton
     setPlayerPos({ row: nextRow, col: nextCol });
-
-    // Checa itens na nova célula usando strings
     const nextCell = mazeMap[nextRow][nextCol];
 
     if (nextCell.includes('SUGAR')) {
       const isExit = nextCell.includes('EXIT');
-
       setScore((prev) => prev + 10);
-
       setMazeMap((prevMap) => {
         const newMap = prevMap.map((row) => [...row]);
         newMap[nextRow][nextCol] = nextCell.replace('_SUGAR', '');
@@ -189,10 +164,6 @@ export default function LabirintoScreen() {
     setPhase('game');
   };
 
-  // ==========================================
-  // RENDERIZAÇÃO: FASE INTRODUÇÃO
-  // ==========================================
-
   if (phase === 'intro') {
     return (
       <ImageBackground
@@ -207,21 +178,17 @@ export default function LabirintoScreen() {
                 <MaterialCommunityIcons name="home" size={24} color="#fff" />
               </TouchableOpacity>
             </Animated.View>
-
             <View style={styles.introCard}>
               <Text style={styles.introTitle}>Adaptação saudável</Text>
-
               <Image
                 source={require('@/assets/images/icone_adaptacao_saudavel.png')}
                 style={styles.introIcon}
                 resizeMode="contain"
               />
-
               <Text style={styles.introText}>
                 Atitudes positivas fazem com que a convivência com o diabetes seja mais tranquila,
                 reduzindo complicações e contribuindo para melhores resultados de bem-estar.
               </Text>
-
               {showIntroBtn && (
                 <Animated.View entering={FadeIn.duration(800)} style={animatedPulseStyle}>
                   <TouchableOpacity style={styles.introCircleBtn} onPress={() => setPhase('game')}>
@@ -236,8 +203,6 @@ export default function LabirintoScreen() {
     );
   }
 
-  // FASE 2: TELA FINAL DE PARABÉNS — usa o VictoryModal padrão do projeto
-  // O modal é exibido sobre o fundo do jogo; score já contém os pontos finais corretos
   if (phase === 'finished') {
     return (
       <ImageBackground
@@ -261,11 +226,9 @@ export default function LabirintoScreen() {
           <Text style={{ fontSize: 50 }}>⏰</Text>
           <Text style={styles.finishedTitle}>O tempo acabou!</Text>
           <Text style={styles.finishedSub}>O Glicemilton não conseguiu achar a saída a tempo.</Text>
-
           <TouchableOpacity style={styles.btnFinished} onPress={reiniciarJogo}>
             <Text style={styles.btnFinishedText}>Tentar Novamente</Text>
           </TouchableOpacity>
-
           <TouchableOpacity style={styles.btnFinishedOutline} onPress={() => router.back()}>
             <Text style={styles.btnFinishedOutlineText}>Voltar ao início</Text>
           </TouchableOpacity>
@@ -274,90 +237,72 @@ export default function LabirintoScreen() {
     );
   }
 
-  // ==========================================
-  // RENDERIZAÇÃO: FASE JOGO (LABIRINTO EM TELA CHEIA)
-  // ==========================================
   return (
-    /* 🔥 AQUI ESTÁ A MÁGICA: A sua imagem virou o fundo de toda a tela do jogo! */
     <ImageBackground
-      source={require('@/assets/images/mapa_completo.png')}
+      source={require('@/assets/images/fundo_labirinto.png')}
       style={styles.gameContainer}
-      resizeMode="contain"
+      resizeMode="cover"
     >
-      {/* Botão de Home flutuando no topo */}
-      <TouchableOpacity
-        style={[styles.topHomeBtn, { top: Math.max(insets.top, 20) }]}
-        onPress={() => router.back()}
-      >
-        <MaterialCommunityIcons name="home" size={24} color="#fff" />
-      </TouchableOpacity>
+      <View style={[styles.header, { marginTop: Math.max(insets.top, 20) + 20 }]}>
+        <TouchableOpacity style={styles.topHomeBtn} onPress={() => router.back()}>
+          <MaterialCommunityIcons name="home" size={24} color="#fff" />
+        </TouchableOpacity>
 
-      <Text style={[styles.gameSubtitle, { marginTop: Math.max(insets.top + 60, 80) }]}>
-        Ajude-o a encontrar a saída!
-      </Text>
-
-      {/* 🔥 MOSTRADOR DO CRONÔMETRO */}
-      <View style={styles.timerBadge}>
-        <MaterialCommunityIcons
-          name="clock-outline"
-          size={20}
-          color={timeLeft <= 10 ? '#FF5252' : '#FFF'}
-        />
-        <Text style={[styles.timerText, timeLeft <= 10 && styles.timerTextDanger]}>
-          {formattedTime}
-        </Text>
-      </View>
-
-      {/* GRADE DE COLISÕES INVISÍVEL (Alinhada exatamente por cima do desenho do labirinto) */}
-      <View style={styles.mazeGridContainer}>
-        {mazeMap.map((row, rowIndex) => (
-          <View key={`row-${rowIndex}`} style={styles.row}>
-            {row.map((cell, colIndex) => {
-              const isPlayer = playerPos.row === rowIndex && playerPos.col === colIndex;
-              return (
-                <View key={`cell-${rowIndex}-${colIndex}`} style={styles.cell}>
-                  {/* BÔNUS (Cubinho de açúcar) */}
-                  {cell.includes('SUGAR') && !isPlayer && (
-                    <Animated.View entering={ZoomIn}>
-                      <Image
-                        source={require('@/assets/images/cubo.png')}
-                        style={{ width: CELL_SIZE * 1.25, height: CELL_SIZE * 1.25 }}
-                        resizeMode="contain"
-                      />
-                    </Animated.View>
-                  )}
-
-                  {/* SINALIZADOR DA SAÍDA: Mudou de cell === 4 para incluir 'EXIT' */}
-                  {cell.includes('EXIT') && !isPlayer && (
-                    <View style={styles.invisibleExitAnchor} />
-                  )}
-
-                  {/* JOGADOR (Formiguinha) */}
-                  {isPlayer && (
-                    <Animated.View
-                      entering={ZoomIn.duration(150)}
-                      style={{ justifyContent: 'center', alignItems: 'center' }}
-                    >
-                      <Image
-                        source={require('@/assets/images/glicemilton_feliz.png')}
-                        style={{
-                          width: CELL_SIZE * 1.25,
-                          height: CELL_SIZE * 1.25,
-                          transform: [{ translateY: -10 }, { translateX: 0 }],
-                        }}
-                        resizeMode="contain"
-                      />
-                    </Animated.View>
-                  )}
-                </View>
-              );
-            })}
+        <View style={styles.headerTitleContainer}>
+          <Text style={styles.gameSubtitle}>Ajude-o a encontrar a saída!</Text>
+          <View style={styles.timerBadge}>
+            <MaterialCommunityIcons
+              name="clock-outline"
+              size={20}
+              color={timeLeft <= 10 ? '#FF5252' : '#FFF'}
+            />
+            <Text style={[styles.timerText, timeLeft <= 10 && styles.timerTextDanger]}>
+              {formattedTime}
+            </Text>
           </View>
-        ))}
+        </View>
       </View>
 
-      {/* TECLADO DIRECIONAL EM DIAMANTE */}
-      <View style={styles.controlsArea}>
+      <View style={styles.boardWrapper}>
+        <ImageBackground
+          source={require('@/assets/images/labirinto.png')}
+          style={{ width: BOARD_SIZE, height: BOARD_SIZE }}
+          resizeMode="stretch"
+        >
+          {mazeMap.map((row, rowIndex) => (
+            <View key={`row-${rowIndex}`} style={styles.row}>
+              {row.map((cell, colIndex) => {
+                const isPlayer = playerPos.row === rowIndex && playerPos.col === colIndex;
+                return (
+                  <View key={`cell-${rowIndex}-${colIndex}`} style={styles.cell}>
+                    {cell.includes('SUGAR') && !isPlayer && (
+                      <Animated.View entering={ZoomIn} style={styles.sugarWrapper}>
+                        <Image
+                          source={require('@/assets/images/cubo.png')}
+                          style={styles.itemImage}
+                          resizeMode="contain"
+                        />
+                      </Animated.View>
+                    )}
+
+                    {isPlayer && (
+                      <Animated.View entering={ZoomIn.duration(150)} style={styles.playerWrapper}>
+                        <Image
+                          source={require('@/assets/images/glicemilton_feliz.png')}
+                          style={styles.itemImage}
+                          resizeMode="contain"
+                        />
+                      </Animated.View>
+                    )}
+                  </View>
+                );
+              })}
+            </View>
+          ))}
+        </ImageBackground>
+      </View>
+
+      <View style={[styles.controlsArea, { paddingBottom: Math.max(insets.bottom, 20) + 10 }]}>
         <TouchableOpacity style={styles.dPadBtn} onPress={() => movePlayer('UP')}>
           <MaterialCommunityIcons name="arrow-up" size={28} color="#FFF" />
         </TouchableOpacity>
@@ -366,9 +311,7 @@ export default function LabirintoScreen() {
           <TouchableOpacity style={styles.dPadBtn} onPress={() => movePlayer('LEFT')}>
             <MaterialCommunityIcons name="arrow-left" size={28} color="#FFF" />
           </TouchableOpacity>
-
           <View style={styles.dPadCenterSpace} />
-
           <TouchableOpacity style={styles.dPadBtn} onPress={() => movePlayer('RIGHT')}>
             <MaterialCommunityIcons name="arrow-right" size={28} color="#FFF" />
           </TouchableOpacity>
@@ -383,6 +326,103 @@ export default function LabirintoScreen() {
 }
 
 const styles = StyleSheet.create({
+  itemWrapper: {
+    width: '200%',
+    height: '200%',
+    aspectRatio: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  gameContainer: {
+    flex: 1,
+    width: '100%',
+  },
+  header: {
+    flexDirection: 'row',
+    paddingHorizontal: 20,
+    alignItems: 'flex-start',
+    zIndex: 99,
+  },
+  topHomeBtn: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    backgroundColor: '#7A5C4E',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 3,
+    borderColor: '#FFF',
+    marginRight: 15,
+  },
+  headerTitleContainer: {
+    flex: 1,
+    alignItems: 'center',
+    paddingRight: 46,
+  },
+  gameSubtitle: {
+    fontFamily: 'Chewy_400Regular',
+    fontSize: 24,
+    color: '#FFF',
+    textAlign: 'center',
+    textShadowColor: 'rgba(0,0,0,0.4)',
+    textShadowOffset: { width: 1, height: 2 },
+    textShadowRadius: 3,
+  },
+  timerBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginTop: 8,
+    gap: 6,
+  },
+  timerText: {
+    fontFamily: 'Chewy_400Regular',
+    fontSize: 22,
+    color: '#FFF',
+  },
+  timerTextDanger: {
+    color: '#FF5252',
+  },
+
+  boardWrapper: {
+    flex: 1,
+    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  row: {
+    flex: 1,
+    flexDirection: 'row',
+    width: '100%',
+  },
+  cell: {
+    flex: 1,
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  controlsArea: {
+    alignItems: 'center',
+    width: '100%',
+    gap: 6,
+  },
+  controlRowMiddle: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
+  dPadBtn: {
+    width: 66,
+    height: 66,
+    borderRadius: 33,
+    backgroundColor: '#7A5C4E',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 3,
+    borderColor: '#A88B7E',
+    elevation: 5,
+  },
+  dPadCenterSpace: { width: 66, height: 66 },
+
   background: { flex: 1, width: '100%', height: '100%' },
   introContainerClean: {
     flex: 1,
@@ -439,81 +479,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     elevation: 4,
   },
-
-  /* 🔥 AJUSTADO: Removido paddingHorizontal para o plano de fundo tocar as bordas do aparelho */
-  gameContainer: {
-    flex: 1,
-    alignItems: 'center',
-    backgroundColor: '#8b4e1f',
-  },
-  topHomeBtn: {
-    position: 'absolute',
-    left: 20,
-    width: 46,
-    height: 46,
-    borderRadius: 23,
-    backgroundColor: '#7A5C4E',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 3,
-    borderColor: '#FFF',
-    zIndex: 99,
-  },
-  gameSubtitle: {
-    fontFamily: 'Chewy_400Regular',
-    fontSize: 24,
-    color: '#FFF',
-    textAlign: 'center',
-    textShadowColor: 'rgba(0,0,0,0.4)',
-    textShadowOffset: { width: 1, height: 2 },
-    textShadowRadius: 3,
-  },
-
-  // ALTERE APENAS ESTA CLASSE NO SEU STYLESHEET:
-  mazeGridContainer: {
-    position: 'absolute',
-    top: '44%',
-    left: '50%',
-    width: MAZE_CONTAINER_SIZE,
-    height: MAZE_CONTAINER_SIZE,
-    marginTop: -MAZE_CONTAINER_SIZE / 2, // Centra verticalmente na perfeição
-    marginLeft: -MAZE_CONTAINER_SIZE / 2, // Centra horizontalmente na perfeição
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'transparent',
-    zIndex: 10, // Garante que fica por cima do fundo
-  },
-  row: { flexDirection: 'row' },
-  cell: {
-    width: CELL_SIZE,
-    height: CELL_SIZE,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'transparent',
-  },
-  invisibleExitAnchor: { width: '100%', height: '100%', backgroundColor: 'transparent' },
-
-  controlsArea: {
-    position: 'absolute',
-    bottom: 50, // Grampeia o D-Pad na parte inferior da tela
-    alignItems: 'center',
-    width: '100%',
-    gap: 6,
-    zIndex: 20, // Garante que as setas fiquem por cima de qualquer fundo e clicáveis
-  },
-  controlRowMiddle: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
-  dPadBtn: {
-    width: 66,
-    height: 66,
-    borderRadius: 33,
-    backgroundColor: '#7A5C4E',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 3,
-    borderColor: '#A88B7E',
-    elevation: 5,
-  },
-  dPadCenterSpace: { width: 66, height: 66 },
   finishedContainer: {
     flex: 1,
     alignItems: 'center',
@@ -529,15 +494,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 16,
     elevation: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
-  },
-  finishedIcon: {
-    width: 120, // Tamanho ideal para o ícone/troféu do cartão
-    height: 120,
-    marginBottom: 10,
   },
   finishedTitle: {
     fontSize: 28,
@@ -578,22 +534,24 @@ const styles = StyleSheet.create({
     fontFamily: 'Chewy_400Regular',
     fontSize: 18,
   },
-  timerBadge: {
-    flexDirection: 'row',
+  sugarWrapper: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    marginTop: 10,
-    gap: 6,
+    transform: [{ scale: 1.3 }],
   },
-  timerText: {
-    fontFamily: 'Chewy_400Regular',
-    fontSize: 22,
-    color: '#FFF',
+  playerWrapper: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: '-45%',
+    transform: [{ scale: 1.5 }],
+    zIndex: 10,
   },
-  timerTextDanger: {
-    color: '#FF5252', // Fica vermelho nos últimos 10 segundos
+  itemImage: {
+    width: '100%',
+    height: '100%',
   },
 });

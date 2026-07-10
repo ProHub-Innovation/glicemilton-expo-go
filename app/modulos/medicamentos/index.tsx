@@ -12,10 +12,10 @@ import {
   Text,
   TouchableOpacity,
   View,
+  useWindowDimensions,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-// IMPORTAÇÃO DO ESTADO GLOBAL E DO NOVO MODAL
 import VictoryModal from '../../../components/VictoryModal';
 import { useGame } from '../../../context/GameContext';
 
@@ -25,20 +25,32 @@ export default function MedicamentosScreen() {
   const [phase, setPhase] = useState<Phase>('intro');
   const [feedbackVisible, setFeedbackVisible] = useState(false);
   const [feedbackData, setFeedbackData] = useState({ isCorrect: false, title: '', message: '' });
-
   const [showIntroBtn, setShowIntroBtn] = useState(false);
-  const btnOpacity = useRef(new Animated.Value(0)).current;
 
-  const [fontsLoaded] = useExpoFonts({ Chewy_400Regular });
+  const btnOpacity = useRef(new Animated.Value(0)).current;
   const homePulseAnim = useRef(new Animated.Value(1)).current;
+  const [fontsLoaded] = useExpoFonts({ Chewy_400Regular });
 
   const insets = useSafeAreaInsets();
   const { addPoints } = useGame();
 
-  // EFEITO NOVO: Dá os pontos assim que a fase finaliza
+  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
+
+  const STORAGE_SPLIT = '59.36%';
+
+  const STORAGE_ASPECT = 1080 / 1920;
+  const APPLICATION_ASPECT = 535 / 1024;
+
+  const headerSpace = Math.max(insets.top, 20) + 110;
+  const availableHeight = windowHeight - headerSpace - Math.max(insets.bottom, 20);
+  const storageWidth = Math.min(windowWidth, availableHeight * STORAGE_ASPECT, 480);
+  const storageHeight = storageWidth / STORAGE_ASPECT;
+  const appHeight = availableHeight;
+  const appWidth = appHeight * APPLICATION_ASPECT;
+
   useEffect(() => {
     if (phase === 'finished') {
-      addPoints('modulo_medicamentos' as any, 10);
+      addPoints('medicamentos', 10);
     }
   }, [phase, addPoints]);
 
@@ -83,9 +95,6 @@ export default function MedicamentosScreen() {
     }
   }
 
-  // ==================== RENDERIZAÇÃO DAS FASES ====================
-
-  // FASE 1: INTRODUÇÃO
   if (phase === 'intro') {
     return (
       <ImageBackground
@@ -130,33 +139,27 @@ export default function MedicamentosScreen() {
     );
   }
 
-  // FASE 2: ARMAZENAMENTO
   if (phase === 'storage') {
     return (
       <View style={styles.storageWrapper}>
-        <View style={styles.topBackground} />
-        <View style={styles.bottomBackground} />
+        <View style={[styles.topBackground, { height: STORAGE_SPLIT }]} />
+        <View style={[styles.bottomBackground, { top: STORAGE_SPLIT }]} />
 
-        <View style={styles.gameBoardStorage}>
+        <View style={[styles.screenHeader, { paddingTop: Math.max(insets.top, 20) + 10 }]}>
+          <TouchableOpacity style={styles.topHomeBtnHeader} onPress={() => router.back()}>
+            <MaterialCommunityIcons name="home" size={24} color="#fff" />
+          </TouchableOpacity>
+          <Text style={styles.gameTitleHeader}>
+            Qual melhor local para armazenar a caneta de insulina em uso?
+          </Text>
+        </View>
+
+        <View style={[styles.gameBoardStorage, { width: storageWidth, height: storageHeight }]}>
           <ImageBackground
             source={require('@/assets/images/armazenamento_insulina.png')}
             style={styles.background}
             resizeMode="cover"
           >
-            <TouchableOpacity
-              style={[styles.topHomeBtn, { top: Math.max(insets.top + 10, 40) }]}
-              onPress={() => router.back()}
-              accessible={true}
-              accessibilityRole="button"
-              accessibilityLabel="Voltar para a tela inicial"
-            >
-              <MaterialCommunityIcons name="home" size={24} color="#fff" />
-            </TouchableOpacity>
-
-            <Text style={styles.gameTitle}>
-              Qual melhor local para armazenar a caneta de insulina em uso?
-            </Text>
-
             <View style={styles.interactiveArea}>
               <TouchableOpacity
                 style={[
@@ -204,22 +207,28 @@ export default function MedicamentosScreen() {
     );
   }
 
-  // FASE 3 E FASE 4 (A tela fica congelada na cozinha, com o modal por cima)
   if (phase === 'application' || phase === 'finished') {
     return (
       <View style={styles.storageWrapper}>
-        <View style={[styles.topBackground, { backgroundColor: '#EAD7C3', bottom: 0 }]} />
+        <View
+          style={[styles.topBackground, { backgroundColor: '#EAD7C3', bottom: 0, height: '100%' }]}
+        />
 
-        <View style={styles.gameBoardApplication}>
+        <View style={[styles.screenHeader, { paddingTop: Math.max(insets.top, 20) + 10 }]}>
+          <TouchableOpacity style={styles.topHomeBtnHeader} onPress={() => router.back()}>
+            <MaterialCommunityIcons name="home" size={24} color="#fff" />
+          </TouchableOpacity>
+          <Text style={styles.gameTitleHeader}>
+            Quais são os locais corretos de aplicação da caneta de insulina?
+          </Text>
+        </View>
+
+        <View style={[styles.gameBoardApplication, { width: appWidth, height: appHeight }]}>
           <ImageBackground
             source={require('@/assets/images/uso_insulina.jpg')}
             style={styles.background}
             resizeMode="cover"
           >
-            <Text style={styles.gameTitle}>
-              Quais são os locais corretos de aplicação da caneta de insulina?
-            </Text>
-
             <View style={styles.interactiveArea}>
               <TouchableOpacity
                 style={styles.wrongAreaFull}
@@ -315,17 +324,6 @@ export default function MedicamentosScreen() {
               onClose={handleCloseFeedback}
             />
 
-            <TouchableOpacity
-              style={[styles.topHomeBtn, { top: Math.max(insets.top + 10, 40) }]}
-              onPress={() => router.back()}
-              accessible={true}
-              accessibilityRole="button"
-              accessibilityLabel="Voltar para o menu principal"
-            >
-              <MaterialCommunityIcons name="home" size={24} color="#fff" />
-            </TouchableOpacity>
-
-            {/* MODAL DE VITÓRIA GLOBAL NO FINAL DA TELA */}
             <VictoryModal
               visible={phase === 'finished'}
               pointsEarned={10}
@@ -375,7 +373,6 @@ function FeedbackModal({ visible, data, onClose }: FeedbackModalProps) {
   );
 }
 
-// ==================== ESTILOS LIMPOS ====================
 const styles = StyleSheet.create({
   background: {
     flex: 1,
@@ -384,9 +381,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  topHomeBtn: {
+  screenHeader: {
     position: 'absolute',
-    left: 20,
+    top: 0,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingBottom: 15,
+    zIndex: 99,
+  },
+  topHomeBtnHeader: {
     width: 44,
     height: 44,
     borderRadius: 22,
@@ -395,24 +401,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 2,
     borderColor: '#FFF',
-    zIndex: 50,
   },
-  gameTitle: {
-    position: 'absolute',
-    top: 100,
+  gameTitleHeader: {
+    flex: 1,
     fontFamily: 'Chewy_400Regular',
-    fontSize: 30,
+    fontSize: 22,
     color: '#FFF',
     textAlign: 'center',
-    paddingHorizontal: 20,
+    marginRight: 44,
     textShadowColor: 'rgba(0,0,0,0.6)',
     textShadowOffset: { width: 1, height: 2 },
     textShadowRadius: 3,
-    zIndex: 10,
   },
-
-  // Áreas Interativas
-  interactiveArea: { flex: 1, width: '100%', position: 'relative' },
+  interactiveArea: {
+    flex: 1,
+    width: '100%',
+    position: 'relative',
+  },
   invisibleButton: {
     position: 'absolute',
     zIndex: 30,
@@ -420,12 +425,11 @@ const styles = StyleSheet.create({
   wrongAreaFull: {
     position: 'absolute',
     top: '33%',
-    bottom: '10%',
-    left: '28%',
-    right: '18%',
+    bottom: '17%',
+    left: '30%',
+    right: '22%',
     zIndex: 10,
   },
-
   storageWrapper: {
     flex: 1,
     width: '100%',
@@ -434,35 +438,28 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#000',
   },
-  gameBoardStorage: {
-    width: '100%',
-    maxHeight: '100%',
-    aspectRatio: 1080 / 1920,
-    overflow: 'hidden',
-  },
-  gameBoardApplication: {
-    width: '100%',
-    maxHeight: '100%',
-    aspectRatio: 535 / 1024,
-    overflow: 'hidden',
-  },
   topBackground: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
-    bottom: '50%',
     backgroundColor: '#894C16',
   },
   bottomBackground: {
     position: 'absolute',
-    top: '50%',
     left: 0,
     right: 0,
     bottom: 0,
     backgroundColor: '#613915',
   },
-
+  gameBoardStorage: {
+    overflow: 'hidden',
+    elevation: 10,
+  },
+  gameBoardApplication: {
+    overflow: 'hidden',
+    elevation: 10,
+  },
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.6)',
@@ -496,7 +493,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalBtnText: { color: '#FFF', fontSize: 18, fontFamily: 'Chewy_400Regular' },
-
   introContainerClean: {
     flex: 1,
     justifyContent: 'center',

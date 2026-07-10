@@ -1,6 +1,3 @@
-// constants/quiz.ts
-// Perguntas, alternativas e gabaritos do módulo Quiz (Reduzir Riscos).
-
 export interface QuizOption {
   id: string;
   text: string;
@@ -15,8 +12,8 @@ export interface QuizQuestion {
 }
 
 export const POINTS_PER_CORRECT_ANSWER = 10;
-export const TOTAL_BOARD_SQUARES = 17; // casa 0 (início) + 15 numeradas + casa 16 (chegada)
-export const NUMBERED_SQUARES = 15; // casas que disparam quiz
+export const TOTAL_BOARD_SQUARES = 17;
+export const NUMBERED_SQUARES = 15;
 
 export const QUIZ_QUESTIONS: QuizQuestion[] = [
   {
