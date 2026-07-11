@@ -15,7 +15,6 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-// IMPORTAÇÃO DO ESTADO GLOBAL E DO NOVO MODAL
 import VictoryModal from '../../../components/VictoryModal';
 import { useGame } from '../../../context/GameContext';
 
@@ -24,19 +23,15 @@ export default function CartoesScreen() {
   const [showIntro, setShowIntro] = useState(true);
   const insets = useSafeAreaInsets();
 
-  // --- Estados da branch feature (Animações) ---
   const [showIntroBtn, setShowIntroBtn] = useState(false);
   const btnOpacity = useRef(new Animated.Value(0)).current;
   const homePulseAnim = useRef(new Animated.Value(1)).current;
 
-  // --- Estados da branch developer (Pontuação e Vitória) ---
   const { addPoints } = useGame();
   const [showVictory, setShowVictory] = useState(false);
 
   const handleGameComplete = useCallback(() => {
-    // Adiciona os pontos
     addPoints('modulo_cartoes' as any, 10);
-    // Exibe o modal festivo unificado
     setShowVictory(true);
   }, [addPoints]);
 
@@ -53,7 +48,6 @@ export default function CartoesScreen() {
 
       return () => clearTimeout(timer);
     } else {
-      // Reseta os estados de animação ao sair da intro
       setShowIntroBtn(false);
       btnOpacity.setValue(0);
     }
@@ -72,7 +66,6 @@ export default function CartoesScreen() {
 
   if (!fontsLoaded) return null;
 
-  // --- TELA DE INTRODUÇÃO PRE-JOGO (PADRONIZADA COM ANIMAÇÃO COMPLETA) ---
   if (showIntro) {
     return (
       <ImageBackground
@@ -81,9 +74,9 @@ export default function CartoesScreen() {
         resizeMode="cover"
       >
         <View style={styles.introContainerClean}>
-          {/* A âncora do cartão centraliza os elementos de forma relativa */}
+          {}
           <View style={styles.cardAnchor}>
-            {/* ✅ Transformado em Animated.View e encaixado perfeitamente na quina superior esquerda com pulsação */}
+            {}
             <Animated.View style={[styles.introHomeBtn, { transform: [{ scale: homePulseAnim }] }]}>
               <TouchableOpacity
                 onPress={() => router.navigate('/(tabs)/onboarding')}
@@ -109,7 +102,7 @@ export default function CartoesScreen() {
                 crucial. Agir nas duas frentes é o segredo para o bom controle glicêmico.
               </Text>
 
-              {/* ✅ O botão de avançar agora aguarda o delay e entra com efeito de fade-in */}
+              {}
               {showIntroBtn && (
                 <Animated.View style={{ opacity: btnOpacity }}>
                   <TouchableOpacity
@@ -130,14 +123,13 @@ export default function CartoesScreen() {
     );
   }
 
-  // --- TELA DO JOGO ATIVA (GRID DE ASSOCIAÇÃO) ---
   return (
     <ImageBackground
       source={require('../../../assets/images/fundo_zoom.jpg')}
       style={styles.container}
       resizeMode="cover"
     >
-      {/* Botão de Home mantido na quina superior esquerda flutuando na tela de jogo ativa com pulsação estável */}
+      {}
       <View style={{ position: 'absolute', top: insets.top + 15, left: 20, zIndex: 99 }}>
         <Animated.View style={[styles.gameHomeBtn, { transform: [{ scale: homePulseAnim }] }]}>
           <TouchableOpacity
@@ -153,7 +145,7 @@ export default function CartoesScreen() {
 
       <CardAssociationGrid onGameComplete={handleGameComplete} />
 
-      {/* 4. MODAL DE VITÓRIA GLOBAL NO FINAL DA TELA */}
+      {}
       <VictoryModal visible={showVictory} pointsEarned={10} moduleName="Resolver Problemas" />
     </ImageBackground>
   );
@@ -179,8 +171,8 @@ const styles = StyleSheet.create({
   },
   introHomeBtn: {
     position: 'absolute',
-    top: -15, // Joga metade do botão para fora do topo do card branco
-    left: -10, // Joga metade do botão para fora da quina esquerda do card branco
+    top: -15,
+    left: -10,
     width: 46,
     height: 46,
     borderRadius: 23,

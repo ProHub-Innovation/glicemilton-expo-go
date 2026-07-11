@@ -9,7 +9,7 @@ interface SquarePosition {
   id: number;
   top: DimensionValue;
   left: DimensionValue;
-  rotate: number; // Trabalhando apenas com números
+  rotate: number;
 }
 
 const SQUARES_POSITIONS: SquarePosition[] = [
@@ -38,7 +38,6 @@ export function BoardTrail({ currentPosition }: BoardTrailProps) {
       {SQUARES_POSITIONS.map((square, index) => {
         const isSpecialLeaf = index === 0 || index === 16;
 
-        // Juntamos a rotação da folha e a escala da folha cinza no mesmo array
         const imageTransforms: ({ rotate: string } | { scale: number })[] = [
           { rotate: `${square.rotate}deg` },
         ];
@@ -49,13 +48,8 @@ export function BoardTrail({ currentPosition }: BoardTrailProps) {
         return (
           <View
             key={square.id}
-            style={[
-              styles.leafWrapper,
-              // A ROTAÇÃO SAIU DO CONTÊINER PAI
-              { top: square.top, left: square.left },
-            ]}
+            style={[styles.leafWrapper, { top: square.top, left: square.left }]}
           >
-            {/* A ROTAÇÃO É APLICADA APENAS DIRETAMENTE NA IMAGEM */}
             <Image
               source={
                 isSpecialLeaf
@@ -66,10 +60,8 @@ export function BoardTrail({ currentPosition }: BoardTrailProps) {
               resizeMode="contain"
             />
 
-            {/* O NÚMERO NÃO PRECISA MAIS DE ROTAÇÃO INVERTIDA */}
             {!isSpecialLeaf && <Text style={styles.leafNumber}>{index}</Text>}
 
-            {/* O GLICEMILTON FICA FIXO, SEMPRE NO EIXO VERTICAL DA TELA */}
             {index === currentPosition && (
               <View style={styles.mascotContainer}>
                 <Image
@@ -98,7 +90,7 @@ export function BoardTrail({ currentPosition }: BoardTrailProps) {
 const styles = StyleSheet.create({
   pinContainer: {
     position: 'absolute',
-    top: 0, // Ajuste para o pin ficar "espetado" levemente para cima da folha
+    top: 0,
     width: 40,
     height: 40,
     zIndex: 9,

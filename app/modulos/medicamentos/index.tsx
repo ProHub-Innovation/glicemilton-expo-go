@@ -15,7 +15,6 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-// IMPORTAÇÃO DO ESTADO GLOBAL E DO NOVO MODAL
 import VictoryModal from '../../../components/VictoryModal';
 import { useGame } from '../../../context/GameContext';
 
@@ -35,7 +34,6 @@ export default function MedicamentosScreen() {
   const insets = useSafeAreaInsets();
   const { addPoints } = useGame();
 
-  // EFEITO NOVO: Dá os pontos assim que a fase finaliza
   useEffect(() => {
     if (phase === 'finished') {
       addPoints('modulo_medicamentos' as any, 10);
@@ -83,9 +81,6 @@ export default function MedicamentosScreen() {
     }
   }
 
-  // ==================== RENDERIZAÇÃO DAS FASES ====================
-
-  // FASE 1: INTRODUÇÃO
   if (phase === 'intro') {
     return (
       <ImageBackground
@@ -130,7 +125,6 @@ export default function MedicamentosScreen() {
     );
   }
 
-  // FASE 2: ARMAZENAMENTO
   if (phase === 'storage') {
     return (
       <View style={styles.storageWrapper}>
@@ -204,7 +198,6 @@ export default function MedicamentosScreen() {
     );
   }
 
-  // FASE 3 E FASE 4 (A tela fica congelada na cozinha, com o modal por cima)
   if (phase === 'application' || phase === 'finished') {
     return (
       <View style={styles.storageWrapper}>
@@ -325,7 +318,6 @@ export default function MedicamentosScreen() {
               <MaterialCommunityIcons name="home" size={24} color="#fff" />
             </TouchableOpacity>
 
-            {/* MODAL DE VITÓRIA GLOBAL NO FINAL DA TELA */}
             <VictoryModal
               visible={phase === 'finished'}
               pointsEarned={10}
@@ -375,7 +367,6 @@ function FeedbackModal({ visible, data, onClose }: FeedbackModalProps) {
   );
 }
 
-// ==================== ESTILOS LIMPOS ====================
 const styles = StyleSheet.create({
   background: {
     flex: 1,
@@ -411,7 +402,6 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
 
-  // Áreas Interativas
   interactiveArea: { flex: 1, width: '100%', position: 'relative' },
   invisibleButton: {
     position: 'absolute',

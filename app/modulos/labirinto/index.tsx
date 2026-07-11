@@ -28,15 +28,15 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const INITIAL_MAZE = [
-  ['EXIT', 'T', 'TB_SUGAR', 'TR', 'TL', 'TR', 'TL', 'TB', 'TR'], // Linha 0
-  ['LRB', 'LR', 'LRT', 'LB', 'BR', 'LB', 'BR', 'LRT', 'LR'], // Linha 1
-  ['LT_SUGAR', 'B', 'R', 'LT', 'TR', 'LT', 'BT', 'R_SUGAR', 'LR'], // Linha 2
-  ['LB', 'TR', 'LB', 'BR', 'LB', 'BR', 'LTR', 'LBR', 'LR'], // Linha 3
-  ['LT', 'B', 'T', 'TRB', 'LT', 'T', 'R', 'LT', 'BR'], // Linha 4
-  ['LB', 'TR', 'L', 'TB', 'BR_SUGAR', 'LR', 'LR', 'LB', 'TR'], // Linha 5
-  ['LT', 'BR', 'LB', 'TR', 'LTR', 'LR', 'LB', 'TRB', 'LR'], // Linha 6
-  ['LB', 'TR', 'BLT', 'B', 'R', 'LB', 'BT', 'RT', 'LBR_SUGAR'], // Linha 7
-  ['BLT', 'B_SUGAR', 'BT', 'BTR', 'BL', 'BT', 'TBR', 'BL', 'BRT'], // Linha 8
+  ['EXIT', 'T', 'TB_SUGAR', 'TR', 'TL', 'TR', 'TL', 'TB', 'TR'],
+  ['LRB', 'LR', 'LRT', 'LB', 'BR', 'LB', 'BR', 'LRT', 'LR'],
+  ['LT_SUGAR', 'B', 'R', 'LT', 'TR', 'LT', 'BT', 'R_SUGAR', 'LR'],
+  ['LB', 'TR', 'LB', 'BR', 'LB', 'BR', 'LTR', 'LBR', 'LR'],
+  ['LT', 'B', 'T', 'TRB', 'LT', 'T', 'R', 'LT', 'BR'],
+  ['LB', 'TR', 'L', 'TB', 'BR_SUGAR', 'LR', 'LR', 'LB', 'TR'],
+  ['LT', 'BR', 'LB', 'TR', 'LTR', 'LR', 'LB', 'TRB', 'LR'],
+  ['LB', 'TR', 'BLT', 'B', 'R', 'LB', 'BT', 'RT', 'LBR_SUGAR'],
+  ['BLT', 'B_SUGAR', 'BT', 'BTR', 'BL', 'BT', 'TBR', 'BL', 'BRT'],
 ];
 
 const START_ROW = 8;
@@ -440,19 +440,18 @@ const styles = StyleSheet.create({
     textShadowRadius: 3,
   },
 
-  // ALTERE APENAS ESTA CLASSE NO SEU STYLESHEET:
   mazeGridContainer: {
     position: 'absolute',
     top: '44%',
     left: '50%',
     width: MAZE_CONTAINER_SIZE,
     height: MAZE_CONTAINER_SIZE,
-    marginTop: -MAZE_CONTAINER_SIZE / 2, // Centra verticalmente na perfeição
-    marginLeft: -MAZE_CONTAINER_SIZE / 2, // Centra horizontalmente na perfeição
+    marginTop: -MAZE_CONTAINER_SIZE / 2,
+    marginLeft: -MAZE_CONTAINER_SIZE / 2,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'transparent',
-    zIndex: 10, // Garante que fica por cima do fundo
+    zIndex: 10,
   },
   row: { flexDirection: 'row' },
   cell: {
@@ -466,11 +465,11 @@ const styles = StyleSheet.create({
 
   controlsArea: {
     position: 'absolute',
-    bottom: 50, // Grampeia o D-Pad na parte inferior da tela
+    bottom: 50,
     alignItems: 'center',
     width: '100%',
     gap: 6,
-    zIndex: 20, // Garante que as setas fiquem por cima de qualquer fundo e clicáveis
+    zIndex: 20,
   },
   controlRowMiddle: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
   dPadBtn: {

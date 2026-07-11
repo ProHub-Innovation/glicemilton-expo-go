@@ -11,15 +11,16 @@ import {
 } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
 
-// Importando os componentes que criamos!
 import { AnimatedCloud, AnimatedFloat, GrassClump } from '../../components/AnimatedElements';
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { width } = useWindowDimensions(); // Hook responsivo adicionado aqui!
+  // 1. Puxamos a 'height' (altura) também, além do 'width'
+  const { width, height } = useWindowDimensions();
 
   return (
-    <View style={styles.screenWrapper}>
+    // 2. Forçamos a altura exata da tela aqui
+    <View style={[styles.screenWrapper, { height }]}>
       <ImageBackground
         source={require('../../assets/images/background.jpg')}
         style={styles.homeArea}
@@ -111,8 +112,18 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  screenWrapper: { flex: 1, backgroundColor: '#222' },
-  homeArea: { flex: 1, width: '100%', alignItems: 'center' },
+  screenWrapper: {
+    flex: 1,
+    backgroundColor: '#222',
+    width: '100%',
+    overflow: 'hidden', // 3. Esconde qualquer coisa que tente "vazar" da tela
+  },
+  homeArea: {
+    flex: 1,
+    width: '100%',
+    height: '100%', // 4. Garante que o fundo cubra tudo
+    alignItems: 'center',
+  },
   welcomeArea: { position: 'absolute', top: '15%', alignItems: 'center', zIndex: 2 },
   smallText: {
     fontSize: 38,

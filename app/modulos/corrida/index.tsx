@@ -21,12 +21,7 @@ import VictoryModal from '@/components/VictoryModal';
 import { RUNNER_ASSETS, RUNNER_CONFIG } from '@/constants/runner';
 
 type ScreenState =
-  | 'CONCEPT'
-  | 'ASK_INSTRUCTIONS'
-  | 'INST_STEP_1'
-  | 'INST_STEP_2'
-  | 'INST_STEP_3'
-  | 'PLAYING';
+  'CONCEPT' | 'ASK_INSTRUCTIONS' | 'INST_STEP_1' | 'INST_STEP_2' | 'INST_STEP_3' | 'PLAYING';
 
 export default function CorridaScreen() {
   const [fontsLoaded] = useFonts({ Chewy_400Regular });
@@ -41,12 +36,10 @@ export default function CorridaScreen() {
 
   const [gameKey, setGameKey] = useState<number>(0);
 
-  // ✅ Referências e estados criados para gerenciar o efeito bolha e fade-in
   const [showIntroBtn, setShowIntroBtn] = useState(false);
   const btnOpacity = useRef(new Animated.Value(0)).current;
   const homePulseAnim = useRef(new Animated.Value(1)).current;
 
-  // Monitor Central do Tempo Globals do Jogo
   useEffect(() => {
     if (currentScreen !== 'PLAYING' || gameStatus !== 'PLAYING') return;
 
@@ -65,7 +58,6 @@ export default function CorridaScreen() {
     return () => clearInterval(timer);
   }, [gameStatus, currentScreen]);
 
-  // ✅ Efeito para o delay de surgimento do botão avançar na tela conceitual
   useEffect(() => {
     if (currentScreen === 'CONCEPT') {
       const timer = setTimeout(() => {
@@ -84,9 +76,7 @@ export default function CorridaScreen() {
     }
   }, [currentScreen, btnOpacity]);
 
-  // ✅ Loop contínuo que dita a animação em formato de bolha para o botão Home
   useEffect(() => {
-    // Força o reset do valor inicial antes de acionar o motor nativo
     homePulseAnim.setValue(1.0);
 
     const animation = Animated.loop(
@@ -94,7 +84,7 @@ export default function CorridaScreen() {
         Animated.timing(homePulseAnim, {
           toValue: 1.1,
           duration: 800,
-          useNativeDriver: true, // Garante o envio direto para a GPU do celular
+          useNativeDriver: true,
         }),
         Animated.timing(homePulseAnim, {
           toValue: 1.0,
@@ -129,17 +119,15 @@ export default function CorridaScreen() {
 
   if (!fontsLoaded) return null;
 
-  // --- 1. Tela Conceitual ---
   if (currentScreen === 'CONCEPT') {
     return (
       <ImageBackground
         source={RUNNER_ASSETS.bgLandscape}
         style={styles.fullscreenBg}
-        //   imageStyle={{ transform: [{ scale: 1.08 }, { translateY: 15 }] }}
         resizeMode="cover"
       >
         <View style={styles.cardAnchor}>
-          {/* ✅ Envolvido em Animated.View com o pulso ativo */}
+          {}
           <Animated.View style={[styles.introHomeBtn, { transform: [{ scale: homePulseAnim }] }]}>
             <TouchableOpacity onPress={() => router.back()}>
               <Ionicons name="home" size={24} color="#FFF" />
@@ -160,7 +148,7 @@ export default function CorridaScreen() {
               coração, controlando o peso, fortalecendo o corpo e a mente.
             </Text>
 
-            {/* ✅ Botão surge suavemente após 1 segundo */}
+            {}
             {showIntroBtn && (
               <Animated.View style={{ opacity: btnOpacity }}>
                 <TouchableOpacity
@@ -178,7 +166,6 @@ export default function CorridaScreen() {
     );
   }
 
-  // --- 2. Tela Decisória ---
   if (currentScreen === 'ASK_INSTRUCTIONS') {
     return (
       <ImageBackground
@@ -190,7 +177,6 @@ export default function CorridaScreen() {
         <SafeAreaView style={styles.introContainer}>
           <Text style={styles.questionTitle}>Precisa de instruções?</Text>
 
-          {/* ✅ Posicionado e animado com o efeito bolha */}
           <View style={{ position: 'absolute', top: insets.top + 15, left: 20, zIndex: 99 }}>
             <Animated.View style={[styles.gameHomeBtn, { transform: [{ scale: homePulseAnim }] }]}>
               <TouchableOpacity onPress={() => router.back()}>
@@ -227,7 +213,6 @@ export default function CorridaScreen() {
     );
   }
 
-  // --- 3. Passo 1 ---
   if (currentScreen === 'INST_STEP_1') {
     return (
       <ImageBackground
@@ -237,7 +222,6 @@ export default function CorridaScreen() {
         resizeMode="cover"
       >
         <SafeAreaView style={styles.instructionContainer}>
-          {/* ✅ Botão Home padronizado e pulsando */}
           <View style={{ position: 'absolute', top: insets.top + 15, left: 20, zIndex: 99 }}>
             <Animated.View style={[styles.gameHomeBtn, { transform: [{ scale: homePulseAnim }] }]}>
               <TouchableOpacity onPress={() => router.back()}>
@@ -288,7 +272,6 @@ export default function CorridaScreen() {
     );
   }
 
-  // --- 4. Passo 2 ---
   if (currentScreen === 'INST_STEP_2') {
     return (
       <ImageBackground
@@ -298,7 +281,6 @@ export default function CorridaScreen() {
         resizeMode="cover"
       >
         <SafeAreaView style={styles.instructionContainer}>
-          {/* ✅ Botão Home padronizado e pulsando */}
           <View style={{ position: 'absolute', top: insets.top + 15, left: 20, zIndex: 99 }}>
             <Animated.View style={[styles.gameHomeBtn, { transform: [{ scale: homePulseAnim }] }]}>
               <TouchableOpacity onPress={() => router.back()}>
@@ -349,7 +331,6 @@ export default function CorridaScreen() {
     );
   }
 
-  // --- 5. Passo 3 ---
   if (currentScreen === 'INST_STEP_3') {
     return (
       <ImageBackground
@@ -359,7 +340,6 @@ export default function CorridaScreen() {
         resizeMode="cover"
       >
         <SafeAreaView style={styles.instructionContainer}>
-          {/* ✅ Botão Home padronizado e pulsando */}
           <View style={{ position: 'absolute', top: insets.top + 15, left: 20, zIndex: 99 }}>
             <Animated.View style={[styles.gameHomeBtn, { transform: [{ scale: homePulseAnim }] }]}>
               <TouchableOpacity onPress={() => router.back()}>
@@ -414,7 +394,6 @@ export default function CorridaScreen() {
     );
   }
 
-  // --- TELA DE JOGO ATIVA ---
   if (currentScreen === 'PLAYING') {
     return (
       <ImageBackground
@@ -423,7 +402,6 @@ export default function CorridaScreen() {
         imageStyle={{ transform: [{ scale: 1.08 }, { translateY: 15 }] }}
         resizeMode="cover"
       >
-        {/* ✅ Botão Home flutuando na tela de jogo com pulsação controlada */}
         <View style={{ position: 'absolute', top: insets.top + 90, left: 20, zIndex: 99 }}>
           <Animated.View style={[styles.gameHomeBtn, { transform: [{ scale: homePulseAnim }] }]}>
             <TouchableOpacity onPress={() => router.back()}>
@@ -462,11 +440,9 @@ export default function CorridaScreen() {
             onGameOver={handleGameOver}
           />
 
-          {/* Modal de Derrota */}
           <Modal visible={gameStatus === 'LOST'} transparent animationType="slide">
             <View style={styles.modalOverlay}>
               <View style={styles.modalCard}>
-                {/* ✅ Botão Home pulsando também no modal de fim de jogo */}
                 <View style={{ position: 'absolute', top: -15, left: -10, zIndex: 99 }}>
                   <Animated.View
                     style={[styles.introHomeBtn, { transform: [{ scale: homePulseAnim }] }]}
@@ -477,7 +453,6 @@ export default function CorridaScreen() {
                   </Animated.View>
                 </View>
 
-                {/* ✅ Lógica Estática de Derrota Resolvida */}
                 <Text style={styles.modalEmoji}>💥</Text>
                 <Text style={styles.modalTitle}>Fim de Jogo!</Text>
 
@@ -499,7 +474,6 @@ export default function CorridaScreen() {
             </View>
           </Modal>
 
-          {/* Modal de Vitória — padrão do projeto */}
           <VictoryModal visible={gameStatus === 'WON'} pointsEarned={score} moduleName="Corrida" />
         </SafeAreaView>
       </ImageBackground>

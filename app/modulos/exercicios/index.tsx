@@ -1,6 +1,3 @@
-// app/(tabs)/modulos/quiz/index.tsx
-// Tela do módulo Quiz — Reduzir Riscos.
-
 import { Caveat_700Bold } from '@expo-google-fonts/caveat';
 import { Chewy_400Regular } from '@expo-google-fonts/chewy';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -56,7 +53,6 @@ function quizScreenReducer(state: QuizScreenState, action: QuizScreenAction): Qu
       const steps = action.payload;
       const rawNext = state.position + steps;
 
-      // Se a soma passar ou for igual à última casa, fixamos na última casa (index 15)
       const nextPosition = Math.min(rawNext, TOTAL_BOARD_SQUARES - 1);
 
       return {
@@ -70,7 +66,6 @@ function quizScreenReducer(state: QuizScreenState, action: QuizScreenAction): Qu
     }
 
     case 'ANSWER_CORRECT': {
-      // Verifica se a casa atual onde ele acertou é a última casa
       const isFinished = state.position === TOTAL_BOARD_SQUARES - 1;
 
       return {
@@ -81,12 +76,11 @@ function quizScreenReducer(state: QuizScreenState, action: QuizScreenAction): Qu
       };
     }
 
-    // 🔥 O CASE QUE ESTAVA FALTANDO:
     case 'ANSWER_WRONG': {
       return {
         ...state,
-        quizVisible: false, // Força o modal do quiz a fechar
-        isLocked: true, // Mantém o dado bloqueado
+        quizVisible: false,
+        isLocked: true,
       };
     }
 
@@ -129,10 +123,10 @@ export default function QuizScreen() {
   useEffect(() => {
     if (state.phase === 'intro') {
       nextBtnOpacity.setValue(0);
-      setShowIntroBtn(false); // Reseta o botão se o usuário voltar para a intro
+      setShowIntroBtn(false);
 
       const timer = setTimeout(() => {
-        setShowIntroBtn(true); // Faz a caixa "crescer" ao renderizar o componente
+        setShowIntroBtn(true);
         Animated.timing(nextBtnOpacity, {
           toValue: 1,
           duration: 800,
@@ -156,7 +150,6 @@ export default function QuizScreen() {
 
       setHasFailedQuestion(false);
 
-      // 🔥 Apenas adiciona ao contexto global se o jogo chegou ao fim
       if (isFinished) {
         addPoints('quiz', newScore);
       }
@@ -222,7 +215,6 @@ export default function QuizScreen() {
                   pelo monitoramento regular (exames e aspectos emocionais).
                 </Text>
 
-                {/* 3. SUBSTITUA O BLOCO DO BOTÃO POR ESTE: */}
                 {showIntroBtn && (
                   <Animated.View style={{ opacity: nextBtnOpacity }}>
                     <TouchableOpacity
@@ -253,12 +245,9 @@ export default function QuizScreen() {
     );
   }
 
-  // 3. TELA DO TABULEIRO INTERATIVO (JOGO EM EXECUÇÃO)
-
   return (
     <View style={styles.gameContainer}>
       <View style={styles.gameOverlay}>
-        {/* Cabeçalho Superior — Apenas a Casinha Pulsante */}
         <View style={styles.floatingHeaderOnlyHome}>
           <AnimatedTouchableOpacity
             style={[styles.gameHomeBtn, { transform: [{ scale: homePulseAnim }] }]}
@@ -271,7 +260,6 @@ export default function QuizScreen() {
           </AnimatedTouchableOpacity>
         </View>
 
-        {/* Área Central Estática com o Tabuleiro (Sem ScrollView) */}
         <View style={styles.staticBoardContainer}>
           <BoardTrail currentPosition={state.position} />
         </View>
@@ -306,7 +294,6 @@ export default function QuizScreen() {
           </View>
         )}
 
-        {/* Dado Fixo no Canto Inferior Direito (Sem Mensagens) */}
         <View style={styles.absoluteDiceContainer}>
           <DiceButton lastRoll={state.lastRoll} isLocked={state.isLocked} onRoll={handleRoll} />
         </View>
@@ -321,16 +308,15 @@ export default function QuizScreen() {
 
 const styles = StyleSheet.create({
   finishedCard: {
-    backgroundColor: 'rgba(255, 255, 255, 0.88)', // Fundo branco translúcido
-    width: '85%', // Ocupa uma boa parte da tela, mas com margens
-    maxWidth: 340, // Evita que fique esticado demais em telas grandes
-    borderRadius: 24, // Bordas bem arredondadas
-    paddingVertical: 40, // Espaço em cima e embaixo
-    paddingHorizontal: 24, // Espaço nas laterais
-    alignItems: 'center', // Centraliza tudo dentro da caixa
-    gap: 16, // Cria um espaçamento automático entre todos os itens
+    backgroundColor: 'rgba(255, 255, 255, 0.88)',
+    width: '85%',
+    maxWidth: 340,
+    borderRadius: 24,
+    paddingVertical: 40,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+    gap: 16,
 
-    // Sombrinha para descolar do fundo da árvore
     elevation: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
@@ -338,7 +324,7 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
   },
   container: {
-    flex: 1, // Isso garante que o fundo ocupe a tela toda
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -380,13 +366,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingBottom: 40, // Dá espaço para o dado não cobrir as últimas casas
+    paddingBottom: 40,
   },
   absoluteDiceContainer: {
     position: 'absolute',
-    bottom: 40, // Distância da borda inferior
-    right: 40, // Distância da borda direita (canto inferior direito)
-    zIndex: 99, // Fica sobreposto ao tabuleiro se necessário
+    bottom: 40,
+    right: 40,
+    zIndex: 99,
     transform: [{ rotate: '15deg' }],
   },
   finishedEmoji: {
@@ -394,7 +380,7 @@ const styles = StyleSheet.create({
   },
   finishedTitle: {
     fontSize: 28,
-    fontFamily: 'Chewy_400Regular', // Mudou para Chewy
+    fontFamily: 'Chewy_400Regular',
     color: '#1A1A1A',
   },
   finishedSub: {
@@ -413,7 +399,7 @@ const styles = StyleSheet.create({
   },
   btnText: {
     color: '#fff',
-    fontFamily: 'Chewy_400Regular', // Mudou para Chewy
+    fontFamily: 'Chewy_400Regular',
     fontSize: 18,
   },
   btnOutline: {
@@ -427,7 +413,7 @@ const styles = StyleSheet.create({
   },
   btnOutlineText: {
     color: '#6D4C41',
-    fontFamily: 'Chewy_400Regular', // Mudou para Chewy
+    fontFamily: 'Chewy_400Regular',
     fontSize: 18,
   },
   introWrapper: {

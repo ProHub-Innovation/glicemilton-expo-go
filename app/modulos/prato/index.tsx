@@ -29,9 +29,6 @@ import Animated, {
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-// ==========================================
-// 1. TIPAGENS E DADOS DOS ALIMENTOS
-// ==========================================
 type Phase = 'intro' | 'chart' | 'game';
 type FoodCategory = 'carbs' | 'drinks' | 'proteins' | 'vegetables' | 'fruits';
 
@@ -50,9 +47,7 @@ export type FoodItem = {
   uniqueId?: string;
 };
 
-// BANCO DE DADOS COMPLETO
 const FOOD_DATABASE: FoodItem[] = [
-  // 🍞 CARBOIDRATOS
   {
     id: 'c1',
     name: 'Pão francês',
@@ -150,7 +145,6 @@ const FOOD_DATABASE: FoodItem[] = [
     color: '#FFB300',
   },
 
-  // 🥩 PROTEÍNAS
   {
     id: 'p1',
     name: 'Coxa de frango',
@@ -248,7 +242,6 @@ const FOOD_DATABASE: FoodItem[] = [
     color: '#FFB300',
   },
 
-  // 🥬 VEGETAIS
   {
     id: 'v1',
     name: 'Alface',
@@ -346,7 +339,6 @@ const FOOD_DATABASE: FoodItem[] = [
     color: '#388E3C',
   },
 
-  // 🍎 FRUTAS
   {
     id: 'f1',
     name: 'Banana prata',
@@ -444,7 +436,6 @@ const FOOD_DATABASE: FoodItem[] = [
     color: '#EF5350',
   },
 
-  // ☕ BEBIDAS E EXTRAS
   {
     id: 'b1',
     name: 'Café sem açúcar',
@@ -529,7 +520,7 @@ const FOOD_DATABASE: FoodItem[] = [
     plateSliceImage: require('@/assets/images/prato/bebidas/agua_coco.png'),
     color: '#AED581',
   },
-  // --- DAQUI PARA BAIXO SÃO SÓLIDOS (Vão para o prato) ---
+
   {
     id: 'b8',
     name: 'Brigadeiro',
@@ -610,7 +601,6 @@ const FOOD_DATABASE: FoodItem[] = [
   },
 ];
 
-// O SEU ARRAY COM AS IMAGENS CUSTOMIZADAS EM VEZ DE ÍCONES
 const MENU_BUTTONS = [
   {
     id: 'carbs',
@@ -635,9 +625,6 @@ const MENU_BUTTONS = [
   },
 ] as const;
 
-// ==========================================
-// 2. COMPONENTE ARRASTÁVEL (O Alimento Selecionado)
-// ==========================================
 interface DraggableFoodProps {
   item: FoodItem;
   onDropInPlate: (item: FoodItem) => void;
@@ -658,7 +645,6 @@ function DraggableFood({ item, onDropInPlate }: DraggableFoodProps) {
     })
     .onEnd((event) => {
       isDragging.value = false;
-      // Arrasta 100px para CIMA -> Solta no prato!
       if (event.translationY < -100) {
         runOnJS(onDropInPlate)(item);
       }
@@ -680,7 +666,6 @@ function DraggableFood({ item, onDropInPlate }: DraggableFoodProps) {
   return (
     <GestureDetector gesture={panGesture}>
       <Animated.View style={[styles.stagedFoodBadge, animatedStyle]}>
-        {/* A MÁGICA ACONTECE AQUI: Agora ele verifica se tem imagem! */}
         <View
           style={[
             styles.stagedFoodIcon,
@@ -710,9 +695,6 @@ function DraggableFood({ item, onDropInPlate }: DraggableFoodProps) {
   );
 }
 
-// ==========================================
-// 3. TELA PRINCIPAL (Fluxo de 3 Fases)
-// ==========================================
 export default function PratoScreen() {
   const pulseAnim = useSharedValue(1);
 
@@ -740,7 +722,6 @@ export default function PratoScreen() {
   const insets = useSafeAreaInsets();
   const [showIntroBtn, setShowIntroBtn] = useState(false);
 
-  // Animação da Bottom Sheet (Lista Branca) - AGORA COM WITHTIMING (SEM QUICAR)
   const bottomSheetY = useSharedValue(SCREEN_HEIGHT);
 
   useEffect(() => {
@@ -773,22 +754,18 @@ export default function PratoScreen() {
 
   const handleDropInPlate = (food: FoodItem) => {
     setPlateItems((prev) => {
-      // Criamos um identificador único para ESTA porção específica
       const foodInstance = {
         ...food,
         uniqueId: `${food.id}-${Date.now()}-${Math.random()}`,
       };
 
-      // REGRA DA BEBIDA ÚNICA: Se for uma bebida legítima (não sólida)
       if (food.category === 'drinks' && !food.isSolid) {
-        // Remove qualquer outra bebida não sólida antiga
         const mesaSemBebidas = prev.filter(
           (item) => !(item.category === 'drinks' && !item.isSolid)
         );
         return [...mesaSemBebidas, foodInstance];
       }
 
-      // Para os alimentos e extras sólidos, permite acumular porções livremente!
       return [...prev, foodInstance];
     });
     setStagedFood(null);
@@ -803,11 +780,9 @@ export default function PratoScreen() {
 
   const visibleFoods = FOOD_DATABASE.filter((food) => food.category === activeCategory);
 
-  // FILTROS DA MESA (Para separar bebida da comida)
   const drinksOnTable = plateItems.filter((item) => item.category === 'drinks' && !item.isSolid);
   const foodOnPlate = plateItems.filter((item) => item.category !== 'drinks' || item.isSolid);
 
-  // FASE 1: INTRODUÇÃO
   if (phase === 'intro') {
     return (
       <ImageBackground
@@ -848,7 +823,6 @@ export default function PratoScreen() {
     );
   }
 
-  // FASE 2: GRÁFICO
   if (phase === 'chart') {
     return (
       <ImageBackground
@@ -885,7 +859,6 @@ export default function PratoScreen() {
     );
   }
 
-  // FASE 3: O MINIGAME (COM BOTTOM SHEET E ÁREA DE BEBIDAS)
   if (phase === 'game') {
     return (
       <GestureHandlerRootView style={{ flex: 1, backgroundColor: '#80A060', overflow: 'hidden' }}>
@@ -920,9 +893,7 @@ export default function PratoScreen() {
 
           <Text style={styles.subtitle}>O que você vai comer agora?</Text>
 
-          {/* MAIN GAME AREA */}
           <View style={styles.mainGameArea}>
-            {/* MENU LATERAL VERTICAL (C/ AS SUAS IMAGENS CUSTOMIZADAS) */}
             <View style={styles.sideMenu}>
               {MENU_BUTTONS.map((btn) => (
                 <TouchableOpacity
@@ -937,21 +908,18 @@ export default function PratoScreen() {
               ))}
             </View>
 
-            {/* ÁREA DA MESA (Bebidas em cima, Prato embaixo) */}
             <View style={styles.tableArea}>
-              {/* ÁREA DAS BEBIDAS */}
               <View style={styles.drinkArea}>
                 {drinksOnTable.length === 0 && (
                   <Text style={styles.dragHintTextDrinks}>Bebida</Text>
                 )}
                 {drinksOnTable.map((item, index) => (
                   <Animated.View
-                    key={`drink-${item.uniqueId}`} //  MUDOU AQUI
+                    key={`drink-${item.uniqueId}`}
                     entering={FadeIn}
                     exiting={FadeOut}
                     style={{ position: 'absolute', zIndex: index }}
                   >
-                    {/* MUDOU O PARAMETRO DO ONPRESS AQUI: */}
                     <TouchableOpacity
                       activeOpacity={0.8}
                       onPress={() => handleRemoveFromPlate(item.uniqueId!)}
@@ -981,7 +949,6 @@ export default function PratoScreen() {
                 ))}
               </View>
 
-              {/* ÁREA DO PRATO */}
               <View style={styles.plateArea}>
                 <ImageBackground
                   source={require('@/assets/images/prato/prato_vazio.png')}
@@ -995,12 +962,11 @@ export default function PratoScreen() {
                   <View style={styles.plateInsideContainer}>
                     {foodOnPlate.map((item, index) => (
                       <Animated.View
-                        key={`food-${item.uniqueId}`} //  MUDOU AQUI
+                        key={`food-${item.uniqueId}`}
                         entering={FadeIn}
                         exiting={FadeOut}
                         style={{ margin: -12, zIndex: index }}
                       >
-                        {/* MUDOU O PARAMETRO DO ONPRESS AQUI: */}
                         <TouchableOpacity
                           activeOpacity={0.8}
                           onPress={() => handleRemoveFromPlate(item.uniqueId!)}
@@ -1035,7 +1001,6 @@ export default function PratoScreen() {
             </View>
           </View>
 
-          {/* DASHBOARD DE TOTAIS */}
           <View style={styles.statsPanel}>
             <View style={styles.statBox}>
               <Text style={styles.statText}>Carboidratos: {totalCarbs}g</Text>
@@ -1045,14 +1010,12 @@ export default function PratoScreen() {
             </View>
           </View>
 
-          {/* O ALIMENTO PRONTO PARA ARRASTAR */}
           {stagedFood && !activeCategory && (
             <View style={styles.stagingArea}>
               <DraggableFood item={stagedFood} onDropInPlate={handleDropInPlate} />
             </View>
           )}
 
-          {/* LISTA BRANCA (BOTTOM SHEET) */}
           <Animated.View style={[styles.bottomSheet, animatedSheetStyle]}>
             <View style={styles.bottomSheetHeader}>
               <Text style={styles.bottomSheetTitle}>
@@ -1078,7 +1041,6 @@ export default function PratoScreen() {
                   style={styles.sheetListItem}
                   onPress={() => handleSelectFood(item)}
                 >
-                  {/* VERIFICA SE TEM IMAGEM PARA MOSTRAR NA LISTA */}
                   <View
                     style={[
                       styles.sheetListItemIcon,
@@ -1128,9 +1090,6 @@ export default function PratoScreen() {
   return null;
 }
 
-// ==========================================
-// 4. ESTILOS
-// ==========================================
 const styles = StyleSheet.create({
   background: {
     flex: 1,
@@ -1168,7 +1127,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
 
-  // LAYOUT DA FASE 3
   mainGameArea: {
     flexDirection: 'row',
     width: '100%',
@@ -1178,7 +1136,6 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
 
-  // MENU LATERAL
   sideMenu: {
     width: 70,
     justifyContent: 'center',
@@ -1199,14 +1156,11 @@ const styles = StyleSheet.create({
   },
   menuBtnActive: { backgroundColor: '#5D4037', borderColor: '#FFF', transform: [{ scale: 1.1 }] },
 
-  // A CLASSE QUE IMPEDE O SEU ÍCONE DE VAZAR OU SUMIR:
   menuCustomIcon: {
-    width: 60, // Largura controlada
-    height: 60, // Altura controlada
-    // tintColor: '#FFF',
+    width: 60,
+    height: 60,
   },
 
-  // ÁREA DA MESA E BEBIDAS
   tableArea: {
     flex: 1,
     justifyContent: 'center',
@@ -1225,7 +1179,6 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
 
-  // PRATO
   plateArea: {
     justifyContent: 'center',
     alignItems: 'center',
@@ -1261,12 +1214,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 
-  // DASHBOARD DE TOTAIS
   statsPanel: { paddingHorizontal: 20, paddingBottom: 20, gap: 8, zIndex: 5, width: '100%' },
   statBox: { backgroundColor: '#628641', padding: 12, borderRadius: 10, elevation: 3 },
   statText: { fontSize: 16, color: '#FFF', fontWeight: 'bold', textAlign: 'center' },
 
-  // ÁREA DE PREPARO
   stagingArea: {
     position: 'absolute',
     bottom: 110,
@@ -1286,7 +1237,7 @@ const styles = StyleSheet.create({
   stagedFoodIcon: {
     width: 74,
     height: 74,
-    borderRadius: 37, // Metade da largura para continuar redondo
+    borderRadius: 37,
     borderColor: '#FFF',
     justifyContent: 'center',
     alignItems: 'center',
@@ -1304,7 +1255,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
 
-  // BOTTOM SHEET
   bottomSheet: {
     position: 'absolute',
     bottom: 0,
@@ -1387,7 +1337,6 @@ const styles = StyleSheet.create({
     color: '#F57F17',
   },
 
-  // ESTILOS DAS FASES 1 E 2
   chartImage: { width: 250, height: 250, marginBottom: 10 },
   sourceText: {
     fontSize: 13,

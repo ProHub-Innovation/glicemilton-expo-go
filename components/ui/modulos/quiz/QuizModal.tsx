@@ -12,7 +12,6 @@ export function QuizModal({ visible, question, onAnswer }: QuizModalProps) {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [isAnswered, setIsAnswered] = useState(false);
 
-  // Reseta os estados sempre que uma nova pergunta abrir
   useEffect(() => {
     if (visible) {
       setSelectedOption(null);
@@ -26,7 +25,6 @@ export function QuizModal({ visible, question, onAnswer }: QuizModalProps) {
     setIsAnswered(true);
   }
 
-  // Função acionada apenas quando o usuário clica no botão "Continuar" após ler a explicação
   function handleContinue() {
     const isCorrect = selectedOption === question.correctId;
     onAnswer(isCorrect);
@@ -56,7 +54,6 @@ export function QuizModal({ visible, question, onAnswer }: QuizModalProps) {
     return [styles.optionTextDefault, styles.optionTextDisabled];
   }
 
-  // Encontra a explicação da alternativa que o usuário clicou
   const currentExplanation =
     isAnswered && selectedOption
       ? question.options.find((opt) => opt.id === selectedOption)?.explanation
@@ -91,7 +88,6 @@ export function QuizModal({ visible, question, onAnswer }: QuizModalProps) {
               ))}
             </View>
 
-            {/* CAIXA DE FEEDBACK EXPLICATIVO (Aparece após responder) */}
             {isAnswered && (
               <View
                 style={[
@@ -119,14 +115,14 @@ export function QuizModal({ visible, question, onAnswer }: QuizModalProps) {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)', // Fundo um pouco mais escuro para destacar o modal maior
+    backgroundColor: 'rgba(0,0,0,0.6)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   card: {
-    backgroundColor: 'rgba(235, 226, 216, 0.98)', // Menos translúcido para melhor leitura do texto longo
+    backgroundColor: 'rgba(235, 226, 216, 0.98)',
     width: '90%',
-    maxHeight: '85%', // Impede que o modal vaze da tela
+    maxHeight: '85%',
     borderRadius: 8,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
@@ -161,7 +157,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     alignItems: 'center',
     borderRadius: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.5)', // Fundo sutil nas opções
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
   },
   optionCorrect: {
     backgroundColor: '#4CAF50',
@@ -184,7 +180,6 @@ const styles = StyleSheet.create({
   optionTextDisabled: {
     color: '#8D6E63',
   },
-  // --- ESTILOS DA CAIXA DE EXPLICAÇÃO ---
   explanationBox: {
     width: '100%',
     marginTop: 10,
