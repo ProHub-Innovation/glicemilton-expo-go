@@ -6,12 +6,10 @@ import { ActivityIndicator, View } from 'react-native';
 import { ScoreProvider } from '../../contexts/ScoreContext';
 
 export default function TabLayout() {
-  // Carrega a fonte uma única vez para todo o app
   const [fontsLoaded] = useFonts({
     Chewy_400Regular,
   });
 
-  // Mostra um ícone de carregamento enquanto a fonte não estiver pronta
   if (!fontsLoaded) {
     return (
       <View

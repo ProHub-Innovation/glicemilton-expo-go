@@ -23,7 +23,7 @@ export default function DashboardScreen() {
     } else if (gameName === 'Adaptação Saudável') {
       router.push('/modulos/labirinto');
     } else if (gameName === 'Atividade Física') {
-      router.push('/modulos/corrida'); // ← adicione isso
+      router.push('/modulos/corrida');
     } else {
       Alert.alert('Em breve', `O módulo ${gameName} ainda está em desenvolvimento!`);
     }

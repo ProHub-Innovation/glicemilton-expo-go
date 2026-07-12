@@ -15,12 +15,11 @@ import {
 } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
 
-// Importando os componentes que criamos!
 import { AnimatedCloud, AnimatedFloat } from '../../components/AnimatedElements';
 
 export default function LoginScreen() {
   const router = useRouter();
-  const { width } = useWindowDimensions(); // Hook responsivo adicionado aqui!
+  const { width } = useWindowDimensions();
 
   return (
     <View style={styles.screenWrapper}>
@@ -219,7 +218,6 @@ const styles = StyleSheet.create({
   },
   characterImage: { width: '100%', height: '100%' },
 
-  // Overlay e Login Card
   loginOverlay: {
     position: 'absolute',
     top: 0,
@@ -246,7 +244,6 @@ const styles = StyleSheet.create({
     textShadowRadius: 2,
   },
 
-  // Mascote Gigante Ajustado
   loginMascotContainer: { zIndex: 1, marginBottom: -60 },
   loginMascot: { width: 180, height: 180 },
 
