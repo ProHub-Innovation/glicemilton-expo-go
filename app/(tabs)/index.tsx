@@ -11,12 +11,11 @@ import {
 } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
 
-// Importando os componentes que criamos!
 import { AnimatedCloud, AnimatedFloat, GrassClump } from '../../components/AnimatedElements';
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { width } = useWindowDimensions(); // Hook responsivo adicionado aqui!
+  const { width } = useWindowDimensions();
 
   return (
     <View style={styles.screenWrapper}>

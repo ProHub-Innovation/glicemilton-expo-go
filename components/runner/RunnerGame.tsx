@@ -36,7 +36,6 @@ export default function RunnerGame({
     healthRef.current = currentHealth;
   }, [score, currentHealth]);
 
-  // Loop 1: Gerador de Obstáculos e Itens Sortidos (Para se gameStatus mudar)
   useEffect(() => {
     if (gameStatus !== 'PLAYING') return;
 
@@ -65,7 +64,6 @@ export default function RunnerGame({
     return () => clearInterval(spawnTimer);
   }, [gameStatus]);
 
-  // Loop 2: Mecanismo de Física e Varredura de Colisão (60 FPS)
   useEffect(() => {
     if (gameStatus !== 'PLAYING') return;
 
@@ -132,7 +130,6 @@ export default function RunnerGame({
 
   return (
     <View style={styles.container}>
-      {/* Cenário de Corrida Límpido */}
       <View style={styles.trackContainer}>
         <View style={styles.lane} />
         <View style={styles.lane} />
@@ -172,7 +169,6 @@ export default function RunnerGame({
         </View>
       </View>
 
-      {/* Controles de Direção Analógicos de Base */}
       <View style={styles.controlsContainer}>
         <TouchableOpacity
           style={styles.hugeAnalogButton}

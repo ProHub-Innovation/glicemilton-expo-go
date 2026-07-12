@@ -20,7 +20,6 @@ export default function VictoryModal({
   const router = useRouter();
 
   const handleClose = () => {
-    // O fechamento obrigatoriamente redireciona o usuário de volta ao Dashboard limpo
     router.replace('/(tabs)/onboarding');
   };
 
@@ -29,7 +28,6 @@ export default function VictoryModal({
       <View style={styles.overlay}>
         <AnimatedFloat delay={0}>
           <View style={styles.card}>
-            {/* Ícone festivo no topo */}
             <View style={styles.iconContainer}>
               <Ionicons name="star" size={60} color="#FFD700" />
             </View>
@@ -86,7 +84,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     borderWidth: 3,
     borderColor: '#FFD700',
-    marginTop: -50, // Faz o ícone "saltar" para fora do card
+    marginTop: -50,
   },
   title: {
     fontSize: 32,
