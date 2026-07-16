@@ -63,7 +63,7 @@ export default function DashboardScreen() {
         <View style={styles.bottomSection}>
           <AnimatedFloat>
             <Image
-              source={require('../../assets/images/Glicemilton_feliz.png')}
+              source={require('../../assets/images/glicemilton_feliz.png')}
               style={styles.characterImage}
               resizeMode="contain"
             />

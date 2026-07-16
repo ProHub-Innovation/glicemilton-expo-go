@@ -69,7 +69,7 @@ export function BoardTrail({ currentPosition }: BoardTrailProps) {
             {index === currentPosition && (
               <View style={styles.mascotContainer}>
                 <Image
-                  source={require('@/assets/images/Glicemilton_feliz.png')}
+                  source={require('@/assets/images/glicemilton_feliz.png')}
                   style={styles.mascotToken}
                   resizeMode="contain"
                 />

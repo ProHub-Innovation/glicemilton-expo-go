@@ -49,7 +49,7 @@ export const SPAWN_ITEMS_POOL: Omit<RunnerSpawnItem, 'id' | 'lane'>[] = [
 export const RUNNER_ASSETS = {
   bgLandscape: require('@/assets/images/background.jpg'),
   antRunningIcon: require('@/assets/images/icone_atividade_fisica.png'),
-  antHappy: require('@/assets/images/Glicemilton_feliz.png'),
+  antHappy: require('@/assets/images/glicemilton_feliz.png'),
   bgBlueInstructions: require('@/assets/images/fundo_azul.jpg'),
   antExplaining: require('@/assets/images/glicemilton_explicando.png'),
   bgdirtroad: require('@/assets/images/runner/bg_dirtroad.jpg'),
