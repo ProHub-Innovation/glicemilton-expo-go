@@ -288,7 +288,7 @@ export default function LabirintoScreen() {
                     {isPlayer && (
                       <Animated.View entering={ZoomIn.duration(150)} style={styles.playerWrapper}>
                         <Image
-                          source={require('@/assets/images/glicemilton_feliz.png')}
+                          source={require('@/assets/images/Glicemilton_feliz.png')}
                           style={styles.itemImage}
                           resizeMode="contain"
                         />
