@@ -128,6 +128,7 @@ export default function LabirintoScreen() {
       return;
 
     setPlayerPos({ row: nextRow, col: nextCol });
+
     const nextCell = mazeMap[nextRow][nextCol];
 
     if (nextCell.includes('SUGAR')) {
@@ -494,6 +495,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 16,
     elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+  },
+  finishedIcon: {
+    width: 120,
+    height: 120,
+    marginBottom: 10,
   },
   finishedTitle: {
     fontSize: 28,

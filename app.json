@@ -1,11 +1,16 @@
 {
   "expo": {
-    "name": "StickerSmash",
-    "slug": "StickerSmash",
+    "name": "Glicemilton",
+    "slug": "glicemilton",
     "version": "1.0.0",
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "stickersmash",
+    "scheme": "glicemilton",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
