@@ -216,8 +216,8 @@ function AfericaoGame({ onFinish }: { onFinish: () => void }) {
   const [glicosimetroLigado, setGlicosimetroLigado] = useState(false);
 
   const [algodao2Molhado, setAlgodao2Molhado] = useState(false);
-  const [algodao2Usado, setAlgodao2Usado] = useState(false); 
-  const [algodao1Sujo, setAlgodao1Sujo] = useState(false); 
+  const [algodao2Usado, setAlgodao2Usado] = useState(false);
+  const [algodao1Sujo, setAlgodao1Sujo] = useState(false);
   const [algodao1Descartado, setAlgodao1Descartado] = useState(false);
 
   const [inputBloqueado, setInputBloqueado] = useState(false);
@@ -227,12 +227,12 @@ function AfericaoGame({ onFinish }: { onFinish: () => void }) {
   const dedoRef = useRef<View>(null);
   const caixaPerfuroRef = useRef<View>(null);
   const lixeiraRef = useRef<View>(null);
-  const algodao2ZoneRef = useRef<View>(null); 
+  const algodao2ZoneRef = useRef<View>(null);
 
   const [dedoZone, setDedoZone] = useState<DropZone | null>(null);
   const [caixaPerfuroZone, setCaixaPerfuroZone] = useState<DropZone | null>(null);
   const [lixeiraZone, setLixeiraZone] = useState<DropZone | null>(null);
-  const [algodao2Zone, setAlgodao2Zone] = useState<DropZone | null>(null); 
+  const [algodao2Zone, setAlgodao2Zone] = useState<DropZone | null>(null);
 
   const medirZona = (ref: React.RefObject<View | null>, setZone: (z: DropZone) => void) => {
     setTimeout(() => {
@@ -243,7 +243,6 @@ function AfericaoGame({ onFinish }: { onFinish: () => void }) {
       });
     }, 500);
   };
-
 
   React.useEffect(() => {
     const timers: any[] = [];
@@ -278,7 +277,7 @@ function AfericaoGame({ onFinish }: { onFinish: () => void }) {
     if (inputBloqueado) return;
 
     if (fase === 'SELECIONAR_DEDO') {
-      setFase('MOLHAR_ALGODAO'); 
+      setFase('MOLHAR_ALGODAO');
       return;
     }
     if (fase === 'SEGUNDA_GOTA') {
@@ -533,7 +532,7 @@ function AfericaoGame({ onFinish }: { onFinish: () => void }) {
   const c = cenarioAfastado ? 'afastado' : 'zoom';
 
   const zIndexAlcool = alcoolDisabled ? 10 : 999;
-  const zIndexAlgodao2 = algodao2Disabled ? 11 : 999; 
+  const zIndexAlgodao2 = algodao2Disabled ? 11 : 999;
   const zIndexLanceta = lancetaDisabled ? 12 : 999;
   const zIndexAlgodao1 = algodao1Disabled ? 13 : 999;
   const zIndexGlicosimetro = glicosimetroDisabled ? 14 : 999;
@@ -1038,7 +1037,7 @@ export default function VigiarTaxasScreen() {
               </View>
               <View style={styles.characterStory} pointerEvents="none">
                 <Image
-                  source={require('../../../assets/images/glicemilton_feliz.png')}
+                  source={require('../../../assets/images/Glicemilton_feliz.png')}
                   style={styles.characterLarge}
                   resizeMode="contain"
                 />
@@ -1080,7 +1079,7 @@ export default function VigiarTaxasScreen() {
               </View>
               <View style={styles.characterBottomCenter} pointerEvents="none">
                 <Image
-                  source={require('../../../assets/images/glicemilton_feliz.png')}
+                  source={require('../../../assets/images/Glicemilton_feliz.png')}
                   style={styles.characterLarge}
                   resizeMode="contain"
                 />
@@ -1568,7 +1567,7 @@ export default function VigiarTaxasScreen() {
 
 const styles = StyleSheet.create({
   background: { flex: 1, width: '100%', height: '100%' },
-  customAlertSuccess: {backgroundColor: '#4CAF50',},
+  customAlertSuccess: { backgroundColor: '#4CAF50' },
   safeArea: { flex: 1, paddingTop: 40, paddingBottom: 20 },
   safeAreaCenter: { flex: 1, paddingTop: 40, paddingBottom: 20, alignItems: 'center' },
   header: {
