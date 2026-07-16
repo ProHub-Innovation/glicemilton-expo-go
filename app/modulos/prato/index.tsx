@@ -1,37 +1,32 @@
-import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  ImageBackground,
-  TouchableOpacity,
-  FlatList,
-  StyleSheet,
-  Image,
-  Dimensions,
-} from 'react-native';
-import { router } from 'expo-router';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { GestureHandlerRootView, GestureDetector, Gesture } from 'react-native-gesture-handler';
-import { useFonts as useExpoFonts } from 'expo-font';
 import { Chewy_400Regular } from '@expo-google-fonts/chewy';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useFonts as useExpoFonts } from 'expo-font';
+import { router } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import {
+  FlatList,
+  Image,
+  ImageBackground,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  useWindowDimensions,
+} from 'react-native';
+import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import Animated, {
   FadeIn,
   FadeOut,
+  runOnJS,
   useAnimatedStyle,
   useSharedValue,
-  withSpring,
-  runOnJS,
   withRepeat,
   withSequence,
+  withSpring,
   withTiming,
 } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-const { height: SCREEN_HEIGHT } = Dimensions.get('window');
-
-// ==========================================
-// 1. TIPAGENS E DADOS DOS ALIMENTOS
-// ==========================================
 type Phase = 'intro' | 'chart' | 'game';
 type FoodCategory = 'carbs' | 'drinks' | 'proteins' | 'vegetables' | 'fruits';
 
@@ -50,16 +45,14 @@ export type FoodItem = {
   uniqueId?: string;
 };
 
-// BANCO DE DADOS COMPLETO
 const FOOD_DATABASE: FoodItem[] = [
-  // 🍞 CARBOIDRATOS
   {
     id: 'c1',
     name: 'Pão francês',
     category: 'carbs',
     portion: '1 unid. (50g)',
-    carbs: 28,
-    cals: 140,
+    carbs: 29,
+    cals: 135,
     insulin: 2,
     conveyorImage: require('@/assets/images/prato/carboidratos/pao_frances.png'),
     plateSliceImage: require('@/assets/images/prato/carboidratos/pao_frances.png'),
@@ -69,9 +62,9 @@ const FOOD_DATABASE: FoodItem[] = [
     id: 'c2',
     name: 'Pão de queijo',
     category: 'carbs',
-    portion: '1 unid. média (20g)',
+    portion: '1 unid. média (27g)',
     carbs: 9,
-    cals: 65,
+    cals: 55,
     insulin: 1,
     conveyorImage: require('@/assets/images/prato/carboidratos/pao_queijo.png'),
     plateSliceImage: require('@/assets/images/prato/carboidratos/pao_queijo.png'),
@@ -81,9 +74,9 @@ const FOOD_DATABASE: FoodItem[] = [
     id: 'c3',
     name: 'Arroz branco',
     category: 'carbs',
-    portion: '1 col. sopa (25g)',
-    carbs: 5,
-    cals: 30,
+    portion: '1 col. sopa (20g)',
+    carbs: 6,
+    cals: 26,
     insulin: 0.5,
     conveyorImage: require('@/assets/images/prato/carboidratos/arroz.png'),
     plateSliceImage: require('@/assets/images/prato/carboidratos/arroz.png'),
@@ -91,11 +84,11 @@ const FOOD_DATABASE: FoodItem[] = [
   },
   {
     id: 'c4',
-    name: 'Macarrão',
+    name: 'Macarrão ao alho e óleo',
     category: 'carbs',
-    portion: '1 pegador (100g)',
-    carbs: 24,
-    cals: 120,
+    portion: '1 escumadeira (110g)',
+    carbs: 28,
+    cals: 195,
     insulin: 2,
     conveyorImage: require('@/assets/images/prato/carboidratos/macarrao.png'),
     plateSliceImage: require('@/assets/images/prato/carboidratos/macarrao.png'),
@@ -103,11 +96,11 @@ const FOOD_DATABASE: FoodItem[] = [
   },
   {
     id: 'c5',
-    name: 'Panqueca',
+    name: 'Massa de panqueca sem recheio',
     category: 'carbs',
-    portion: '1 unid. média (80g)',
-    carbs: 12,
-    cals: 90,
+    portion: '1 unid. pequena (30g)',
+    carbs: 9,
+    cals: 79,
     insulin: 1,
     conveyorImage: require('@/assets/images/prato/carboidratos/panqueca.png'),
     plateSliceImage: require('@/assets/images/prato/carboidratos/panqueca.png'),
@@ -115,11 +108,11 @@ const FOOD_DATABASE: FoodItem[] = [
   },
   {
     id: 'c6',
-    name: 'Macaxeira',
+    name: 'Macaxeira cozida',
     category: 'carbs',
-    portion: '1 pedaço (60g)',
-    carbs: 18,
-    cals: 75,
+    portion: '1 pedaço grande (100g)',
+    carbs: 30,
+    cals: 120,
     insulin: 1.5,
     conveyorImage: require('@/assets/images/prato/carboidratos/macaxeira.png'),
     plateSliceImage: require('@/assets/images/prato/carboidratos/macaxeira.png'),
@@ -127,11 +120,11 @@ const FOOD_DATABASE: FoodItem[] = [
   },
   {
     id: 'c7',
-    name: 'Cuscuz',
+    name: 'Cuscuz de milho com sal',
     category: 'carbs',
-    portion: '1 fatia (40g farinha)',
-    carbs: 30,
-    cals: 140,
+    portion: '1 pedaço pequeno (85g)',
+    carbs: 21,
+    cals: 96,
     insulin: 2,
     conveyorImage: require('@/assets/images/prato/carboidratos/cuscuz.png'),
     plateSliceImage: require('@/assets/images/prato/carboidratos/cuscuz.png'),
@@ -141,23 +134,21 @@ const FOOD_DATABASE: FoodItem[] = [
     id: 'c8',
     name: 'Bolo de milho',
     category: 'carbs',
-    portion: '1 fatia média (40g)',
-    carbs: 18,
-    cals: 120,
+    portion: '1 fatia média (60g)',
+    carbs: 32,
+    cals: 174,
     insulin: 1.5,
     conveyorImage: require('@/assets/images/prato/carboidratos/bolo_milho.png'),
     plateSliceImage: require('@/assets/images/prato/carboidratos/bolo_milho.png'),
     color: '#FFB300',
   },
-
-  // 🥩 PROTEÍNAS
   {
     id: 'p1',
     name: 'Coxa de frango',
     category: 'proteins',
-    portion: '1 unid. média (40g)',
+    portion: '1 unid. média (55g)',
     carbs: 0,
-    cals: 110,
+    cals: 118,
     insulin: 0,
     conveyorImage: require('@/assets/images/prato/proteinas/coxa.png'),
     plateSliceImage: require('@/assets/images/prato/proteinas/coxa.png'),
@@ -167,9 +158,9 @@ const FOOD_DATABASE: FoodItem[] = [
     id: 'p2',
     name: 'Carne assada',
     category: 'proteins',
-    portion: '1 fatia média (60g)',
+    portion: '1 fatia média (90g)',
     carbs: 0,
-    cals: 150,
+    cals: 259,
     insulin: 0,
     conveyorImage: require('@/assets/images/prato/proteinas/carne_assada.png'),
     plateSliceImage: require('@/assets/images/prato/proteinas/carne_assada.png'),
@@ -177,11 +168,11 @@ const FOOD_DATABASE: FoodItem[] = [
   },
   {
     id: 'p3',
-    name: 'Filé de Peixe',
+    name: 'Filé de peixe frito',
     category: 'proteins',
-    portion: '1 unid. (120g - frito)',
-    carbs: 4,
-    cals: 200,
+    portion: '1 filé (100g)',
+    carbs: 0,
+    cals: 180,
     insulin: 0,
     conveyorImage: require('@/assets/images/prato/proteinas/file.png'),
     plateSliceImage: require('@/assets/images/prato/proteinas/file.png'),
@@ -191,9 +182,9 @@ const FOOD_DATABASE: FoodItem[] = [
     id: 'p4',
     name: 'Ovo frito',
     category: 'proteins',
-    portion: '1 unid. média (50g)',
-    carbs: 0,
-    cals: 100,
+    portion: '1 unid. média (65g)',
+    carbs: 2,
+    cals: 110,
     insulin: 0,
     conveyorImage: require('@/assets/images/prato/proteinas/ovo.png'),
     plateSliceImage: require('@/assets/images/prato/proteinas/ovo.png'),
@@ -201,11 +192,11 @@ const FOOD_DATABASE: FoodItem[] = [
   },
   {
     id: 'p5',
-    name: 'Feijão comum',
+    name: 'Feijão comum carioquinha cozido',
     category: 'proteins',
-    portion: '1 col. sopa (17g)',
+    portion: '1 col. sopa média (17g)',
     carbs: 3,
-    cals: 15,
+    cals: 19,
     insulin: 0,
     conveyorImage: require('@/assets/images/prato/proteinas/feijao_comum.png'),
     plateSliceImage: require('@/assets/images/prato/proteinas/feijao_comum.png'),
@@ -213,11 +204,11 @@ const FOOD_DATABASE: FoodItem[] = [
   },
   {
     id: 'p6',
-    name: 'Feijão preto',
+    name: 'Feijão preto cozido',
     category: 'proteins',
     portion: '1 col. sopa (17g)',
     carbs: 2,
-    cals: 15,
+    cals: 13,
     insulin: 0,
     conveyorImage: require('@/assets/images/prato/proteinas/feijao_preto.png'),
     plateSliceImage: require('@/assets/images/prato/proteinas/feijao_preto.png'),
@@ -225,11 +216,11 @@ const FOOD_DATABASE: FoodItem[] = [
   },
   {
     id: 'p7',
-    name: 'Queijo minas',
+    name: 'Queijo minas padrão',
     category: 'proteins',
     portion: '1 fatia média (30g)',
     carbs: 0,
-    cals: 75,
+    cals: 107,
     insulin: 0,
     conveyorImage: require('@/assets/images/prato/proteinas/queijo.png'),
     plateSliceImage: require('@/assets/images/prato/proteinas/queijo.png'),
@@ -237,25 +228,23 @@ const FOOD_DATABASE: FoodItem[] = [
   },
   {
     id: 'p8',
-    name: 'Nuggets',
+    name: 'Nuggets de frango simples',
     category: 'proteins',
-    portion: '1 unid. média (26g)',
-    carbs: 4,
-    cals: 60,
+    portion: '1 unid. (22g)',
+    carbs: 3,
+    cals: 40,
     insulin: 0,
     conveyorImage: require('@/assets/images/prato/proteinas/nuggets.png'),
     plateSliceImage: require('@/assets/images/prato/proteinas/nuggets.png'),
     color: '#FFB300',
   },
-
-  // 🥬 VEGETAIS
   {
     id: 'v1',
     name: 'Alface',
     category: 'vegetables',
-    portion: '1 folha média (15g)',
+    portion: '1 folha média (10g)',
     carbs: 0,
-    cals: 2,
+    cals: 1,
     insulin: 0,
     conveyorImage: require('@/assets/images/prato/vegetais/alface.png'),
     plateSliceImage: require('@/assets/images/prato/vegetais/alface.png'),
@@ -266,7 +255,7 @@ const FOOD_DATABASE: FoodItem[] = [
     name: 'Tomate',
     category: 'vegetables',
     portion: '1 fatia média (15g)',
-    carbs: 0,
+    carbs: 0.6,
     cals: 3,
     insulin: 0,
     conveyorImage: require('@/assets/images/prato/vegetais/tomate.png'),
@@ -275,11 +264,11 @@ const FOOD_DATABASE: FoodItem[] = [
   },
   {
     id: 'v3',
-    name: 'Cenoura picada',
+    name: 'Cenoura crua ralada',
     category: 'vegetables',
-    portion: '1 col. sopa (25g)',
-    carbs: 2,
-    cals: 10,
+    portion: '1 col. sopa (12g)',
+    carbs: 1,
+    cals: 4,
     insulin: 0,
     conveyorImage: require('@/assets/images/prato/vegetais/cenoura.png'),
     plateSliceImage: require('@/assets/images/prato/vegetais/cenoura.png'),
@@ -287,11 +276,11 @@ const FOOD_DATABASE: FoodItem[] = [
   },
   {
     id: 'v4',
-    name: 'Repolho picado',
+    name: 'Repolho cru picado',
     category: 'vegetables',
-    portion: '1 col. sopa (10g)',
+    portion: '1 col. sopa cheia (10g)',
     carbs: 0,
-    cals: 3,
+    cals: 2,
     insulin: 0,
     conveyorImage: require('@/assets/images/prato/vegetais/repolho.png'),
     plateSliceImage: require('@/assets/images/prato/vegetais/repolho.png'),
@@ -303,7 +292,7 @@ const FOOD_DATABASE: FoodItem[] = [
     category: 'vegetables',
     portion: '1 col. sopa (10g)',
     carbs: 1,
-    cals: 5,
+    cals: 4,
     insulin: 0,
     conveyorImage: require('@/assets/images/prato/vegetais/cebola.png'),
     plateSliceImage: require('@/assets/images/prato/vegetais/cebola.png'),
@@ -313,7 +302,7 @@ const FOOD_DATABASE: FoodItem[] = [
     id: 'v6',
     name: 'Pepino',
     category: 'vegetables',
-    portion: '1 fatia média (7g)',
+    portion: '1 fatia pequena (3g)',
     carbs: 0,
     cals: 1,
     insulin: 0,
@@ -327,7 +316,7 @@ const FOOD_DATABASE: FoodItem[] = [
     category: 'vegetables',
     portion: '1 folha média (20g)',
     carbs: 1,
-    cals: 5,
+    cals: 10,
     insulin: 0,
     conveyorImage: require('@/assets/images/prato/vegetais/couve.png'),
     plateSliceImage: require('@/assets/images/prato/vegetais/couve.png'),
@@ -335,9 +324,9 @@ const FOOD_DATABASE: FoodItem[] = [
   },
   {
     id: 'v8',
-    name: 'Brócolis',
+    name: 'Brócolis cozido',
     category: 'vegetables',
-    portion: '1 col. sopa (10g cozido)',
+    portion: '1 col. sopa (10g)',
     carbs: 0,
     cals: 4,
     insulin: 0,
@@ -345,15 +334,13 @@ const FOOD_DATABASE: FoodItem[] = [
     plateSliceImage: require('@/assets/images/prato/vegetais/brocolis.png'),
     color: '#388E3C',
   },
-
-  // 🍎 FRUTAS
   {
     id: 'f1',
     name: 'Banana prata',
     category: 'fruits',
-    portion: '1 unid. média (50g)',
-    carbs: 13,
-    cals: 50,
+    portion: '1 unid. média (100g)',
+    carbs: 24,
+    cals: 185,
     insulin: 1,
     conveyorImage: require('@/assets/images/prato/frutas/banana.png'),
     plateSliceImage: require('@/assets/images/prato/frutas/banana.png'),
@@ -363,9 +350,9 @@ const FOOD_DATABASE: FoodItem[] = [
     id: 'f2',
     name: 'Maçã',
     category: 'fruits',
-    portion: '1 unid. média (80g)',
-    carbs: 12,
-    cals: 45,
+    portion: '1 unid. pequena (90g)',
+    carbs: 14,
+    cals: 58,
     insulin: 1,
     conveyorImage: require('@/assets/images/prato/frutas/maca.png'),
     plateSliceImage: require('@/assets/images/prato/frutas/maca.png'),
@@ -373,11 +360,11 @@ const FOOD_DATABASE: FoodItem[] = [
   },
   {
     id: 'f3',
-    name: 'Uva',
+    name: 'Uva verde',
     category: 'fruits',
-    portion: '10 gomos (80g)',
+    portion: '10 gomos médios (80g)',
     carbs: 10,
-    cals: 55,
+    cals: 50,
     insulin: 1,
     conveyorImage: require('@/assets/images/prato/frutas/uva.png'),
     plateSliceImage: require('@/assets/images/prato/frutas/uva.png'),
@@ -388,8 +375,8 @@ const FOOD_DATABASE: FoodItem[] = [
     name: 'Goiaba',
     category: 'fruits',
     portion: '1 unid. média (100g)',
-    carbs: 13,
-    cals: 55,
+    carbs: 14,
+    cals: 50,
     insulin: 1,
     conveyorImage: require('@/assets/images/prato/frutas/goiaba.png'),
     plateSliceImage: require('@/assets/images/prato/frutas/goiaba.png'),
@@ -401,7 +388,7 @@ const FOOD_DATABASE: FoodItem[] = [
     category: 'fruits',
     portion: '1 unid. média (120g)',
     carbs: 12,
-    cals: 45,
+    cals: 51.6,
     insulin: 1,
     conveyorImage: require('@/assets/images/prato/frutas/caju.png'),
     plateSliceImage: require('@/assets/images/prato/frutas/caju.png'),
@@ -409,11 +396,11 @@ const FOOD_DATABASE: FoodItem[] = [
   },
   {
     id: 'f6',
-    name: 'Laranja',
+    name: 'Laranja lima',
     category: 'fruits',
     portion: '1 unid. média (180g)',
-    carbs: 21,
-    cals: 85,
+    carbs: 20,
+    cals: 82,
     insulin: 1.5,
     conveyorImage: require('@/assets/images/prato/frutas/laranja.png'),
     plateSliceImage: require('@/assets/images/prato/frutas/laranja.png'),
@@ -421,11 +408,11 @@ const FOOD_DATABASE: FoodItem[] = [
   },
   {
     id: 'f7',
-    name: 'Mamão',
+    name: 'Mamão papaia',
     category: 'fruits',
     portion: '1 fatia média (160g)',
     carbs: 16,
-    cals: 65,
+    cals: 68,
     insulin: 1,
     conveyorImage: require('@/assets/images/prato/frutas/mamao.png'),
     plateSliceImage: require('@/assets/images/prato/frutas/mamao.png'),
@@ -436,22 +423,20 @@ const FOOD_DATABASE: FoodItem[] = [
     name: 'Melancia',
     category: 'fruits',
     portion: '1 fatia média (200g)',
-    carbs: 11,
-    cals: 60,
+    carbs: 13,
+    cals: 58,
     insulin: 1,
     conveyorImage: require('@/assets/images/prato/frutas/melancia.png'),
     plateSliceImage: require('@/assets/images/prato/frutas/melancia.png'),
     color: '#EF5350',
   },
-
-  // ☕ BEBIDAS E EXTRAS
   {
     id: 'b1',
     name: 'Café sem açúcar',
     category: 'drinks',
     portion: '1 xícara (200ml)',
     carbs: 0,
-    cals: 2,
+    cals: 16,
     insulin: 0,
     conveyorImage: require('@/assets/images/prato/bebidas/cafe.png'),
     plateSliceImage: require('@/assets/images/prato/bebidas/cafe.png'),
@@ -463,7 +448,7 @@ const FOOD_DATABASE: FoodItem[] = [
     category: 'drinks',
     portion: '1 xícara (200ml)',
     carbs: 20,
-    cals: 80,
+    cals: 76,
     insulin: 1.5,
     conveyorImage: require('@/assets/images/prato/bebidas/cafe_acucar.png'),
     plateSliceImage: require('@/assets/images/prato/bebidas/cafe_acucar.png'),
@@ -475,7 +460,7 @@ const FOOD_DATABASE: FoodItem[] = [
     category: 'drinks',
     portion: '1 copo (200ml)',
     carbs: 21,
-    cals: 90,
+    cals: 66,
     insulin: 1.5,
     conveyorImage: require('@/assets/images/prato/bebidas/suco_laranja.png'),
     plateSliceImage: require('@/assets/images/prato/bebidas/suco_laranja.png'),
@@ -486,8 +471,8 @@ const FOOD_DATABASE: FoodItem[] = [
     name: 'Suco maracujá (C/A)',
     category: 'drinks',
     portion: '1 copo (200ml)',
-    carbs: 14,
-    cals: 60,
+    carbs: 12,
+    cals: 52,
     insulin: 1,
     conveyorImage: require('@/assets/images/prato/bebidas/suco_maracuja.png'),
     plateSliceImage: require('@/assets/images/prato/bebidas/suco_maracuja.png'),
@@ -495,10 +480,10 @@ const FOOD_DATABASE: FoodItem[] = [
   },
   {
     id: 'b5',
-    name: 'Coca-Cola',
+    name: 'Coca-Cola normal',
     category: 'drinks',
     portion: '1 copo (200ml)',
-    carbs: 20,
+    carbs: 21,
     cals: 85,
     insulin: 1.5,
     conveyorImage: require('@/assets/images/prato/bebidas/coca.png'),
@@ -519,24 +504,23 @@ const FOOD_DATABASE: FoodItem[] = [
   },
   {
     id: 'b7',
-    name: 'Água de coco',
+    name: 'Água-de-coco verde',
     category: 'drinks',
     portion: '1 copo (200ml)',
-    carbs: 8,
-    cals: 40,
+    carbs: 11,
+    cals: 44,
     insulin: 0.5,
     conveyorImage: require('@/assets/images/prato/bebidas/agua_coco.png'),
     plateSliceImage: require('@/assets/images/prato/bebidas/agua_coco.png'),
     color: '#AED581',
   },
-  // --- DAQUI PARA BAIXO SÃO SÓLIDOS (Vão para o prato) ---
   {
     id: 'b8',
     name: 'Brigadeiro',
     category: 'drinks',
-    portion: '1 unid. média (10g)',
-    carbs: 6,
-    cals: 40,
+    portion: '1 unid. pequena (15g)',
+    carbs: 9,
+    cals: 60,
     insulin: 0.5,
     conveyorImage: require('@/assets/images/prato/bebidas/brigadeiro.png'),
     plateSliceImage: require('@/assets/images/prato/bebidas/brigadeiro.png'),
@@ -545,11 +529,11 @@ const FOOD_DATABASE: FoodItem[] = [
   },
   {
     id: 'b9',
-    name: 'Lasanha 4 Queijos',
+    name: 'Lasanha',
     category: 'drinks',
-    portion: '1 pedaço (190g)',
-    carbs: 22,
-    cals: 300,
+    portion: '1 escumadeira (170g)',
+    carbs: 23,
+    cals: 224,
     insulin: 2,
     conveyorImage: require('@/assets/images/prato/bebidas/lasanha.png'),
     plateSliceImage: require('@/assets/images/prato/bebidas/lasanha.png'),
@@ -560,9 +544,9 @@ const FOOD_DATABASE: FoodItem[] = [
     id: 'b10',
     name: 'Misto quente',
     category: 'drinks',
-    portion: '1 unid. (100g)',
-    carbs: 21,
-    cals: 250,
+    portion: '1 unid. (85g)',
+    carbs: 29,
+    cals: 212,
     insulin: 1.5,
     conveyorImage: require('@/assets/images/prato/bebidas/misto.png'),
     plateSliceImage: require('@/assets/images/prato/bebidas/misto.png'),
@@ -571,11 +555,11 @@ const FOOD_DATABASE: FoodItem[] = [
   },
   {
     id: 'b11',
-    name: 'Pizza calabresa',
+    name: 'Pizza de calabresa',
     category: 'drinks',
-    portion: '1 fatia grande (135g)',
-    carbs: 35,
-    cals: 350,
+    portion: '1 fatia média (100g)',
+    carbs: 21,
+    cals: 240,
     insulin: 2.5,
     conveyorImage: require('@/assets/images/prato/bebidas/pizza.png'),
     plateSliceImage: require('@/assets/images/prato/bebidas/pizza.png'),
@@ -584,11 +568,11 @@ const FOOD_DATABASE: FoodItem[] = [
   },
   {
     id: 'b12',
-    name: 'Hambúrguer',
+    name: 'Mini hambúrguer (com pão)',
     category: 'drinks',
-    portion: '1 unid. (100g)',
-    carbs: 29,
-    cals: 260,
+    portion: '1 unid. (60g)',
+    carbs: 15,
+    cals: 123,
     insulin: 2,
     conveyorImage: require('@/assets/images/prato/bebidas/hamburger.png'),
     plateSliceImage: require('@/assets/images/prato/bebidas/hamburger.png'),
@@ -600,8 +584,8 @@ const FOOD_DATABASE: FoodItem[] = [
     name: 'Chocolate ao leite',
     category: 'drinks',
     portion: '1 barra média (30g)',
-    carbs: 18,
-    cals: 160,
+    carbs: 19.6,
+    cals: 159.6,
     insulin: 1.5,
     conveyorImage: require('@/assets/images/prato/bebidas/chocolate.png'),
     plateSliceImage: require('@/assets/images/prato/bebidas/chocolate.png'),
@@ -610,7 +594,6 @@ const FOOD_DATABASE: FoodItem[] = [
   },
 ];
 
-// O SEU ARRAY COM AS IMAGENS CUSTOMIZADAS EM VEZ DE ÍCONES
 const MENU_BUTTONS = [
   {
     id: 'carbs',
@@ -635,9 +618,6 @@ const MENU_BUTTONS = [
   },
 ] as const;
 
-// ==========================================
-// 2. COMPONENTE ARRASTÁVEL (O Alimento Selecionado)
-// ==========================================
 interface DraggableFoodProps {
   item: FoodItem;
   onDropInPlate: (item: FoodItem) => void;
@@ -658,7 +638,6 @@ function DraggableFood({ item, onDropInPlate }: DraggableFoodProps) {
     })
     .onEnd((event) => {
       isDragging.value = false;
-      // Arrasta 100px para CIMA -> Solta no prato!
       if (event.translationY < -100) {
         runOnJS(onDropInPlate)(item);
       }
@@ -680,7 +659,6 @@ function DraggableFood({ item, onDropInPlate }: DraggableFoodProps) {
   return (
     <GestureDetector gesture={panGesture}>
       <Animated.View style={[styles.stagedFoodBadge, animatedStyle]}>
-        {/* A MÁGICA ACONTECE AQUI: Agora ele verifica se tem imagem! */}
         <View
           style={[
             styles.stagedFoodIcon,
@@ -703,18 +681,15 @@ function DraggableFood({ item, onDropInPlate }: DraggableFoodProps) {
             </Text>
           )}
         </View>
-
         <Text style={styles.stagedFoodLabel}>Arraste até o prato!</Text>
       </Animated.View>
     </GestureDetector>
   );
 }
 
-// ==========================================
-// 3. TELA PRINCIPAL (Fluxo de 3 Fases)
-// ==========================================
 export default function PratoScreen() {
   const pulseAnim = useSharedValue(1);
+  const { height: windowHeight } = useWindowDimensions();
 
   useEffect(() => {
     pulseAnim.value = withRepeat(
@@ -725,7 +700,7 @@ export default function PratoScreen() {
       -1,
       true
     );
-  }, []);
+  }, [pulseAnim]);
 
   const animatedPulseStyle = useAnimatedStyle(() => {
     return { transform: [{ scale: pulseAnim.value }] };
@@ -733,23 +708,21 @@ export default function PratoScreen() {
 
   const [phase, setPhase] = useState<Phase>('intro');
   const [plateItems, setPlateItems] = useState<FoodItem[]>([]);
-
   const [activeCategory, setActiveCategory] = useState<FoodCategory | null>(null);
   const [stagedFood, setStagedFood] = useState<FoodItem | null>(null);
 
   const insets = useSafeAreaInsets();
   const [showIntroBtn, setShowIntroBtn] = useState(false);
 
-  // Animação da Bottom Sheet (Lista Branca) - AGORA COM WITHTIMING (SEM QUICAR)
-  const bottomSheetY = useSharedValue(SCREEN_HEIGHT);
+  const bottomSheetY = useSharedValue(1500);
 
   useEffect(() => {
     if (activeCategory) {
       bottomSheetY.value = withTiming(0, { duration: 300 });
     } else {
-      bottomSheetY.value = withTiming(SCREEN_HEIGHT, { duration: 300 });
+      bottomSheetY.value = withTiming(windowHeight, { duration: 300 });
     }
-  }, [activeCategory]);
+  }, [activeCategory, windowHeight, bottomSheetY]);
 
   const animatedSheetStyle = useAnimatedStyle(() => {
     return { transform: [{ translateY: bottomSheetY.value }] };
@@ -773,22 +746,17 @@ export default function PratoScreen() {
 
   const handleDropInPlate = (food: FoodItem) => {
     setPlateItems((prev) => {
-      // Criamos um identificador único para ESTA porção específica
       const foodInstance = {
         ...food,
         uniqueId: `${food.id}-${Date.now()}-${Math.random()}`,
       };
 
-      // REGRA DA BEBIDA ÚNICA: Se for uma bebida legítima (não sólida)
       if (food.category === 'drinks' && !food.isSolid) {
-        // Remove qualquer outra bebida não sólida antiga
         const mesaSemBebidas = prev.filter(
           (item) => !(item.category === 'drinks' && !item.isSolid)
         );
         return [...mesaSemBebidas, foodInstance];
       }
-
-      // Para os alimentos e extras sólidos, permite acumular porções livremente!
       return [...prev, foodInstance];
     });
     setStagedFood(null);
@@ -803,11 +771,9 @@ export default function PratoScreen() {
 
   const visibleFoods = FOOD_DATABASE.filter((food) => food.category === activeCategory);
 
-  // FILTROS DA MESA (Para separar bebida da comida)
   const drinksOnTable = plateItems.filter((item) => item.category === 'drinks' && !item.isSolid);
   const foodOnPlate = plateItems.filter((item) => item.category !== 'drinks' || item.isSolid);
 
-  // FASE 1: INTRODUÇÃO
   if (phase === 'intro') {
     return (
       <ImageBackground
@@ -822,7 +788,6 @@ export default function PratoScreen() {
                 <MaterialCommunityIcons name="home" size={24} color="#fff" />
               </TouchableOpacity>
             </Animated.View>
-
             <View style={styles.introCard}>
               <Text style={styles.introTitle}>Alimentação saudável</Text>
               <Image
@@ -848,7 +813,6 @@ export default function PratoScreen() {
     );
   }
 
-  // FASE 2: GRÁFICO
   if (phase === 'chart') {
     return (
       <ImageBackground
@@ -863,7 +827,6 @@ export default function PratoScreen() {
                 <MaterialCommunityIcons name="home" size={24} color="#fff" />
               </TouchableOpacity>
             </Animated.View>
-
             <View style={styles.introCard}>
               <Text style={styles.introTitle}>O prato ideal é composto por:</Text>
               <Image
@@ -885,44 +848,29 @@ export default function PratoScreen() {
     );
   }
 
-  // FASE 3: O MINIGAME (COM BOTTOM SHEET E ÁREA DE BEBIDAS)
-  if (phase === 'game') {
-    return (
-      <GestureHandlerRootView style={{ flex: 1, backgroundColor: '#80A060', overflow: 'hidden' }}>
-        <ImageBackground
-          source={require('@/assets/images/prato/fundo_verde.png')}
-          style={styles.background}
-          resizeMode="cover"
-        >
+  return (
+    <GestureHandlerRootView style={styles.rootGestureView}>
+      <ImageBackground
+        source={require('@/assets/images/prato/fundo_verde.png')}
+        style={styles.background}
+        resizeMode="cover"
+      >
+        <View style={styles.tabletGameArea}>
           <Animated.View
             style={[styles.topHomeBtn, { top: Math.max(insets.top + 10, 40) }, animatedPulseStyle]}
           >
-            <TouchableOpacity
-              onPress={() => router.back()}
-              style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
-            >
+            <TouchableOpacity onPress={() => router.back()} style={styles.homeBtnTouch}>
               <MaterialCommunityIcons name="home" size={24} color="#fff" />
             </TouchableOpacity>
           </Animated.View>
 
-          <Text
-            style={[
-              styles.titleText,
-              {
-                color: '#FFF',
-                marginTop: Math.max(insets.top + 20, 60),
-                textShadowColor: 'rgba(0,0,0,0.3)',
-              },
-            ]}
-          >
+          <Text style={[styles.titleText, { marginTop: Math.max(insets.top + 20, 60) }]}>
             Monte seu prato
           </Text>
 
           <Text style={styles.subtitle}>O que você vai comer agora?</Text>
 
-          {/* MAIN GAME AREA */}
           <View style={styles.mainGameArea}>
-            {/* MENU LATERAL VERTICAL (C/ AS SUAS IMAGENS CUSTOMIZADAS) */}
             <View style={styles.sideMenu}>
               {MENU_BUTTONS.map((btn) => (
                 <TouchableOpacity
@@ -937,43 +885,32 @@ export default function PratoScreen() {
               ))}
             </View>
 
-            {/* ÁREA DA MESA (Bebidas em cima, Prato embaixo) */}
             <View style={styles.tableArea}>
-              {/* ÁREA DAS BEBIDAS */}
               <View style={styles.drinkArea}>
                 {drinksOnTable.length === 0 && (
                   <Text style={styles.dragHintTextDrinks}>Bebida</Text>
                 )}
                 {drinksOnTable.map((item, index) => (
                   <Animated.View
-                    key={`drink-${item.uniqueId}`} //  MUDOU AQUI
+                    key={`drink-${item.uniqueId}`}
                     entering={FadeIn}
                     exiting={FadeOut}
-                    style={{ position: 'absolute', zIndex: index }}
+                    style={styles.absoluteItem}
                   >
-                    {/* MUDOU O PARAMETRO DO ONPRESS AQUI: */}
                     <TouchableOpacity
                       activeOpacity={0.8}
                       onPress={() => handleRemoveFromPlate(item.uniqueId!)}
+                      style={styles.foodItemTouch}
                     >
                       {item.plateSliceImage ? (
                         <Image
                           source={item.plateSliceImage}
-                          style={{ width: 85, height: 85 }}
+                          style={styles.drinkImageProportional}
                           resizeMode="contain"
                         />
                       ) : (
-                        <View
-                          style={{
-                            backgroundColor: item.color,
-                            paddingVertical: 10,
-                            paddingHorizontal: 15,
-                            borderRadius: 10,
-                            borderWidth: 2,
-                            borderColor: '#FFF',
-                          }}
-                        >
-                          <Text style={{ fontWeight: 'bold', fontSize: 14 }}>{item.name}</Text>
+                        <View style={[styles.fallbackFoodView, { backgroundColor: item.color }]}>
+                          <Text style={styles.fallbackFoodText}>{item.name}</Text>
                         </View>
                       )}
                     </TouchableOpacity>
@@ -981,7 +918,6 @@ export default function PratoScreen() {
                 ))}
               </View>
 
-              {/* ÁREA DO PRATO */}
               <View style={styles.plateArea}>
                 <ImageBackground
                   source={require('@/assets/images/prato/prato_vazio.png')}
@@ -991,39 +927,30 @@ export default function PratoScreen() {
                   {foodOnPlate.length === 0 && (
                     <Text style={styles.dragHintText}>Pegue o alimento{'\n'}e solte aqui</Text>
                   )}
-
                   <View style={styles.plateInsideContainer}>
                     {foodOnPlate.map((item, index) => (
                       <Animated.View
-                        key={`food-${item.uniqueId}`} //  MUDOU AQUI
+                        key={`food-${item.uniqueId}`}
                         entering={FadeIn}
                         exiting={FadeOut}
-                        style={{ margin: -12, zIndex: index }}
+                        style={styles.foodItemWrapper}
                       >
-                        {/* MUDOU O PARAMETRO DO ONPRESS AQUI: */}
                         <TouchableOpacity
                           activeOpacity={0.8}
                           onPress={() => handleRemoveFromPlate(item.uniqueId!)}
-                          style={{ justifyContent: 'center', alignItems: 'center' }}
+                          style={styles.foodItemTouch}
                         >
                           {item.plateSliceImage ? (
                             <Image
                               source={item.plateSliceImage}
-                              style={{ width: 80, height: 80 }}
+                              style={styles.foodImageProportional}
                               resizeMode="contain"
                             />
                           ) : (
                             <View
-                              style={{
-                                backgroundColor: item.color,
-                                paddingVertical: 10,
-                                paddingHorizontal: 15,
-                                borderRadius: 10,
-                                borderWidth: 2,
-                                borderColor: '#FFF',
-                              }}
+                              style={[styles.fallbackFoodView, { backgroundColor: item.color }]}
                             >
-                              <Text style={{ fontWeight: 'bold', fontSize: 14 }}>{item.name}</Text>
+                              <Text style={styles.fallbackFoodText}>{item.name}</Text>
                             </View>
                           )}
                         </TouchableOpacity>
@@ -1035,7 +962,6 @@ export default function PratoScreen() {
             </View>
           </View>
 
-          {/* DASHBOARD DE TOTAIS */}
           <View style={styles.statsPanel}>
             <View style={styles.statBox}>
               <Text style={styles.statText}>Carboidratos: {totalCarbs}g</Text>
@@ -1045,14 +971,12 @@ export default function PratoScreen() {
             </View>
           </View>
 
-          {/* O ALIMENTO PRONTO PARA ARRASTAR */}
           {stagedFood && !activeCategory && (
             <View style={styles.stagingArea}>
               <DraggableFood item={stagedFood} onDropInPlate={handleDropInPlate} />
             </View>
           )}
 
-          {/* LISTA BRANCA (BOTTOM SHEET) */}
           <Animated.View style={[styles.bottomSheet, animatedSheetStyle]}>
             <View style={styles.bottomSheetHeader}>
               <Text style={styles.bottomSheetTitle}>
@@ -1078,37 +1002,24 @@ export default function PratoScreen() {
                   style={styles.sheetListItem}
                   onPress={() => handleSelectFood(item)}
                 >
-                  {/* VERIFICA SE TEM IMAGEM PARA MOSTRAR NA LISTA */}
                   <View
                     style={[
                       styles.sheetListItemIcon,
-                      {
-                        backgroundColor: item.conveyorImage ? 'transparent' : item.color,
-                        overflow: 'hidden',
-                      },
+                      { backgroundColor: item.conveyorImage ? 'transparent' : item.color },
                     ]}
                   >
                     {item.conveyorImage ? (
                       <Image
                         source={item.conveyorImage}
-                        style={{ width: '100%', height: '100%' }}
+                        style={styles.sheetItemImageFill}
                         resizeMode="contain"
                       />
                     ) : (
-                      <Text
-                        style={{
-                          fontSize: 10,
-                          fontWeight: 'bold',
-                          color: '#333',
-                          textAlign: 'center',
-                        }}
-                        numberOfLines={2}
-                      >
+                      <Text style={styles.fallbackIconText} numberOfLines={2}>
                         {item.name}
                       </Text>
                     )}
                   </View>
-
                   <View style={styles.sheetListItemTextContainer}>
                     <Text style={styles.sheetListItemName}>{item.name}</Text>
                     <Text style={styles.sheetListItemPortion}>{item.portion}</Text>
@@ -1120,24 +1031,30 @@ export default function PratoScreen() {
               )}
             />
           </Animated.View>
-        </ImageBackground>
-      </GestureHandlerRootView>
-    );
-  }
-
-  return null;
+        </View>
+      </ImageBackground>
+    </GestureHandlerRootView>
+  );
 }
 
-// ==========================================
-// 4. ESTILOS
-// ==========================================
 const styles = StyleSheet.create({
+  rootGestureView: {
+    flex: 1,
+    backgroundColor: '#80A060',
+    overflow: 'hidden',
+  },
   background: {
     flex: 1,
     width: '100%',
     height: '100%',
     alignItems: 'center',
     backgroundColor: '#80A060',
+  },
+  tabletGameArea: {
+    flex: 1,
+    width: '100%',
+    maxWidth: 600,
+    alignSelf: 'center',
   },
   topHomeBtn: {
     position: 'absolute',
@@ -1150,14 +1067,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     zIndex: 50,
   },
+  homeBtnTouch: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   titleText: {
     fontSize: 34,
     fontWeight: 'bold',
-    color: '#6D4C41',
+    color: '#FFF',
     textAlign: 'center',
     marginBottom: 5,
+    textShadowColor: 'rgba(0,0,0,0.3)',
+    textShadowOffset: { width: 1, height: 2 },
+    textShadowRadius: 3,
   },
-
   subtitle: {
     fontWeight: '100',
     fontFamily: 'Chewy_400Regular',
@@ -1167,8 +1091,6 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     marginBottom: 10,
   },
-
-  // LAYOUT DA FASE 3
   mainGameArea: {
     flexDirection: 'row',
     width: '100%',
@@ -1177,19 +1099,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     zIndex: 1,
   },
-
-  // MENU LATERAL
   sideMenu: {
-    width: 70,
+    width: '15%',
+    maxWidth: 80,
     justifyContent: 'center',
     alignItems: 'center',
     gap: 15,
     zIndex: 10,
   },
   menuBtn: {
-    width: 54,
-    height: 54,
-    borderRadius: 27,
+    width: '100%',
+    aspectRatio: 1,
+    borderRadius: 999,
     backgroundColor: '#8B9C73',
     justifyContent: 'center',
     alignItems: 'center',
@@ -1197,45 +1118,42 @@ const styles = StyleSheet.create({
     borderColor: '#A3C27C',
     elevation: 4,
   },
-  menuBtnActive: { backgroundColor: '#5D4037', borderColor: '#FFF', transform: [{ scale: 1.1 }] },
-
-  // A CLASSE QUE IMPEDE O SEU ÍCONE DE VAZAR OU SUMIR:
-  menuCustomIcon: {
-    width: 60, // Largura controlada
-    height: 60, // Altura controlada
-    // tintColor: '#FFF',
+  menuBtnActive: {
+    backgroundColor: '#5D4037',
+    borderColor: '#FFF',
+    transform: [{ scale: 1.1 }],
   },
-
-  // ÁREA DA MESA E BEBIDAS
+  menuCustomIcon: {
+    width: '110%',
+    height: '110%',
+  },
   tableArea: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
   drinkArea: {
-    width: 105,
-    height: 105,
+    width: 110,
+    height: 110,
+    borderRadius: 55,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 10,
     borderWidth: 2,
     borderColor: 'rgba(255, 255, 255, 0.4)',
     borderStyle: 'dashed',
-    borderRadius: 52.5,
-    position: 'relative',
   },
-
-  // PRATO
   plateArea: {
-    justifyContent: 'center',
+    width: '100%',
     alignItems: 'center',
+    justifyContent: 'center',
   },
   plateImage: {
-    width: 340,
-    height: 340,
+    width: '95%',
+    maxWidth: 380,
+    aspectRatio: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    position: 'relative',
   },
   dragHintText: {
     color: '#b3a5998a',
@@ -1252,21 +1170,75 @@ const styles = StyleSheet.create({
     position: 'absolute',
   },
   plateInsideContainer: {
-    width: '80%',
-    height: '80%',
+    width: '65%',
+    height: '65%',
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
     alignContent: 'center',
     alignItems: 'center',
   },
-
-  // DASHBOARD DE TOTAIS
-  statsPanel: { paddingHorizontal: 20, paddingBottom: 20, gap: 8, zIndex: 5, width: '100%' },
-  statBox: { backgroundColor: '#628641', padding: 12, borderRadius: 10, elevation: 3 },
-  statText: { fontSize: 16, color: '#FFF', fontWeight: 'bold', textAlign: 'center' },
-
-  // ÁREA DE PREPARO
+  foodItemWrapper: {
+    width: '28%',
+    aspectRatio: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    margin: '1.5%',
+  },
+  foodItemTouch: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  foodImageProportional: {
+    width: '100%',
+    height: '100%',
+  },
+  drinkImageProportional: {
+    width: '80%',
+    height: '80%',
+  },
+  absoluteItem: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  fallbackFoodView: {
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#FFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  fallbackFoodText: {
+    fontWeight: 'bold',
+    fontSize: 12,
+    textAlign: 'center',
+  },
+  statsPanel: {
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+    gap: 8,
+    zIndex: 5,
+    width: '100%',
+  },
+  statBox: {
+    backgroundColor: '#628641',
+    padding: 12,
+    borderRadius: 10,
+    elevation: 3,
+  },
+  statText: {
+    fontSize: 16,
+    color: '#FFF',
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
   stagingArea: {
     position: 'absolute',
     bottom: 110,
@@ -1286,7 +1258,7 @@ const styles = StyleSheet.create({
   stagedFoodIcon: {
     width: 74,
     height: 74,
-    borderRadius: 37, // Metade da largura para continuar redondo
+    borderRadius: 37,
     borderColor: '#FFF',
     justifyContent: 'center',
     alignItems: 'center',
@@ -1303,8 +1275,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 14,
   },
-
-  // BOTTOM SHEET
   bottomSheet: {
     position: 'absolute',
     bottom: 0,
@@ -1342,7 +1312,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5F5F5',
     borderRadius: 20,
   },
-
   sheetListItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1359,6 +1328,17 @@ const styles = StyleSheet.create({
     marginRight: 15,
     borderWidth: 1,
     borderColor: '#DDD',
+    overflow: 'hidden',
+  },
+  sheetItemImageFill: {
+    width: '100%',
+    height: '100%',
+  },
+  fallbackIconText: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: '#333',
+    textAlign: 'center',
   },
   sheetListItemTextContainer: {
     flex: 1,
@@ -1386,8 +1366,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#F57F17',
   },
-
-  // ESTILOS DAS FASES 1 E 2
   chartImage: { width: 250, height: 250, marginBottom: 10 },
   sourceText: {
     fontSize: 13,

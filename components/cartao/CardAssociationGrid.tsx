@@ -35,13 +35,9 @@ export default function CardAssociationGrid({ onGameComplete }: { onGameComplete
     };
   }, []);
 
-  // --- LÓGICA DE VITÓRIA CORRIGIDA ---
   useEffect(() => {
-    // Quando o usuário encontrar os 8 pares, o jogo termina
     if (matchedPairs.size === 8) {
-      // Adiciona um pequeno atraso para o usuário ver a última carta virar
       setTimeout(() => {
-        // Dispara o callback para o componente pai (CartoesScreen) abrir o VictoryModal
         onGameCompleteRef.current?.();
       }, 500);
     }

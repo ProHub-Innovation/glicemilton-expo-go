@@ -14,7 +14,7 @@ export const CARTOES_COLORS = {
   primary: GLICEMIA_COLORS.primary,
   white: GLICEMIA_COLORS.white,
   containerBg: GLICEMIA_COLORS.background,
-  brandDark: '#6D4C41', // Unificado com o Design System central
+  brandDark: '#6D4C41',
   selectedBorder: GLICEMIA_COLORS.selectionOrange,
   selectedBg: GLICEMIA_COLORS.selectionOrangeBg,
   successBg: '#AED581',
@@ -36,9 +36,9 @@ export const CARTOES_THEORY = {
     'Você associou todos os problemas diários às suas respectivas soluções clínicas com maestria!',
 };
 
-// Mapeamento dos 8 pares sequenciais vindos do Drive (Problemas vs Soluções)
+
 export const TABULEIRO_CARTOES: CardItem[] = [
-  // Par 1
+
   {
     id: 'p1',
     pairId: 'par_1',
@@ -53,7 +53,6 @@ export const TABULEIRO_CARTOES: CardItem[] = [
     image: require('../assets/images/cartas/Jogo 1.1.png'),
     alt: 'Solução recomendada para o obstáculo 1.',
   },
-  // Par 2
   {
     id: 'p2',
     pairId: 'par_2',
@@ -68,7 +67,7 @@ export const TABULEIRO_CARTOES: CardItem[] = [
     image: require('../assets/images/cartas/Jogo 2.2.png'),
     alt: 'Solução recomendada para o obstáculo 2.',
   },
-  // Par 3
+
   {
     id: 'p3',
     pairId: 'par_3',
@@ -83,7 +82,7 @@ export const TABULEIRO_CARTOES: CardItem[] = [
     image: require('../assets/images/cartas/Jogo 3.3.png'),
     alt: 'Solução recomendada para o obstáculo 3.',
   },
-  // Par 4
+
   {
     id: 'p4',
     pairId: 'par_4',
@@ -98,7 +97,7 @@ export const TABULEIRO_CARTOES: CardItem[] = [
     image: require('../assets/images/cartas/Jogo 4.4.png'),
     alt: 'Solução recomendada para o obstáculo 4.',
   },
-  // Par 5
+
   {
     id: 'p5',
     pairId: 'par_5',
@@ -113,7 +112,7 @@ export const TABULEIRO_CARTOES: CardItem[] = [
     image: require('../assets/images/cartas/Jogo 5.5.png'),
     alt: 'Solução recomendada para o obstáculo 5.',
   },
-  // Par 6
+
   {
     id: 'p6',
     pairId: 'par_6',
@@ -128,7 +127,7 @@ export const TABULEIRO_CARTOES: CardItem[] = [
     image: require('../assets/images/cartas/Jogo 6.6.png'),
     alt: 'Solução recomendada para o obstáculo 6.',
   },
-  // Par 7
+ 
   {
     id: 'p7',
     pairId: 'par_7',
@@ -143,7 +142,7 @@ export const TABULEIRO_CARTOES: CardItem[] = [
     image: require('../assets/images/cartas/Jogo 7.7.png'),
     alt: 'Solução recomendada para o obstáculo 7.',
   },
-  // Par 8
+
   {
     id: 'p8',
     pairId: 'par_8',

@@ -11,12 +11,11 @@ import {
 } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
 
-// Importando os componentes que criamos!
 import { AnimatedCloud, AnimatedFloat, GrassClump } from '../../components/AnimatedElements';
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { width } = useWindowDimensions(); // Hook responsivo adicionado aqui!
+  const { width } = useWindowDimensions();
 
   return (
     <View style={styles.screenWrapper}>
@@ -47,11 +46,12 @@ export default function HomeScreen() {
           <Text style={styles.smallText}>Bem-vindo ao</Text>
           <View style={styles.titleRow}>
             <Text style={styles.bigTitle}>Glicemilt</Text>
+
             <Svg
               viewBox="0 0 100 100"
               width={32}
               height={32}
-              style={{ marginTop: 8, marginHorizontal: 2 }}
+              style={{ marginTop: 8, marginHorizontal: -20, marginRight: 10 }}
             >
               <Path
                 d="M 35 30 Q 28 10 20 15"
@@ -80,7 +80,8 @@ export default function HomeScreen() {
                 strokeLinecap="round"
               />
             </Svg>
-            <Text style={styles.bigTitle}>n!</Text>
+
+            <Text style={[styles.bigTitle, { transform: [{ translateX: -10 }] }]}>n!</Text>
           </View>
         </AnimatedFloat>
 

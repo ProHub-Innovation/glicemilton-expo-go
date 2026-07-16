@@ -45,15 +45,12 @@ export function DiceButton({ lastRoll, isLocked, onRoll }: DiceButtonProps) {
     }, 80);
   }
 
-  // Define qual número renderizar no momento
   const currentNumber =
     isRolling || displayFace !== null ? displayFace || 1 : lastRoll ? lastRoll : 1;
 
-  // Mapeamento das posições das bolinhas (grid de 3x3) para cada face do dado
   const renderDots = () => {
     const dots: React.ReactElement[] = [];
 
-    // Configuração de quais posições do grid acendem para cada número (idêntico à imagem)
     const dotMap: { [key: number]: number[] } = {
       1: [4],
       2: [0, 8],
@@ -65,7 +62,6 @@ export function DiceButton({ lastRoll, isLocked, onRoll }: DiceButtonProps) {
 
     const activePositions = dotMap[currentNumber] || [4];
 
-    // Monta o grid 3x3 interno do dado
     for (let i = 0; i < 9; i++) {
       const isActive = activePositions.includes(i);
       dots.push(
@@ -84,7 +80,6 @@ export function DiceButton({ lastRoll, isLocked, onRoll }: DiceButtonProps) {
       disabled={isLocked || isRolling}
       activeOpacity={0.8}
     >
-      {/* Corpo Externo do Dado — Trazendo a Borda Dupla Macia e a Inclinação de -8deg */}
       <View style={styles.diceOuterBorder}>
         <View style={styles.diceBody}>
           <View style={styles.dotsGrid}>{renderDots()}</View>
@@ -96,7 +91,12 @@ export function DiceButton({ lastRoll, isLocked, onRoll }: DiceButtonProps) {
 
 const styles = StyleSheet.create({
   diceContainer: {
-    // Mantém a rotação charmosa do protótipo
+    width: '22%',
+    minWidth: 70,
+    maxWidth: 100,
+    minHeight: 70,
+    maxHeight: 100,
+    aspectRatio: 1,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.2,
@@ -107,44 +107,42 @@ const styles = StyleSheet.create({
     opacity: 0.5,
     transform: [{ rotate: '-8deg' }, { scale: 0.95 }],
   },
-  // Borda externa cinza/azulada bem suave da imagem
   diceOuterBorder: {
-    width: 90,
-    height: 90,
+    flex: 1,
     backgroundColor: '#D2D7DF',
-    borderRadius: 22,
-    padding: 3, // Espaçamento para criar a linha dupla perfeita
+    borderRadius: 20,
+    padding: 4,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  // Corpo interno branco do dado
   diceBody: {
+    flex: 1,
     width: '100%',
-    height: '100%',
     backgroundColor: '#FFFFFF',
-    borderRadius: 19,
-    padding: 12,
+    borderRadius: 16,
+    padding: '12%',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  // Grid interno para alinhar as bolinhas verticais e horizontais
+
   dotsGrid: {
+    flex: 1,
     width: '100%',
-    height: '100%',
     flexDirection: 'row',
     flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    alignContent: 'space-between',
   },
   dotCell: {
-    width: '33.33%',
-    height: '33.33%',
+    width: '31%',
+    height: '31%',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  // Estilo exato da bolinha azul escura/preta arredondada
   dot: {
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-    backgroundColor: '#0A142F', // Azul escuro da foto
+    width: '75%',
+    aspectRatio: 1,
+    borderRadius: 999,
+    backgroundColor: '#3E2723',
   },
 });

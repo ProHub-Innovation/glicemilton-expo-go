@@ -9,7 +9,7 @@ interface SquarePosition {
   id: number;
   top: DimensionValue;
   left: DimensionValue;
-  rotate: number; // Trabalhando apenas com números
+  rotate: number;
 }
 
 const SQUARES_POSITIONS: SquarePosition[] = [
@@ -38,7 +38,6 @@ export function BoardTrail({ currentPosition }: BoardTrailProps) {
       {SQUARES_POSITIONS.map((square, index) => {
         const isSpecialLeaf = index === 0 || index === 16;
 
-        // Juntamos a rotação da folha e a escala da folha cinza no mesmo array
         const imageTransforms: ({ rotate: string } | { scale: number })[] = [
           { rotate: `${square.rotate}deg` },
         ];
@@ -49,13 +48,8 @@ export function BoardTrail({ currentPosition }: BoardTrailProps) {
         return (
           <View
             key={square.id}
-            style={[
-              styles.leafWrapper,
-              // A ROTAÇÃO SAIU DO CONTÊINER PAI
-              { top: square.top, left: square.left },
-            ]}
+            style={[styles.leafWrapper, { top: square.top, left: square.left }]}
           >
-            {/* A ROTAÇÃO É APLICADA APENAS DIRETAMENTE NA IMAGEM */}
             <Image
               source={
                 isSpecialLeaf
@@ -66,19 +60,22 @@ export function BoardTrail({ currentPosition }: BoardTrailProps) {
               resizeMode="contain"
             />
 
-            {/* O NÚMERO NÃO PRECISA MAIS DE ROTAÇÃO INVERTIDA */}
-            {!isSpecialLeaf && <Text style={styles.leafNumber}>{index}</Text>}
+            {!isSpecialLeaf && (
+              <Text style={styles.leafNumber} adjustsFontSizeToFit numberOfLines={1}>
+                {index}
+              </Text>
+            )}
 
-            {/* O GLICEMILTON FICA FIXO, SEMPRE NO EIXO VERTICAL DA TELA */}
             {index === currentPosition && (
               <View style={styles.mascotContainer}>
                 <Image
-                  source={require('@/assets/images/glicemilton_feliz.png')}
+                  source={require('@/assets/images/Glicemilton_feliz.png')}
                   style={styles.mascotToken}
                   resizeMode="contain"
                 />
               </View>
             )}
+
             {index === 16 && currentPosition !== 16 && (
               <View style={styles.pinContainer}>
                 <Image
@@ -96,37 +93,23 @@ export function BoardTrail({ currentPosition }: BoardTrailProps) {
 }
 
 const styles = StyleSheet.create({
-  pinContainer: {
-    position: 'absolute',
-    top: 0, // Ajuste para o pin ficar "espetado" levemente para cima da folha
-    width: 40,
-    height: 40,
-    zIndex: 9,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  pinImage: {
-    width: '150%',
-    height: '150%',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 2,
-  },
   boardContainer: {
     width: '100%',
-    height: 700,
+    aspectRatio: 0.6,
+    maxWidth: 600,
+    alignSelf: 'center',
+    marginVertical: 'auto',
     position: 'relative',
   },
   leafWrapper: {
     position: 'absolute',
     alignItems: 'center',
     justifyContent: 'center',
-    width: 75,
-    height: 75,
+    width: '18%',
+    aspectRatio: 1,
     zIndex: 5,
-    marginLeft: -37.5,
-    marginTop: -37.5,
+    marginLeft: '-9%',
+    marginTop: '-9%',
   },
   leafImage: {
     width: '100%',
@@ -138,16 +121,15 @@ const styles = StyleSheet.create({
     fontSize: 24,
     color: '#3E2723',
     zIndex: 6,
-    transform: [{ translateY: 0 }],
     textShadowColor: 'rgba(0, 0, 0, 0.4)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,
   },
   mascotContainer: {
     position: 'absolute',
-    top: -45,
-    width: 110,
-    height: 110,
+    top: '-70%',
+    width: '150%',
+    aspectRatio: 1,
     zIndex: 10,
     alignItems: 'center',
     justifyContent: 'center',
@@ -159,5 +141,22 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 3,
+  },
+  pinContainer: {
+    position: 'absolute',
+    top: '-10%',
+    width: '50%',
+    aspectRatio: 1,
+    zIndex: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  pinImage: {
+    width: '150%',
+    height: '150%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 2,
   },
 });

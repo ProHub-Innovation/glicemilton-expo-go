@@ -23,7 +23,7 @@ export default function DashboardScreen() {
     } else if (gameName === 'Adaptação Saudável') {
       router.push('/modulos/labirinto');
     } else if (gameName === 'Atividade Física') {
-      router.push('/modulos/corrida'); // ← adicione isso
+      router.push('/modulos/corrida');
     } else {
       Alert.alert('Em breve', `O módulo ${gameName} ainda está em desenvolvimento!`);
     }
@@ -63,7 +63,7 @@ export default function DashboardScreen() {
         <View style={styles.bottomSection}>
           <AnimatedFloat>
             <Image
-              source={require('../../assets/images/glicemilton_feliz.png')}
+              source={require('../../assets/images/Glicemilton_feliz.png')}
               style={styles.characterImage}
               resizeMode="contain"
             />

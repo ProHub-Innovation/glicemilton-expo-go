@@ -1,7 +1,3 @@
-// context/GameContext.types.ts
-// Tipos e interfaces do estado global de jogo.
-// Exportados separadamente para uso em constantes e componentes sem importar o contexto inteiro.
-
 export type ModuleId =
   | 'prato'
   | 'exercicios'
@@ -15,18 +11,14 @@ export type ModuleId =
 export interface ModuleScore {
   moduleId: ModuleId;
   points: number;
-  completedAt: number; // timestamp em ms
+  completedAt: number;
 }
 
 export interface GameState {
   totalPoints: number;
   moduleScores: ModuleScore[];
-  sessionStartedAt: number; // timestamp em ms — início da sessão atual
+  sessionStartedAt: number;
 }
-
-// ---------------------------------------------------------------------------
-// Actions
-// ---------------------------------------------------------------------------
 
 export type GameAction =
   | {
@@ -44,14 +36,8 @@ export type GameAction =
       };
     };
 
-// ---------------------------------------------------------------------------
-// Contexto
-// ---------------------------------------------------------------------------
-
 export interface GameContextValue {
   state: GameState;
-  /** Soma pontos ao total global e registra no histórico do módulo. */
   addPoints: (moduleId: ModuleId, points: number) => void;
-  /** Reinicia toda a sessão — score volta a 0. */
   resetSession: () => void;
 }

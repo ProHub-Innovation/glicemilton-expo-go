@@ -2,7 +2,6 @@ import React, { useEffect, useRef } from 'react';
 import { Animated, Easing, StyleProp, ViewStyle, useWindowDimensions } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
-// 1. ANIMATED FLOAT
 interface AnimatedFloatProps {
   children: React.ReactNode;
   delay?: number;
@@ -37,7 +36,6 @@ export const AnimatedFloat = ({ children, delay = 0, style }: AnimatedFloatProps
   return <Animated.View style={[style, { transform: [{ translateY }] }]}>{children}</Animated.View>;
 };
 
-// 2. ANIMATED CLOUD
 interface AnimatedCloudProps {
   top: string | number;
   width: number;
@@ -53,7 +51,6 @@ export const AnimatedCloud = ({
   initialX,
   opacity = 1,
 }: AnimatedCloudProps) => {
-  // Hook responsivo adicionado dentro do componente para se adaptar à tela
   const { width } = useWindowDimensions();
   const translateX = useRef(new Animated.Value(initialX)).current;
 
@@ -108,7 +105,6 @@ export const AnimatedCloud = ({
   );
 };
 
-// 3. GRASS CLUMP
 interface GrassClumpProps {
   left: string | number;
   delay: number;

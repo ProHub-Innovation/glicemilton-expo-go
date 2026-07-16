@@ -1,7 +1,3 @@
-// context/gameReducer.ts
-// Reducer puro — sem efeitos colaterais, sem dependências externas.
-// Toda mutação de estado passa obrigatoriamente por aqui.
-
 import { GameAction, GameState } from './GameContext.types';
 
 export const INITIAL_STATE: GameState = {
@@ -16,7 +12,6 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       const { moduleId, points } = action.payload;
 
       if (points <= 0) {
-        // Pontos inválidos não alteram o estado — imutabilidade garantida
         return state;
       }
 
@@ -36,12 +31,11 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     case 'RESET_SESSION': {
       return {
         ...INITIAL_STATE,
-        sessionStartedAt: action.payload.sessionStartedAt, // novo timestamp para a sessão reiniciada
+        sessionStartedAt: action.payload.sessionStartedAt,
       };
     }
 
     default: {
-      // Garante exhaustive check em TypeScript — never deve ser atingível
       const _exhaustiveCheck: never = action;
       return _exhaustiveCheck;
     }

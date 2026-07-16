@@ -14,7 +14,6 @@ import {
   View,
 } from 'react-native';
 
-// IMPORTAÇÃO DO ESTADO GLOBAL E DO NOVO MODAL
 import VictoryModal from '../../../components/VictoryModal';
 import { useGame } from '../../../context/GameContext';
 
@@ -29,7 +28,6 @@ function pointInZone(px: number, py: number, zone: DropZone | null): boolean {
   return px >= zone.x && px <= zone.x + zone.width && py >= zone.y && py <= zone.y + zone.height;
 }
 
-// --- COMPONENTE DO MINIGAME ARRASTÁVEL E CLICÁVEL ---
 function DraggableItem({
   name,
   imageSource,
@@ -131,7 +129,6 @@ function DraggableItem({
   );
 }
 
-// --- MINIATURA PARA A TELA "CLIQUE NO GLICEMILTON" ---
 function MiniatureSetup() {
   return (
     <View style={styles.miniatureContainer}>
@@ -166,7 +163,6 @@ function MiniatureSetup() {
         resizeMode="contain"
       />
 
-      {/* Dois algodões na miniatura */}
       <Image
         source={require('../../../assets/images/algodao_seco.png')}
         style={[styles.miniItemAbsolute, { left: 195, bottom: 58, width: 15, height: 15 }]}
@@ -210,7 +206,6 @@ const INSTRUCOES: Record<FasePasso, string> = {
   DESCARTE: '9. Descarte a lanceta na caixa de perfurocortantes e o algodão na lixeira infectante!',
 };
 
-// --- COMPONENTE PRINCIPAL DO JOGO DE AFERIÇÃO ---
 function AfericaoGame({ onFinish }: { onFinish: () => void }) {
   const [fase, setFase] = useState<FasePasso>('SELECIONAR_DEDO');
 
@@ -220,10 +215,9 @@ function AfericaoGame({ onFinish }: { onFinish: () => void }) {
   const [lancetaDescartada, setLancetaDescartada] = useState(false);
   const [glicosimetroLigado, setGlicosimetroLigado] = useState(false);
 
-  // Estados dos DOIS algodões
   const [algodao2Molhado, setAlgodao2Molhado] = useState(false);
-  const [algodao2Usado, setAlgodao2Usado] = useState(false); // Algodão direita: molhado com álcool → higieniza dedo → some
-  const [algodao1Sujo, setAlgodao1Sujo] = useState(false); // Algodão esquerda: limpa primeira gota → descarte
+  const [algodao2Usado, setAlgodao2Usado] = useState(false);
+  const [algodao1Sujo, setAlgodao1Sujo] = useState(false);
   const [algodao1Descartado, setAlgodao1Descartado] = useState(false);
 
   const [inputBloqueado, setInputBloqueado] = useState(false);
@@ -233,12 +227,12 @@ function AfericaoGame({ onFinish }: { onFinish: () => void }) {
   const dedoRef = useRef<View>(null);
   const caixaPerfuroRef = useRef<View>(null);
   const lixeiraRef = useRef<View>(null);
-  const algodao2ZoneRef = useRef<View>(null); // Algodão da DIREITA: alvo do álcool
+  const algodao2ZoneRef = useRef<View>(null);
 
   const [dedoZone, setDedoZone] = useState<DropZone | null>(null);
   const [caixaPerfuroZone, setCaixaPerfuroZone] = useState<DropZone | null>(null);
   const [lixeiraZone, setLixeiraZone] = useState<DropZone | null>(null);
-  const [algodao2Zone, setAlgodao2Zone] = useState<DropZone | null>(null); // Hitbox do algodão direita
+  const [algodao2Zone, setAlgodao2Zone] = useState<DropZone | null>(null);
 
   const medirZona = (ref: React.RefObject<View | null>, setZone: (z: DropZone) => void) => {
     setTimeout(() => {
@@ -250,12 +244,9 @@ function AfericaoGame({ onFinish }: { onFinish: () => void }) {
     }, 500);
   };
 
-  // Remede a hitbox do algodão2 toda vez que a fase entra em MOLHAR_ALGODAO,
-  // garantindo que o measureInWindow aconteça após o layout estar estável na tela
   React.useEffect(() => {
     const timers: any[] = [];
     if (fase === 'MOLHAR_ALGODAO') {
-      // Tenta várias vezes com delays crescentes para garantir que o layout esteja pronto
       [300, 600, 1000].forEach((delay) => {
         const timer = setTimeout(() => {
           algodao2ZoneRef.current?.measureInWindow((x, y, w, h) => {
@@ -286,7 +277,7 @@ function AfericaoGame({ onFinish }: { onFinish: () => void }) {
     if (inputBloqueado) return;
 
     if (fase === 'SELECIONAR_DEDO') {
-      setFase('MOLHAR_ALGODAO'); // Vai para a nova fase
+      setFase('MOLHAR_ALGODAO');
       return;
     }
     if (fase === 'SEGUNDA_GOTA') {
@@ -303,7 +294,6 @@ function AfericaoGame({ onFinish }: { onFinish: () => void }) {
     const acertouCaixa = pointInZone(moveX, moveY, caixaPerfuroZone);
     const acertouLixo = pointInZone(moveX, moveY, lixeiraZone);
 
-    // Detecção do algodão2: usa a zona medida OU fallback por posição aproximada na tela
     const algodao2PosX = POSICAO.algodao2[c].x;
     const algodao2PosY = POSICAO.algodao2[c].y;
     const algodao2W = ESCALA.algodao[c] * 0.5 * RATIO.algodao;
@@ -317,7 +307,6 @@ function AfericaoGame({ onFinish }: { onFinish: () => void }) {
 
     switch (fase) {
       case 'MOLHAR_ALGODAO': {
-        // Álcool deve acertar o algodão da DIREITA (algodao2)
         if (itemName === 'alcool' && acertouAlgodao2) {
           setInputBloqueado(true);
           setIsSpraying(true);
@@ -336,7 +325,6 @@ function AfericaoGame({ onFinish }: { onFinish: () => void }) {
       }
 
       case 'ASSEPSIA': {
-        // Algodão DIREITA (molhado) higieniza o dedo e some
         if (itemName === 'algodao2' && acertouDedo) {
           setAlgodao2Usado(true);
           setFase('ABRIR_LANCETA');
@@ -353,7 +341,6 @@ function AfericaoGame({ onFinish }: { onFinish: () => void }) {
       }
 
       case 'LIMPAR_PRIMEIRA_GOTA': {
-        // Algodão ESQUERDA (algodao1) limpa a primeira gota
         if (itemName === 'algodao1' && acertouDedo) {
           setSangueVisible(false);
           setAlgodao1Sujo(true);
@@ -380,7 +367,6 @@ function AfericaoGame({ onFinish }: { onFinish: () => void }) {
             'A lanceta é um perfurocortante e deve ser descartada na caixa amarela de perfurocortantes, não no lixo infectante!'
           );
         } else if (itemName === 'algodao1' && acertouLixo) {
-          // Algodão ESQUERDA (com sangue) vai para o lixo infectante
           setAlgodao1Descartado(true);
           checkWin(lancetaDescartada, true);
         } else if (itemName === 'algodao1' && acertouCaixa) {
@@ -406,11 +392,9 @@ function AfericaoGame({ onFinish }: { onFinish: () => void }) {
   };
 
   const alcoolDisabled = fase !== 'MOLHAR_ALGODAO' || inputBloqueado;
-  // Algodão DIREITA: só fica ativo APÓS ser molhado, na fase ASSEPSIA
   const algodao2Disabled = fase !== 'ASSEPSIA' || inputBloqueado;
   const lancetaDisabled =
     !(fase === 'ABRIR_LANCETA' || fase === 'FURO' || fase === 'DESCARTE') || inputBloqueado;
-  // Algodão ESQUERDA: ativo apenas para limpar primeira gota e descartar
   const algodao1Disabled =
     !(fase === 'LIMPAR_PRIMEIRA_GOTA' || fase === 'DESCARTE') || inputBloqueado;
   const glicosimetroDisabled = fase !== 'AFERICAO' || inputBloqueado;
@@ -456,12 +440,10 @@ function AfericaoGame({ onFinish }: { onFinish: () => void }) {
       zoom: { x: cenaWidth * 0.35, y: cenaHeight * -1.3 + offsetTop },
     },
     algodao1: {
-      // Algodão para higienizar (esquerda)
       afastado: { x: cenaWidth * 0.28, y: cenaHeight * -0.67 + offsetTop },
       zoom: { x: cenaWidth * 0.05, y: cenaHeight * -0.75 + offsetTop },
     },
     algodao2: {
-      // Algodão para sangue (direita)
       afastado: { x: cenaWidth * 0.42, y: cenaHeight * -0.67 + offsetTop },
       zoom: { x: cenaWidth * 0.25, y: cenaHeight * -0.75 + offsetTop },
     },
@@ -550,9 +532,9 @@ function AfericaoGame({ onFinish }: { onFinish: () => void }) {
   const c = cenarioAfastado ? 'afastado' : 'zoom';
 
   const zIndexAlcool = alcoolDisabled ? 10 : 999;
-  const zIndexAlgodao2 = algodao2Disabled ? 11 : 999; // Direita
+  const zIndexAlgodao2 = algodao2Disabled ? 11 : 999;
   const zIndexLanceta = lancetaDisabled ? 12 : 999;
-  const zIndexAlgodao1 = algodao1Disabled ? 13 : 999; // Esquerda
+  const zIndexAlgodao1 = algodao1Disabled ? 13 : 999;
   const zIndexGlicosimetro = glicosimetroDisabled ? 14 : 999;
 
   return (
@@ -679,7 +661,6 @@ function AfericaoGame({ onFinish }: { onFinish: () => void }) {
             onLayout={() => medirZona(lixeiraRef, setLixeiraZone)}
           />
 
-          {/* HITBOX INVISÍVEL DO ALGODÃO DIREITA (algodao2) PARA O ÁLCOOL ACERTAR */}
           {!algodao2Usado && (
             <View
               ref={algodao2ZoneRef}
@@ -716,7 +697,6 @@ function AfericaoGame({ onFinish }: { onFinish: () => void }) {
           zIndex={zIndexAlcool}
         />
 
-        {/* ALGODÃO 1 — ESQUERDA: limpa primeira gota de sangue → descarte no lixo */}
         {!algodao1Descartado && (
           <DraggableItem
             key={`algodao1-${c}-${ESCALA.algodao[c]}-${POSICAO.algodao1[c].x}-${POSICAO.algodao1[c].y}`}
@@ -764,7 +744,6 @@ function AfericaoGame({ onFinish }: { onFinish: () => void }) {
           />
         )}
 
-        {/* ALGODÃO 2 — DIREITA: recebe álcool → higieniza dedo → some */}
         {!algodao2Usado && (
           <DraggableItem
             key={`algodao2-${c}-${ESCALA.algodao[c]}-${POSICAO.algodao2[c].x}-${POSICAO.algodao2[c].y}`}
@@ -866,7 +845,6 @@ function AfericaoGame({ onFinish }: { onFinish: () => void }) {
   );
 }
 
-// --- TELA PRINCIPAL QUE GERE O FLUXO ---
 export default function VigiarTaxasScreen() {
   const router = useRouter();
 
@@ -878,7 +856,6 @@ export default function VigiarTaxasScreen() {
   const [glicemiaGerada, setGlicemiaGerada] = useState<number>(0);
   const [gameKey, setGameKey] = useState(0);
 
-  // ✅ Estados e referências criados para gerenciar o efeito bolha e fade-in
   const [showIntroBtn, setShowIntroBtn] = useState(false);
   const btnOpacity = useRef(new Animated.Value(0)).current;
   const homePulseAnim = useRef(new Animated.Value(1)).current;
@@ -894,7 +871,6 @@ export default function VigiarTaxasScreen() {
     message: string;
   } | null>(null);
 
-  // ✅ Efeito 1: Delay de 1 segundo para transição do botão de avançar (Fase Intro)
   useEffect(() => {
     if (step === 'intro') {
       const timer = setTimeout(() => {
@@ -913,7 +889,6 @@ export default function VigiarTaxasScreen() {
     }
   }, [step, btnOpacity]);
 
-  // ✅ Efeito 2: Loop contínuo de pulsação (Efeito Bolha) para o botão Home
   useEffect(() => {
     const animation = Animated.loop(
       Animated.sequence([
@@ -970,7 +945,6 @@ export default function VigiarTaxasScreen() {
       setErrosConsecutivos(novosErros);
 
       if (novosErros >= 2) {
-        // Segundo erro: mostra aviso antes de ir para a tela de referência
         setErrosConsecutivos(0);
         setAlertConfig(null);
         setAvisoReferencia(true);
@@ -1011,9 +985,7 @@ export default function VigiarTaxasScreen() {
             resizeMode="cover"
           >
             <View style={styles.introContainerClean}>
-              {/* O cardAnchor sustenta o encaixe tridimensional relativo do botão Home */}
               <View style={styles.cardAnchor}>
-                {/* ✅ Botão Home readequado com pulsação infinita em escala */}
                 <Animated.View
                   style={[styles.introHomeBtn, { transform: [{ scale: homePulseAnim }] }]}
                 >
@@ -1034,7 +1006,6 @@ export default function VigiarTaxasScreen() {
                     prevenir complicações agudas e crônicas.
                   </Text>
 
-                  {/* ✅ Botão de avançar entra com delay de 1 segundo e efeito fade-in */}
                   {showIntroBtn && (
                     <Animated.View style={{ opacity: btnOpacity, marginTop: 24 }}>
                       <TouchableOpacity style={styles.navButton} onPress={() => setStep('story')}>
@@ -1066,7 +1037,7 @@ export default function VigiarTaxasScreen() {
               </View>
               <View style={styles.characterStory} pointerEvents="none">
                 <Image
-                  source={require('../../../assets/images/glicemilton_feliz.png')}
+                  source={require('../../../assets/images/Glicemilton_feliz.png')}
                   style={styles.characterLarge}
                   resizeMode="contain"
                 />
@@ -1108,7 +1079,7 @@ export default function VigiarTaxasScreen() {
               </View>
               <View style={styles.characterBottomCenter} pointerEvents="none">
                 <Image
-                  source={require('../../../assets/images/glicemilton_feliz.png')}
+                  source={require('../../../assets/images/Glicemilton_feliz.png')}
                   style={styles.characterLarge}
                   resizeMode="contain"
                 />
@@ -1551,7 +1522,6 @@ export default function VigiarTaxasScreen() {
 
               <VictoryModal visible={showVictory} pointsEarned={10} moduleName="Medir Glicemia" />
 
-              {/* AVISO ANTES DE IR PARA A TELA DE REFERÊNCIA */}
               {avisoReferencia && (
                 <View style={styles.modalOverlay}>
                   <View
@@ -1597,6 +1567,7 @@ export default function VigiarTaxasScreen() {
 
 const styles = StyleSheet.create({
   background: { flex: 1, width: '100%', height: '100%' },
+  customAlertSuccess: { backgroundColor: '#4CAF50' },
   safeArea: { flex: 1, paddingTop: 40, paddingBottom: 20 },
   safeAreaCenter: { flex: 1, paddingTop: 40, paddingBottom: 20, alignItems: 'center' },
   header: {
