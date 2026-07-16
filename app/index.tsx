@@ -15,12 +15,12 @@ import { AnimatedCloud, AnimatedFloat, GrassClump } from '@/components/AnimatedE
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { width, height } = useWindowDimensions(); 
+  const { width, height } = useWindowDimensions();
 
   return (
     <View style={[styles.screenWrapper, { height }]}>
       <ImageBackground
-        source={require('../../assets/images/background.jpg')}
+        source={require('../assets/images/background.jpg')}
         style={styles.homeArea}
         imageStyle={{ transform: [{ scale: 1.1 }, { translateX: -15 }] }}
       >
@@ -50,7 +50,7 @@ export default function HomeScreen() {
               viewBox="0 0 100 100"
               width={32}
               height={32}
-              style={{ marginTop: 8, marginHorizontal: 2 }}
+              style={{ marginTop: 8, marginHorizontal: -20, marginRight: -1 }}
             >
               <Path
                 d="M 35 30 Q 28 10 20 15"
@@ -93,7 +93,7 @@ export default function HomeScreen() {
 
         <AnimatedFloat style={styles.characterPosition}>
           <Image
-            source={require('../../assets/images/character.png')}
+            source={require('../assets/images/character.png')}
             style={styles.characterImage}
             resizeMode="contain"
           />
@@ -110,17 +110,17 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  screenWrapper: { 
-    flex: 1, 
+  screenWrapper: {
+    flex: 1,
     backgroundColor: '#222',
     width: '100%',
     overflow: 'hidden',
   },
-  homeArea: { 
-    flex: 1, 
-    width: '100%', 
-    height: '100%', 
-    alignItems: 'center' 
+  homeArea: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
   },
   welcomeArea: { position: 'absolute', top: '15%', alignItems: 'center', zIndex: 2 },
   smallText: {
