@@ -21,6 +21,12 @@ export default function LoginScreen() {
   const router = useRouter();
   const { width } = useWindowDimensions();
 
+  const titleFontSize = Math.min(width * 0.12, 48);
+  const subtitleFontSize = Math.min(width * 0.09, 38);
+  const svgWidth = titleFontSize * 0.58;
+  const svgHeight = titleFontSize * 0.71;
+  const svgMarginTop = titleFontSize * 0.16;
+
   return (
     <View style={styles.screenWrapper}>
       <ImageBackground
@@ -47,43 +53,47 @@ export default function LoginScreen() {
         />
 
         <AnimatedFloat style={styles.welcomeArea}>
-          <Text style={styles.smallText}>Bem-vindo ao</Text>
+          <Text style={[styles.smallText, { fontSize: subtitleFontSize }]}>Bem-vindo ao</Text>
           <View style={styles.titleRow}>
-            <Text style={styles.bigTitle}>Glicemilt</Text>
-            <Svg
-              viewBox="0 0 100 100"
-              width={32}
-              height={32}
-              style={{ marginTop: 8, marginHorizontal: 2 }}
+            <Text style={[styles.bigTitle, { fontSize: titleFontSize }]}>Glicemilt</Text>
+
+            <View
+              style={[
+                styles.mascotOContainer,
+                { marginTop: svgMarginTop, width: svgWidth, height: svgHeight },
+              ]}
             >
-              <Path
-                d="M 35 30 Q 28 10 20 15"
-                fill="none"
-                stroke="#523624"
-                strokeWidth="5"
-                strokeLinecap="round"
-              />
-              <Circle cx="20" cy="15" r="4" fill="#523624" />
-              <Path
-                d="M 65 30 Q 72 10 80 15"
-                fill="none"
-                stroke="#523624"
-                strokeWidth="5"
-                strokeLinecap="round"
-              />
-              <Circle cx="80" cy="15" r="4" fill="#523624" />
-              <Circle cx="50" cy="60" r="34" fill="#BA7D53" stroke="#523624" strokeWidth="5" />
-              <Circle cx="38" cy="55" r="5" fill="#523624" />
-              <Circle cx="62" cy="55" r="5" fill="#523624" />
-              <Path
-                d="M 38 70 Q 50 82 62 70"
-                fill="none"
-                stroke="#523624"
-                strokeWidth="4.5"
-                strokeLinecap="round"
-              />
-            </Svg>
-            <Text style={styles.bigTitle}>n!</Text>
+              <Svg viewBox="15 10 70 85" width="100%" height="100%">
+                <Path
+                  d="M 35 30 Q 28 10 20 15"
+                  fill="none"
+                  stroke="#523624"
+                  strokeWidth="5"
+                  strokeLinecap="round"
+                />
+                <Circle cx="20" cy="15" r="4" fill="#523624" />
+                <Path
+                  d="M 65 30 Q 72 10 80 15"
+                  fill="none"
+                  stroke="#523624"
+                  strokeWidth="5"
+                  strokeLinecap="round"
+                />
+                <Circle cx="80" cy="15" r="4" fill="#523624" />
+                <Circle cx="50" cy="60" r="34" fill="#BA7D53" stroke="#523624" strokeWidth="5" />
+                <Circle cx="38" cy="55" r="5" fill="#523624" />
+                <Circle cx="62" cy="55" r="5" fill="#523624" />
+                <Path
+                  d="M 38 70 Q 50 82 62 70"
+                  fill="none"
+                  stroke="#523624"
+                  strokeWidth="4.5"
+                  strokeLinecap="round"
+                />
+              </Svg>
+            </View>
+
+            <Text style={[styles.bigTitle, { fontSize: titleFontSize }]}>n!</Text>
           </View>
         </AnimatedFloat>
 
@@ -168,22 +178,35 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#80A060',
+  },
   screenWrapper: { flex: 1, backgroundColor: '#222' },
   homeArea: { flex: 1, width: '100%', alignItems: 'center' },
   welcomeArea: { position: 'absolute', top: '15%', alignItems: 'center', zIndex: 2 },
   smallText: {
-    fontSize: 38,
     fontFamily: 'Chewy_400Regular',
     color: 'white',
     textShadowColor: 'rgba(0, 0, 0, 0.4)',
     textShadowOffset: { width: 2, height: 2 },
     textShadowRadius: 1,
-    marginBottom: -10,
+    marginBottom: -5,
   },
-  titleRow: { flexDirection: 'row', alignItems: 'center' },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  mascotOContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 4,
+    marginRight: 2,
+  },
   bigTitle: {
-    fontSize: 48,
     fontFamily: 'Chewy_400Regular',
     color: 'white',
     textShadowColor: 'rgba(0, 0, 0, 0.4)',
@@ -210,8 +233,8 @@ const styles = StyleSheet.create({
   },
   characterPosition: {
     position: 'absolute',
-    bottom: '12%',
-    left: '15%',
+    bottom: 40,
+    left: '12%',
     width: 100,
     height: 100,
     zIndex: 2,
@@ -243,7 +266,6 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 2,
   },
-
   loginMascotContainer: { zIndex: 1, marginBottom: -60 },
   loginMascot: { width: 180, height: 180 },
 

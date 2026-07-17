@@ -17,6 +17,12 @@ export default function HomeScreen() {
   const router = useRouter();
   const { width, height } = useWindowDimensions();
 
+  const titleFontSize = Math.min(width * 0.12, 48);
+  const subtitleFontSize = Math.min(width * 0.09, 38);
+  const svgWidth = titleFontSize * 0.58;
+  const svgHeight = titleFontSize * 0.71;
+  const svgMarginTop = titleFontSize * 0.16;
+
   return (
     <View style={[styles.screenWrapper, { height }]}>
       <ImageBackground
@@ -43,43 +49,46 @@ export default function HomeScreen() {
         />
 
         <AnimatedFloat style={styles.welcomeArea}>
-          <Text style={styles.smallText}>Bem-vindo ao</Text>
+          <Text style={[styles.smallText, { fontSize: subtitleFontSize }]}>Bem-vindo ao</Text>
           <View style={styles.titleRow}>
-            <Text style={styles.bigTitle}>Glicemilt</Text>
-            <Svg
-              viewBox="0 0 100 100"
-              width={32}
-              height={32}
-              style={{ marginTop: 8, marginHorizontal: -20, marginRight: -1 }}
+            <Text style={[styles.bigTitle, { fontSize: titleFontSize }]}>Glicemilt</Text>
+            <View
+              style={[
+                styles.mascotOContainer,
+                { marginTop: svgMarginTop, width: svgWidth, height: svgHeight },
+              ]}
             >
-              <Path
-                d="M 35 30 Q 28 10 20 15"
-                fill="none"
-                stroke="#523624"
-                strokeWidth="5"
-                strokeLinecap="round"
-              />
-              <Circle cx="20" cy="15" r="4" fill="#523624" />
-              <Path
-                d="M 65 30 Q 72 10 80 15"
-                fill="none"
-                stroke="#523624"
-                strokeWidth="5"
-                strokeLinecap="round"
-              />
-              <Circle cx="80" cy="15" r="4" fill="#523624" />
-              <Circle cx="50" cy="60" r="34" fill="#BA7D53" stroke="#523624" strokeWidth="5" />
-              <Circle cx="38" cy="55" r="5" fill="#523624" />
-              <Circle cx="62" cy="55" r="5" fill="#523624" />
-              <Path
-                d="M 38 70 Q 50 82 62 70"
-                fill="none"
-                stroke="#523624"
-                strokeWidth="4.5"
-                strokeLinecap="round"
-              />
-            </Svg>
-            <Text style={styles.bigTitle}>n!</Text>
+              <Svg viewBox="15 10 70 85" width="100%" height="100%">
+                <Path
+                  d="M 35 30 Q 28 10 20 15"
+                  fill="none"
+                  stroke="#523624"
+                  strokeWidth="5"
+                  strokeLinecap="round"
+                />
+                <Circle cx="20" cy="15" r="4" fill="#523624" />
+                <Path
+                  d="M 65 30 Q 72 10 80 15"
+                  fill="none"
+                  stroke="#523624"
+                  strokeWidth="5"
+                  strokeLinecap="round"
+                />
+                <Circle cx="80" cy="15" r="4" fill="#523624" />
+                <Circle cx="50" cy="60" r="34" fill="#BA7D53" stroke="#523624" strokeWidth="5" />
+                <Circle cx="38" cy="55" r="5" fill="#523624" />
+                <Circle cx="62" cy="55" r="5" fill="#523624" />
+                <Path
+                  d="M 38 70 Q 50 82 62 70"
+                  fill="none"
+                  stroke="#523624"
+                  strokeWidth="4.5"
+                  strokeLinecap="round"
+                />
+              </Svg>
+            </View>
+
+            <Text style={[styles.bigTitle, { fontSize: titleFontSize }]}>n!</Text>
           </View>
         </AnimatedFloat>
 
@@ -124,17 +133,25 @@ const styles = StyleSheet.create({
   },
   welcomeArea: { position: 'absolute', top: '15%', alignItems: 'center', zIndex: 2 },
   smallText: {
-    fontSize: 38,
     fontFamily: 'Chewy_400Regular',
     color: 'white',
     textShadowColor: 'rgba(0, 0, 0, 0.4)',
     textShadowOffset: { width: 2, height: 2 },
     textShadowRadius: 1,
-    marginBottom: -10,
+    marginBottom: -5,
   },
-  titleRow: { flexDirection: 'row', alignItems: 'center' },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  mascotOContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 4,
+    marginRight: 2,
+  },
   bigTitle: {
-    fontSize: 48,
     fontFamily: 'Chewy_400Regular',
     color: 'white',
     textShadowColor: 'rgba(0, 0, 0, 0.4)',
@@ -164,7 +181,7 @@ const styles = StyleSheet.create({
   },
   characterPosition: {
     position: 'absolute',
-    bottom: '12%',
+    bottom: 40,
     left: '15%',
     width: 100,
     height: 100,
