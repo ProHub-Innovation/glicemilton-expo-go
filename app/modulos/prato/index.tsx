@@ -7,7 +7,6 @@ import {
   FlatList,
   StyleSheet,
   Image,
-  Dimensions,
   useWindowDimensions,
 } from 'react-native';
 import { router } from 'expo-router';
@@ -27,8 +26,6 @@ import Animated, {
   withSequence,
   withTiming,
 } from 'react-native-reanimated';
-
-const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 type Phase = 'intro' | 'chart' | 'game';
 type FoodCategory = 'carbs' | 'drinks' | 'proteins' | 'vegetables' | 'fruits';
@@ -706,7 +703,7 @@ export default function PratoScreen() {
 
   const availablePlateHeight = availableHeight - 125;
 
-  const PLATE_SIZE = Math.max(200, Math.min(availableWidth, availablePlateHeight, 360));
+  const PLATE_SIZE = Math.max(140, Math.min(availableWidth, availablePlateHeight, 360));
 
   useEffect(() => {
     pulseAnim.value = withRepeat(
@@ -865,7 +862,7 @@ export default function PratoScreen() {
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1, backgroundColor: '#80A060', overflow: 'hidden' }}>
+    <GestureHandlerRootView style={styles.rootGestureView}>
       <ImageBackground
         source={require('@/assets/images/prato/fundo_verde.png')}
         style={styles.background}
@@ -874,10 +871,7 @@ export default function PratoScreen() {
         <Animated.View
           style={[styles.topHomeBtn, { top: Math.max(insets.top + 10, 40) }, animatedPulseStyle]}
         >
-          <TouchableOpacity
-            onPress={() => router.back()}
-            style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
-          >
+          <TouchableOpacity onPress={() => router.back()} style={styles.homeBtnTouch}>
             <MaterialCommunityIcons name="home" size={24} color="#fff" />
           </TouchableOpacity>
         </Animated.View>
@@ -886,9 +880,7 @@ export default function PratoScreen() {
           style={[
             styles.titleText,
             {
-              color: '#FFF',
               marginTop: Math.max(insets.top + 20, 60),
-              textShadowColor: 'rgba(0,0,0,0.3)',
             },
           ]}
         >
@@ -1041,19 +1033,11 @@ export default function PratoScreen() {
                   {item.conveyorImage ? (
                     <Image
                       source={item.conveyorImage}
-                      style={{ width: '100%', height: '100%' }}
+                      style={styles.sheetItemImageFill}
                       resizeMode="contain"
                     />
                   ) : (
-                    <Text
-                      style={{
-                        fontSize: 10,
-                        fontWeight: 'bold',
-                        color: '#333',
-                        textAlign: 'center',
-                      }}
-                      numberOfLines={2}
-                    >
+                    <Text style={styles.fallbackIconText} numberOfLines={2}>
                       {item.name}
                     </Text>
                   )}
@@ -1097,7 +1081,7 @@ const styles = StyleSheet.create({
   titleText: {
     fontSize: 34,
     fontWeight: 'bold',
-    color: '#6D4C41',
+    color: '#ffffff',
     textAlign: 'center',
     marginBottom: 5,
   },
@@ -1427,5 +1411,25 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     elevation: 4,
+  },
+  rootGestureView: {
+    flex: 1,
+    backgroundColor: '#80A060',
+    overflow: 'hidden',
+  },
+  sheetItemImageFill: {
+    width: '100%',
+    height: '100%',
+  },
+  fallbackIconText: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: '#333',
+    textAlign: 'center',
+  },
+  homeBtnTouch: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
