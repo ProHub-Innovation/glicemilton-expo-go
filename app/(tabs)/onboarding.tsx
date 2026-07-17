@@ -15,6 +15,7 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  useWindowDimensions,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Animated, {
@@ -29,14 +30,10 @@ import { AnimatedFloat } from '../../components/AnimatedElements';
 export default function DashboardScreen() {
   const router = useRouter();
   const { state } = useGame();
+  const { width, height } = useWindowDimensions();
 
   const [modalVisible, setModalVisible] = useState(false);
-  const [registro, setRegistro] = useState({
-    data: '',
-    hora: '',
-    condicao: '',
-    indice: '',
-  });
+  const [registro, setRegistro] = useState({ data: '', hora: '', condicao: '', indice: '' });
 
   const scale = useSharedValue(1);
 
@@ -51,6 +48,11 @@ export default function DashboardScreen() {
   const animatedButtonStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
   }));
+
+  const titleFontSize = Math.min(width * 0.08, 32);
+  const labelFontSize = Math.min(width * 0.06, 24);
+  const valueFontSize = Math.min(width * 0.12, 48);
+  const characterHeight = Math.min(height * 0.3, 230);
 
   const navigateToGame = (gameName: string) => {
     if (gameName === 'Vigiar Taxas' || gameName === 'Medir Glicemia') {
@@ -71,7 +73,7 @@ export default function DashboardScreen() {
       resizeMode="cover"
       imageStyle={{ transform: [{ scale: 1.08 }, { translateY: 15 }] }}
     >
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={[styles.safeArea, { height }]}>
         <View style={styles.headerButtons}>
           <TouchableOpacity style={styles.circleButton}>
             <MaterialCommunityIcons name="cog" size={24} color="white" />
@@ -97,7 +99,7 @@ export default function DashboardScreen() {
 
           <View style={styles.cardBody}>
             <View style={styles.valueRow}>
-              <Text style={styles.glicemiaValue}>104</Text>
+              <Text style={[styles.glicemiaValue, { fontSize: valueFontSize }]}>104</Text>
               <Text style={styles.glicemiaUnit}>mg/dL</Text>
             </View>
             <View style={styles.scoreContainer}>
@@ -111,7 +113,7 @@ export default function DashboardScreen() {
           <AnimatedFloat>
             <Image
               source={require('../../assets/images/glicemilton_feliz.png')}
-              style={styles.characterImage}
+              style={[styles.characterImage, { height: characterHeight }]}
               resizeMode="contain"
             />
           </AnimatedFloat>
@@ -206,49 +208,65 @@ export default function DashboardScreen() {
                   style={{ flex: 1 }}
                 >
                   <View style={styles.notebookContainer}>
-                    <Text style={styles.notebookTitle}>Registros anteriores</Text>
+                    <Text style={[styles.notebookTitle, { fontSize: titleFontSize }]}>
+                      Registros anteriores
+                    </Text>
 
-                    <ScrollView contentContainerStyle={styles.notebookContent}>
+                    <ScrollView
+                      contentContainerStyle={styles.notebookContent}
+                      showsVerticalScrollIndicator={false}
+                    >
                       <View style={styles.inputGroup}>
-                        <Text style={styles.inputLabel}>Data:</Text>
+                        <Text style={[styles.inputLabel, { fontSize: labelFontSize }]}>Data:</Text>
                         <TextInput
                           style={styles.input}
                           value={registro.data}
                           onChangeText={(t) => setRegistro({ ...registro, data: t })}
                           placeholder="Ex: 10/10/2023"
+                          placeholderTextColor="#A99282"
                         />
                       </View>
 
                       <View style={styles.inputGroup}>
-                        <Text style={styles.inputLabel}>Hora:</Text>
+                        <Text style={[styles.inputLabel, { fontSize: labelFontSize }]}>Hora:</Text>
                         <TextInput
                           style={styles.input}
                           value={registro.hora}
                           onChangeText={(t) => setRegistro({ ...registro, hora: t })}
                           placeholder="Ex: 08:30"
+                          placeholderTextColor="#A99282"
                         />
                       </View>
 
                       <View style={styles.inputGroup}>
-                        <Text style={styles.inputLabel}>Condição:</Text>
-                        <Text style={styles.inputSubLabel}>
-                          Em jejum / Antes de comer / 1h depois de comer / 2h depois de comer
-                        </Text>
+                        <View style={styles.conditionHeaderRow}>
+                          <Text style={[styles.inputLabel, { fontSize: labelFontSize }]}>
+                            Condição:
+                          </Text>
+                          <Text style={styles.inputSubLabel}>
+                            Em jejum / Antes de comer{'\n'}/ 1h depois de comer / 2h{'\n'}depois de
+                            comer
+                          </Text>
+                        </View>
                         <TextInput
                           style={styles.input}
                           value={registro.condicao}
                           onChangeText={(t) => setRegistro({ ...registro, condicao: t })}
                           placeholder="Digite a condição..."
+                          placeholderTextColor="#A99282"
                         />
                       </View>
 
                       <View style={styles.inputGroup}>
-                        <Text style={styles.inputLabel}>Índice glicemico (mg/dL):</Text>
+                        <Text style={[styles.inputLabel, { fontSize: labelFontSize }]}>
+                          Índice glicêmico (mg/dL):
+                        </Text>
                         <TextInput
                           style={styles.input}
                           value={registro.indice}
                           onChangeText={(t) => setRegistro({ ...registro, indice: t })}
                           placeholder="Ex: 110"
+                          placeholderTextColor="#A99282"
                           keyboardType="numeric"
                         />
                       </View>
@@ -276,16 +294,19 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     alignItems: 'center',
-    paddingTop: 20,
+    paddingTop: Platform.OS === 'web' ? 20 : 10,
     paddingBottom: 20,
     justifyContent: 'space-between',
+    width: '100%',
   },
   headerButtons: {
-    width: '90%',
+    width: '85%',
+    maxWidth: 350,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingHorizontal: 10,
-    marginBottom: 10,
+    alignItems: 'center',
+    marginBottom: 5,
+    marginTop: Platform.OS === 'web' ? 10 : 0,
     zIndex: 10,
   },
   circleButton: {
@@ -296,7 +317,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: 'rgba(255,255,255,0.3)',
+    borderColor: 'rgba(255, 255, 255, 0.3)',
   },
   topCard: {
     backgroundColor: 'white',
@@ -330,7 +351,7 @@ const styles = StyleSheet.create({
   progressFill: { width: '70%', height: '100%', backgroundColor: '#8DB863', borderRadius: 6 },
   cardBody: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
   valueRow: { flexDirection: 'row', alignItems: 'baseline' },
-  glicemiaValue: { fontSize: 48, fontWeight: '900', color: '#6C5141', lineHeight: 50 },
+  glicemiaValue: { fontWeight: '900', color: '#6C5141', lineHeight: 50 },
   glicemiaUnit: { fontSize: 18, fontWeight: 'bold', color: '#6C5141', marginLeft: 5 },
   scoreContainer: {
     alignItems: 'center',
@@ -342,7 +363,7 @@ const styles = StyleSheet.create({
   scoreLabel: { fontSize: 14, fontFamily: 'Chewy_400Regular', color: 'white' },
   scoreValue: { fontSize: 22, fontFamily: 'Chewy_400Regular', color: 'white' },
   bottomSection: { width: '100%', alignItems: 'center', justifyContent: 'flex-end' },
-  characterImage: { width: 220, height: 270, marginBottom: 5 },
+  characterImage: { width: 220, marginBottom: 5 },
   bottomGrid: { width: '100%', alignItems: 'center', gap: 8, paddingHorizontal: 10 },
   gridRow: {
     flexDirection: 'row',
@@ -359,7 +380,7 @@ const styles = StyleSheet.create({
   modalSafeArea: { flex: 1 },
   notebookContainer: {
     flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    backgroundColor: 'rgba(255, 255, 255, 0.92)',
     margin: 20,
     borderRadius: 25,
     padding: 20,
@@ -370,26 +391,31 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
   },
   notebookTitle: {
-    fontSize: 32,
     fontFamily: 'Chewy_400Regular',
     color: '#8B5E3C',
     textAlign: 'center',
     marginBottom: 20,
   },
-  notebookContent: { paddingBottom: 20 },
-  inputGroup: { marginBottom: 20 },
+  notebookContent: { paddingBottom: 10 },
+  inputGroup: { marginBottom: 15 },
   inputLabel: {
-    fontSize: 24,
     fontFamily: 'Chewy_400Regular',
     color: '#6C5141',
-    marginBottom: 5,
+  },
+  conditionHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    width: '100%',
+    marginBottom: 2,
   },
   inputSubLabel: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#8B5E3C',
     fontWeight: 'bold',
-    marginBottom: 5,
-    lineHeight: 16,
+    textAlign: 'right',
+    maxWidth: '65%',
+    lineHeight: 14,
   },
   input: {
     fontSize: 18,

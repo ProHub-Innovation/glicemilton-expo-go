@@ -14,20 +14,12 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
-import { useFonts as useExpoFonts } from 'expo-font';
-import { Chewy_400Regular } from '@expo-google-fonts/chewy';
 
 import { AnimatedCloud, AnimatedFloat } from '../../components/AnimatedElements';
 
 export default function LoginScreen() {
   const router = useRouter();
   const { width } = useWindowDimensions();
-
-  const [fontsLoaded] = useExpoFonts({ Chewy_400Regular });
-
-  if (!fontsLoaded) {
-    return <View style={styles.screenWrapper} />;
-  }
 
   const titleFontSize = Math.min(width * 0.12, 48);
   const subtitleFontSize = Math.min(width * 0.09, 38);
